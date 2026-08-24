@@ -37,13 +37,37 @@ Cuando no exista una razón documentada para otra decisión:
 
 Estas decisiones son defaults, no excusa para reescribir un Brownfield funcional sin beneficio demostrado.
 
-## 5. Regla API-first de implementación
+## 5. Gates de ingeniería
+
+El Blueprint v0.2 formaliza gates intermedios para impedir que una IA avance por entusiasmo cuando todavía existen ambigüedades críticas.
+
+Secuencia Brownfield mínima:
+
+`Brownfield Baseline → Requirements Ready → Architecture Ready → API Implementation → OpenAPI/Postman/QA → API Gate → UI/Clients → Release Gate`
+
+### Brownfield Baseline
+
+Exige inventario técnico, reconstrucción funcional, Gap Analysis, TO-BE y roadmap antes de tratar propuestas como requisitos.
+
+### Requirements Ready
+
+Exige actores/autorización, requisitos funcionales y no funcionales, reglas de negocio, casos de uso, criterios de aceptación y trazabilidad.
+
+### Architecture Ready
+
+Exige decisiones explícitas sobre arquitectura, seguridad, datos, base de datos autoritativa, auditoría, autenticación API, contrato de errores y versionado. Threat Modeling se incorpora cuando aplica.
+
+### API Gate
 
 Una vez implementada la API, no se inicia el diseño visual ni la implementación de los clientes web/Android hasta cumplir el API Gate.
 
 Secuencia mínima:
 
 `API -> OpenAPI -> Postman -> QA API -> Contract Validation -> API Gate PASS -> Inventarios UX -> Identidad/Design System -> Mockups -> React/Kotlin`
+
+### Release Gate
+
+No se libera una solución sin QA de integración, QA de seguridad, documentación de release y backup/restore cuando aplique.
 
 ## 6. UI y mockups
 
@@ -85,6 +109,6 @@ Un check automático o un gate debe poder asociarse a evidencia verificable: arc
 
 El Blueprint usa versionado semántico. Los proyectos declaran la versión adoptada. Una nueva versión del Blueprint no modifica automáticamente proyectos existentes; primero se realiza un Compliance Review y se decide qué adoptar.
 
-## 12. Proyecto piloto de Core v0.1
+## 12. Proyecto piloto
 
-`LuisHdezE/CareShift_Manager` validará el flujo Brownfield y los formatos machine-readable antes de cerrar Blueprint v1.0.
+`LuisHdezE/CareShift_Manager` valida el flujo Brownfield y los formatos machine-readable antes de cerrar Blueprint v1.0. Los hallazgos del piloto se incorporan al Blueprint mediante cambios versionados y PRs separados.
