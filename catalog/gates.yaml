@@ -11,7 +11,7 @@ gates:
       - brownfield.gap_analysis
       - brownfield.target_definition
       - brownfield.alignment_roadmap
-    result_values: [PASS, FAIL, BLOCKED]
+    result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
 
   - id: requirements_ready
     name: Requirements Ready Gate
@@ -25,7 +25,7 @@ gates:
       - requirements.use_cases
       - requirements.acceptance_criteria
       - requirements.traceability
-    result_values: [PASS, FAIL, BLOCKED]
+    result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
     rule: >-
       No se diseña ni implementa un endpoint para un caso de uso cuyos actores,
       reglas, entradas, criterios de aceptación y trazabilidad sigan ambiguos.
@@ -48,7 +48,7 @@ gates:
       - api.versioning_policy
     require_if_applicable:
       - architecture.threat_model
-    result_values: [PASS, FAIL, BLOCKED]
+    result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
     rule: >-
       La API no comienza mientras las decisiones de arquitectura, seguridad,
       datos, auditoría, autenticación, errores y versionado no estén explícitas.
@@ -67,7 +67,7 @@ gates:
       - api.qa_positive
       - api.qa_negative
       - api.contract_validation
-    result_values: [PASS, FAIL, BLOCKED]
+    result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
     rule: >-
       No se inicia diseño visual ni implementación de clientes web/Android
       mientras este gate no esté en PASS.
@@ -81,4 +81,4 @@ gates:
       - release.documentation
     require_if_applicable:
       - release.backup_restore
-    result_values: [PASS, FAIL, BLOCKED]
+    result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
