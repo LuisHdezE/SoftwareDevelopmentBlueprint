@@ -1,199 +1,71 @@
-version: 0.2.0
+version: 0.3.0
 checks:
-  - id: discovery.product_vision
-    phase: discovery
-    type: REQUIRED
-    verification: manual
-  - id: discovery.scope_mvp
-    phase: discovery
-    type: REQUIRED
-    verification: manual
+  - {id: discovery.product_vision, phase: discovery, type: REQUIRED, verification: manual}
+  - {id: discovery.scope_mvp, phase: discovery, type: REQUIRED, verification: manual}
 
-  - id: brownfield.technical_inventory
-    phase: brownfield_inspection
-    type: BROWNFIELD
-    verification: evidence
-  - id: brownfield.functional_reconstruction
-    phase: as_is
-    type: BROWNFIELD
-    verification: evidence
-  - id: brownfield.gap_analysis
-    phase: gap_analysis
-    type: BROWNFIELD
-    verification: evidence
-  - id: brownfield.target_definition
-    phase: target_definition
-    type: BROWNFIELD
-    verification: evidence
-  - id: brownfield.alignment_roadmap
-    phase: target_definition
-    type: BROWNFIELD
-    verification: evidence
+  - {id: brownfield.technical_inventory, phase: brownfield_inspection, type: BROWNFIELD, verification: evidence}
+  - {id: brownfield.functional_reconstruction, phase: as_is, type: BROWNFIELD, verification: evidence}
+  - {id: brownfield.gap_analysis, phase: gap_analysis, type: BROWNFIELD, verification: evidence}
+  - {id: brownfield.target_definition, phase: target_definition, type: BROWNFIELD, verification: evidence}
+  - {id: brownfield.alignment_roadmap, phase: target_definition, type: BROWNFIELD, verification: evidence}
 
-  - id: requirements.actors_authorization
-    phase: requirements_domain
-    type: REQUIRED
-    verification: evidence
-  - id: requirements.functional
-    phase: requirements_domain
-    type: REQUIRED
-    verification: evidence
-  - id: requirements.non_functional
-    phase: requirements_domain
-    type: REQUIRED
-    verification: evidence
-  - id: requirements.business_rules
-    phase: requirements_domain
-    type: REQUIRED
-    verification: evidence
-  - id: requirements.use_cases
-    phase: requirements_domain
-    type: REQUIRED
-    verification: evidence
-  - id: requirements.acceptance_criteria
-    phase: requirements_domain
-    type: REQUIRED
-    verification: evidence
-  - id: requirements.traceability
-    phase: requirements_domain
-    type: REQUIRED
-    verification: evidence
+  - {id: requirements.actors_authorization, phase: requirements_domain, type: REQUIRED, verification: evidence}
+  - {id: requirements.functional, phase: requirements_domain, type: REQUIRED, verification: evidence}
+  - {id: requirements.non_functional, phase: requirements_domain, type: REQUIRED, verification: evidence}
+  - {id: requirements.business_rules, phase: requirements_domain, type: REQUIRED, verification: evidence}
+  - {id: requirements.use_cases, phase: requirements_domain, type: REQUIRED, verification: evidence}
+  - {id: requirements.acceptance_criteria, phase: requirements_domain, type: REQUIRED, verification: evidence}
+  - {id: requirements.traceability, phase: requirements_domain, type: REQUIRED, verification: evidence}
 
-  - id: architecture.domain_model
-    phase: architecture_security_data
-    type: REQUIRED
-    verification: evidence
-  - id: architecture.decision_records
-    phase: architecture_security_data
-    type: REQUIRED
-    verification: evidence
-  - id: architecture.security_model
-    phase: architecture_security_data
-    type: REQUIRED
-    verification: evidence
-  - id: architecture.threat_model
-    phase: architecture_security_data
-    type: CONDITIONAL
-    verification: evidence
-  - id: data.architecture
-    phase: architecture_security_data
-    type: REQUIRED
-    verification: evidence
-  - id: data.schema_migrations
-    phase: architecture_security_data
-    type: REQUIRED
-    verification: evidence
-  - id: data.authoritative_database
-    phase: architecture_security_data
-    type: REQUIRED
-    verification: evidence
-  - id: audit.event_catalog
-    phase: architecture_security_data
-    type: REQUIRED
-    verification: evidence
-  - id: audit.retention_policy
-    phase: architecture_security_data
-    type: REQUIRED
-    verification: evidence
-  - id: api.auth_strategy
-    phase: architecture_security_data
-    type: REQUIRED
-    verification: evidence
-  - id: api.error_contract
-    phase: architecture_security_data
-    type: REQUIRED
-    verification: evidence
-  - id: api.versioning_policy
-    phase: architecture_security_data
-    type: REQUIRED
-    verification: evidence
+  - {id: architecture.domain_model, phase: architecture_security_data, type: REQUIRED, verification: evidence}
+  - {id: architecture.decision_records, phase: architecture_security_data, type: REQUIRED, verification: evidence}
+  - {id: architecture.security_model, phase: architecture_security_data, type: REQUIRED, verification: evidence}
+  - {id: architecture.threat_model, phase: architecture_security_data, type: CONDITIONAL, verification: evidence}
+  - {id: data.architecture, phase: architecture_security_data, type: REQUIRED, verification: evidence}
+  - {id: data.schema_migrations, phase: architecture_security_data, type: REQUIRED, verification: evidence}
+  - {id: data.authoritative_database, phase: architecture_security_data, type: REQUIRED, verification: evidence}
+  - {id: audit.event_catalog, phase: architecture_security_data, type: REQUIRED, verification: evidence}
+  - {id: audit.retention_policy, phase: architecture_security_data, type: REQUIRED, verification: evidence}
+  - {id: api.auth_strategy, phase: architecture_security_data, type: REQUIRED, verification: evidence}
+  - {id: api.error_contract, phase: architecture_security_data, type: REQUIRED, verification: evidence}
+  - {id: api.versioning_policy, phase: architecture_security_data, type: REQUIRED, verification: evidence}
 
-  - id: api.endpoints_implemented
-    phase: api_implementation
-    type: REQUIRED
-    verification: evidence
-  - id: api.auth_authorization
-    phase: api_implementation
-    type: REQUIRED
-    verification: evidence
-  - id: api.audit_logging
-    phase: api_implementation
-    type: REQUIRED
-    verification: evidence
-  - id: api.openapi
-    phase: api_contract_qa
-    type: GENERATED
-    verification: file
-  - id: api.postman_collection
-    phase: api_contract_qa
-    type: GENERATED
-    verification: file
-  - id: api.postman_environment
-    phase: api_contract_qa
-    type: GENERATED
-    verification: file
-  - id: api.qa_positive
-    phase: api_contract_qa
-    type: REQUIRED
-    verification: evidence
-  - id: api.qa_negative
-    phase: api_contract_qa
-    type: REQUIRED
-    verification: evidence
-  - id: api.contract_validation
-    phase: api_contract_qa
-    type: REQUIRED
-    verification: evidence
+  - {id: api.scope_defined, phase: api_contract_design, type: REQUIRED, verification: evidence}
+  - {id: api.endpoint_inventory, phase: api_contract_design, type: REQUIRED, verification: evidence}
+  - {id: api.auth_contract, phase: api_contract_design, type: REQUIRED, verification: evidence}
+  - {id: api.permission_matrix, phase: api_contract_design, type: REQUIRED, verification: evidence}
+  - {id: api.audit_event_mapping, phase: api_contract_design, type: REQUIRED, verification: evidence}
+  - {id: api.idempotency_matrix, phase: api_contract_design, type: REQUIRED, verification: evidence}
+  - {id: api.contract_traceability, phase: api_contract_design, type: REQUIRED, verification: evidence}
 
-  - id: ui.web_inventory
-    phase: interface_inventory
-    type: CONDITIONAL
-    capability: web
-    verification: evidence
-  - id: ui.android_inventory
-    phase: interface_inventory
-    type: CONDITIONAL
-    capability: android
-    verification: evidence
-  - id: design.identity
-    phase: visual_identity
-    type: REQUIRED
-    verification: manual
-  - id: design.logo
-    phase: visual_identity
-    type: REQUIRED
-    verification: manual
-  - id: design.system
-    phase: visual_identity
-    type: REQUIRED
-    verification: evidence
-  - id: mockups.inventory_preexists
-    phase: mockups
-    type: REQUIRED
-    verification: evidence
-  - id: mockups.batch_limit
-    phase: mockups
-    type: REQUIRED
-    verification: policy
-    rule: max_10_images_per_generation
+  - {id: api.endpoints_implemented, phase: api_implementation, type: REQUIRED, verification: evidence}
+  - {id: api.auth_authorization, phase: api_implementation, type: REQUIRED, verification: evidence}
+  - {id: api.audit_logging, phase: api_implementation, type: REQUIRED, verification: evidence}
+  - {id: api.backend_tests, phase: api_implementation, type: REQUIRED, verification: evidence}
 
-  - id: qa.integration
-    phase: integration_qa
-    type: REQUIRED
-    verification: evidence
-  - id: qa.security
-    phase: integration_qa
-    type: REQUIRED
-    verification: evidence
-  - id: release.documentation
-    phase: release_gate
-    type: REQUIRED
-    verification: evidence
-  - id: release.backup_restore
-    phase: release_gate
-    type: CONDITIONAL
-    verification: evidence
-  - id: operations.observability
-    phase: operations
-    type: REQUIRED
-    verification: evidence
+  - {id: api.openapi, phase: openapi_validation, type: GENERATED, verification: file}
+  - {id: api.openapi_validation, phase: openapi_validation, type: REQUIRED, verification: evidence}
+
+  - {id: api.postman_collection, phase: postman_contract, type: GENERATED, verification: file}
+  - {id: api.postman_environment, phase: postman_contract, type: GENERATED, verification: file}
+  - {id: api.postman_coverage, phase: postman_contract, type: REQUIRED, verification: evidence}
+
+  - {id: api.qa_positive, phase: api_qa, type: REQUIRED, verification: evidence}
+  - {id: api.qa_negative, phase: api_qa, type: REQUIRED, verification: evidence}
+  - {id: api.contract_validation, phase: api_qa, type: REQUIRED, verification: evidence}
+  - {id: api.security_qa, phase: api_qa, type: REQUIRED, verification: evidence}
+  - {id: api.audit_qa, phase: api_qa, type: REQUIRED, verification: evidence}
+
+  - {id: ui.web_inventory, phase: interface_inventory, type: CONDITIONAL, capability: web, verification: evidence}
+  - {id: ui.android_inventory, phase: interface_inventory, type: CONDITIONAL, capability: android, verification: evidence}
+  - {id: design.identity, phase: visual_identity, type: REQUIRED, verification: manual}
+  - {id: design.logo, phase: visual_identity, type: REQUIRED, verification: manual}
+  - {id: design.system, phase: visual_identity, type: REQUIRED, verification: evidence}
+  - {id: mockups.inventory_preexists, phase: mockups, type: REQUIRED, verification: evidence}
+  - {id: mockups.batch_limit, phase: mockups, type: REQUIRED, verification: policy, rule: max_10_images_per_generation}
+
+  - {id: qa.integration, phase: integration_qa, type: REQUIRED, verification: evidence}
+  - {id: qa.security, phase: integration_qa, type: REQUIRED, verification: evidence}
+  - {id: release.documentation, phase: release_gate, type: REQUIRED, verification: evidence}
+  - {id: release.backup_restore, phase: release_gate, type: CONDITIONAL, verification: evidence}
+  - {id: operations.observability, phase: operations, type: REQUIRED, verification: evidence}

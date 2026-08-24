@@ -1,4 +1,4 @@
-version: 0.2.0
+version: 0.3.0
 mode: brownfield
 entry_condition: existing_solution
 sequence:
@@ -8,8 +8,11 @@ sequence:
   - target_definition
   - requirements_domain
   - architecture_security_data
+  - api_contract_design
   - api_implementation
-  - api_contract_qa
+  - openapi_validation
+  - postman_contract
+  - api_qa
   - api_gate
   - interface_inventory
   - visual_identity
@@ -23,7 +26,12 @@ gates:
   after_target_definition: brownfield_baseline
   after_requirements_domain: requirements_ready
   after_architecture_security_data: architecture_ready
-  after_api_contract_qa: api_gate
+  after_api_contract_design: api_contract_ready
+  after_api_implementation: api_implemented
+  after_openapi_validation: openapi_valid
+  after_postman_contract: postman_ready
+  after_api_qa: api_qa_pass
+  before_clients: api_gate
   before_release: release_gate
 rules:
   - describe_existing_state_before_proposing_changes
@@ -34,7 +42,8 @@ rules:
   - inventory_existing_api_ui_tests_security_and_dependencies
   - produce_as_is_gap_analysis_and_to_be_before_alignment_work
   - requirements_ready_must_pass_before_api_design_or_implementation
-  - architecture_ready_must_pass_before_api_implementation
+  - architecture_ready_must_pass_before_api_contract_design
+  - api_contract_ready_must_pass_before_api_implementation
   - api_gate_must_pass_before_new_ui_design_or_client_alignment
   - mockups_require_view_inventory
   - max_10_mockups_per_generation

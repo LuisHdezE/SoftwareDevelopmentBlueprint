@@ -1,4 +1,4 @@
-version: 0.1.0
+version: 0.3.0
 mode: greenfield
 entry_condition: new_solution
 sequence:
@@ -6,8 +6,11 @@ sequence:
   - target_definition
   - requirements_domain
   - architecture_security_data
+  - api_contract_design
   - api_implementation
-  - api_contract_qa
+  - openapi_validation
+  - postman_contract
+  - api_qa
   - api_gate
   - interface_inventory
   - visual_identity
@@ -17,8 +20,19 @@ sequence:
   - integration_qa
   - release_gate
   - operations
+gates:
+  after_requirements_domain: requirements_ready
+  after_architecture_security_data: architecture_ready
+  after_api_contract_design: api_contract_ready
+  after_api_implementation: api_implemented
+  after_openapi_validation: openapi_valid
+  after_postman_contract: postman_ready
+  after_api_qa: api_qa_pass
+  before_clients: api_gate
+  before_release: release_gate
 rules:
   - do_not_implement_before_discovery
+  - api_contract_ready_must_pass_before_api_implementation
   - api_gate_must_pass_before_ui_design_or_client_implementation
   - mockups_require_view_inventory
   - max_10_mockups_per_generation

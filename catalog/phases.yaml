@@ -1,4 +1,4 @@
-version: 0.1.0
+version: 0.3.0
 phases:
   - id: discovery
     name: Discovery
@@ -28,52 +28,64 @@ phases:
     name: Architecture, Security & Data
     applies_to: [greenfield, brownfield]
     order: 60
+  - id: api_contract_design
+    name: API Scope & Contract Design
+    applies_to: [greenfield, brownfield]
+    order: 70
   - id: api_implementation
     name: API Implementation
     applies_to: [greenfield, brownfield]
-    order: 70
-  - id: api_contract_qa
-    name: API Contract & QA
-    applies_to: [greenfield, brownfield]
     order: 80
+  - id: openapi_validation
+    name: OpenAPI Formalization & Validation
+    applies_to: [greenfield, brownfield]
+    order: 90
+  - id: postman_contract
+    name: Postman Operational Contract
+    applies_to: [greenfield, brownfield]
+    order: 100
+  - id: api_qa
+    name: API QA & Contract Validation
+    applies_to: [greenfield, brownfield]
+    order: 110
   - id: api_gate
     name: API Gate
     applies_to: [greenfield, brownfield]
-    order: 90
+    order: 120
   - id: interface_inventory
     name: Interface Inventory
     applies_to: [greenfield, brownfield]
-    order: 100
+    order: 130
     blocked_by: [api_gate]
   - id: visual_identity
     name: Brand, Logo & Design System
     applies_to: [greenfield, brownfield]
-    order: 110
+    order: 140
     blocked_by: [api_gate]
   - id: mockups
     name: Mockups & Visual Validation
     applies_to: [greenfield, brownfield]
-    order: 120
+    order: 150
     max_images_per_batch: 10
   - id: web_implementation
     name: React Web Implementation
     applies_to: [greenfield, brownfield]
-    order: 130
+    order: 160
     conditional_capability: web
   - id: android_implementation
     name: Kotlin Android Implementation
     applies_to: [greenfield, brownfield]
-    order: 140
+    order: 170
     conditional_capability: android
   - id: integration_qa
     name: Integration & System QA
     applies_to: [greenfield, brownfield]
-    order: 150
+    order: 180
   - id: release_gate
     name: Release Gate
     applies_to: [greenfield, brownfield]
-    order: 160
+    order: 190
   - id: operations
     name: Operations & Maintenance
     applies_to: [greenfield, brownfield]
-    order: 170
+    order: 200

@@ -1,10 +1,10 @@
-version: 0.2.0
+version: 0.3.0
 gates:
   - id: brownfield_baseline
     name: Brownfield Baseline Gate
     phase: target_definition
     mode: brownfield
-    blocks: [requirements_domain, architecture_security_data, api_implementation]
+    blocks: [requirements_domain, architecture_security_data, api_contract_design, api_implementation]
     require_all:
       - brownfield.technical_inventory
       - brownfield.functional_reconstruction
@@ -16,7 +16,7 @@ gates:
   - id: requirements_ready
     name: Requirements Ready Gate
     phase: requirements_domain
-    blocks: [architecture_security_data, api_implementation]
+    blocks: [architecture_security_data, api_contract_design, api_implementation]
     require_all:
       - requirements.actors_authorization
       - requirements.functional
@@ -26,14 +26,11 @@ gates:
       - requirements.acceptance_criteria
       - requirements.traceability
     result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
-    rule: >-
-      No se diseña ni implementa un endpoint para un caso de uso cuyos actores,
-      reglas, entradas, criterios de aceptación y trazabilidad sigan ambiguos.
 
   - id: architecture_ready
     name: Architecture Ready Gate
     phase: architecture_security_data
-    blocks: [api_implementation]
+    blocks: [api_contract_design, api_implementation]
     require_all:
       - architecture.domain_model
       - architecture.decision_records
@@ -46,12 +43,67 @@ gates:
       - api.auth_strategy
       - api.error_contract
       - api.versioning_policy
-    require_if_applicable:
-      - architecture.threat_model
+    require_if_applicable: [architecture.threat_model]
+    result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
+
+  - id: api_contract_ready
+    name: API Contract Ready Gate
+    phase: api_contract_design
+    blocks: [api_implementation]
+    require_all:
+      - api.scope_defined
+      - api.endpoint_inventory
+      - api.auth_contract
+      - api.permission_matrix
+      - api.audit_event_mapping
+      - api.idempotency_matrix
+      - api.contract_traceability
     result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
     rule: >-
-      La API no comienza mientras las decisiones de arquitectura, seguridad,
-      datos, auditoría, autenticación, errores y versionado no estén explícitas.
+      No endpoint implementation begins until scope, payload intent, authorization,
+      audit mapping, idempotency and traceability are explicit.
+
+  - id: api_implemented
+    name: API Implemented Gate
+    phase: api_implementation
+    blocks: [openapi_validation, postman_contract, api_qa]
+    require_all:
+      - api.endpoints_implemented
+      - api.auth_authorization
+      - api.audit_logging
+      - api.backend_tests
+    result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
+
+  - id: openapi_valid
+    name: OpenAPI Valid Gate
+    phase: openapi_validation
+    blocks: [postman_contract, api_qa]
+    require_all:
+      - api.openapi
+      - api.openapi_validation
+    result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
+
+  - id: postman_ready
+    name: Postman Ready Gate
+    phase: postman_contract
+    blocks: [api_qa]
+    require_all:
+      - api.postman_collection
+      - api.postman_environment
+      - api.postman_coverage
+    result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
+
+  - id: api_qa_pass
+    name: API QA Pass Gate
+    phase: api_qa
+    blocks: [api_gate]
+    require_all:
+      - api.qa_positive
+      - api.qa_negative
+      - api.contract_validation
+      - api.security_qa
+      - api.audit_qa
+    result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
 
   - id: api_gate
     name: API Gate
@@ -61,12 +113,17 @@ gates:
       - api.endpoints_implemented
       - api.auth_authorization
       - api.audit_logging
+      - api.backend_tests
       - api.openapi
+      - api.openapi_validation
       - api.postman_collection
       - api.postman_environment
+      - api.postman_coverage
       - api.qa_positive
       - api.qa_negative
       - api.contract_validation
+      - api.security_qa
+      - api.audit_qa
     result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
     rule: >-
       No se inicia diseño visual ni implementación de clientes web/Android
@@ -79,6 +136,5 @@ gates:
       - qa.integration
       - qa.security
       - release.documentation
-    require_if_applicable:
-      - release.backup_restore
+    require_if_applicable: [release.backup_restore]
     result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
