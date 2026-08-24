@@ -1,0 +1,34 @@
+version: 0.1.0
+mode: brownfield
+entry_condition: existing_solution
+sequence:
+  - brownfield_inspection
+  - as_is
+  - gap_analysis
+  - target_definition
+  - requirements_domain
+  - architecture_security_data
+  - api_implementation
+  - api_contract_qa
+  - api_gate
+  - interface_inventory
+  - visual_identity
+  - mockups
+  - web_implementation
+  - android_implementation
+  - integration_qa
+  - release_gate
+  - operations
+rules:
+  - describe_existing_state_before_proposing_changes
+  - distinguish_observed_inferred_and_proposed_items
+  - do_not_rewrite_only_for_architectural_aesthetics
+  - preserve_existing_working_behavior_unless_change_is_justified
+  - identify_documentation_drift
+  - inventory_existing_api_ui_tests_security_and_dependencies
+  - produce_as_is_gap_analysis_and_to_be_before_alignment_work
+  - api_gate_must_pass_before_new_ui_design_or_client_alignment
+  - mockups_require_view_inventory
+  - max_10_mockups_per_generation
+pilot:
+  repository: LuisHdezE/CareShift_Manager
