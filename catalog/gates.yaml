@@ -1,5 +1,58 @@
-version: 0.1.0
+version: 0.2.0
 gates:
+  - id: brownfield_baseline
+    name: Brownfield Baseline Gate
+    phase: target_definition
+    mode: brownfield
+    blocks: [requirements_domain, architecture_security_data, api_implementation]
+    require_all:
+      - brownfield.technical_inventory
+      - brownfield.functional_reconstruction
+      - brownfield.gap_analysis
+      - brownfield.target_definition
+      - brownfield.alignment_roadmap
+    result_values: [PASS, FAIL, BLOCKED]
+
+  - id: requirements_ready
+    name: Requirements Ready Gate
+    phase: requirements_domain
+    blocks: [architecture_security_data, api_implementation]
+    require_all:
+      - requirements.actors_authorization
+      - requirements.functional
+      - requirements.non_functional
+      - requirements.business_rules
+      - requirements.use_cases
+      - requirements.acceptance_criteria
+      - requirements.traceability
+    result_values: [PASS, FAIL, BLOCKED]
+    rule: >-
+      No se diseña ni implementa un endpoint para un caso de uso cuyos actores,
+      reglas, entradas, criterios de aceptación y trazabilidad sigan ambiguos.
+
+  - id: architecture_ready
+    name: Architecture Ready Gate
+    phase: architecture_security_data
+    blocks: [api_implementation]
+    require_all:
+      - architecture.domain_model
+      - architecture.decision_records
+      - architecture.security_model
+      - data.architecture
+      - data.schema_migrations
+      - data.authoritative_database
+      - audit.event_catalog
+      - audit.retention_policy
+      - api.auth_strategy
+      - api.error_contract
+      - api.versioning_policy
+    require_if_applicable:
+      - architecture.threat_model
+    result_values: [PASS, FAIL, BLOCKED]
+    rule: >-
+      La API no comienza mientras las decisiones de arquitectura, seguridad,
+      datos, auditoría, autenticación, errores y versionado no estén explícitas.
+
   - id: api_gate
     name: API Gate
     phase: api_gate
