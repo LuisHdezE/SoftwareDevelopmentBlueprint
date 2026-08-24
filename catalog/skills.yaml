@@ -1,0 +1,84 @@
+version: 0.1.0
+skill_model:
+  principles:
+    - skills_are_versioned_with_blueprint
+    - load_only_relevant_skills
+    - project_specific_knowledge_stays_in_project
+    - skills_reference_canonical_docs_instead_of_duplicating_them
+
+categories:
+  core:
+    always_consider:
+      - dev-git-workflow
+      - dev-code-review
+      - dev-debugging
+      - dev-refactoring
+      - dev-security-baseline
+      - dev-database-design
+      - dev-testing-strategy
+      - dev-event-logging-audit
+      - dev-documentation
+
+  backend:
+    conditional_on:
+      backend: laravel
+    skills:
+      - dev-laravel-setup
+      - dev-api-design
+      - dev-backend-security
+      - dev-database-migration
+      - dev-ddd-tactical-patterns
+      - dev-openapi
+      - dev-postman-qa
+      - dev-contract-testing
+
+  web:
+    conditional_on:
+      web: true
+    skills:
+      - dev-react
+      - dev-tailwind
+      - dev-accessibility
+      - dev-web-view-inventory
+
+  android:
+    conditional_on:
+      android: true
+    skills:
+      - dev-android-kotlin
+      - dev-jetpack-compose
+      - dev-mobile-security
+      - dev-android-view-inventory
+
+  saas:
+    conditional_on:
+      saas: true
+    skills:
+      - dev-saas
+      - dev-multi-tenancy
+      - dev-tenant-security
+
+  brownfield:
+    conditional_on:
+      mode: brownfield
+    skills:
+      - dev-brownfield-analysis
+      - dev-gap-analysis
+      - dev-migration-planning
+
+  devops:
+    skills:
+      - dev-ci-cd
+      - dev-deployment
+    conditional:
+      docker:
+        capability: docker
+        skills: [dev-docker]
+
+sources_for_initial_audit:
+  - repository: LuisHdezE/VolquetasManager
+    path: .agents/skills
+    rule: >-
+      Reutilizar conocimiento genérico después de eliminar referencias específicas
+      de Volquetas Manager. Las skills vm-* se usan como patrón para skills de proyecto,
+      no como skills core del Blueprint.
