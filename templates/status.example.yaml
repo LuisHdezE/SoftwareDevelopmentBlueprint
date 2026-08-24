@@ -1,0 +1,43 @@
+blueprint_version: 0.1.0
+updated_at: 2026-08-24T00:00:00Z
+
+phases:
+  brownfield_inspection:
+    status: IN_PROGRESS
+    progress: 25
+  as_is:
+    status: NOT_STARTED
+    progress: 0
+  api_gate:
+    status: BLOCKED
+    progress: 0
+  interface_inventory:
+    status: BLOCKED
+    progress: 0
+
+checks:
+  api.openapi:
+    status: PENDING
+    verification: file
+    evidence: []
+  api.postman_collection:
+    status: PENDING
+    verification: file
+    evidence: []
+  api.qa_positive:
+    status: PENDING
+    verification: evidence
+    evidence: []
+  api.qa_negative:
+    status: PENDING
+    verification: evidence
+    evidence: []
+
+gates:
+  api_gate:
+    status: PENDING
+    evaluated_at: null
+    note: Awaiting API contract and QA evidence.
+  release_gate:
+    status: PENDING
+    evaluated_at: null
