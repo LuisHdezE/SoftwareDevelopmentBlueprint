@@ -39,11 +39,9 @@ Estas decisiones son defaults, no excusa para reescribir un Brownfield funcional
 
 ## 5. Gates de ingeniería
 
-El Blueprint v0.2 formaliza gates intermedios para impedir que una IA avance por entusiasmo cuando todavía existen ambigüedades críticas.
+Blueprint v0.3 formaliza la cadena completa de gates previos al trabajo de clientes:
 
-Secuencia Brownfield mínima:
-
-`Brownfield Baseline → Requirements Ready → Architecture Ready → API Implementation → OpenAPI/Postman/QA → API Gate → UI/Clients → Release Gate`
+`Brownfield Baseline → Requirements Ready → Architecture Ready → API Contract Ready → API Implemented → OpenAPI Valid → Postman Ready → API QA Pass → API Gate → UI/Clients → Release Gate`
 
 ### Brownfield Baseline
 
@@ -55,15 +53,31 @@ Exige actores/autorización, requisitos funcionales y no funcionales, reglas de 
 
 ### Architecture Ready
 
-Exige decisiones explícitas sobre arquitectura, seguridad, datos, base de datos autoritativa, auditoría, autenticación API, contrato de errores y versionado. Threat Modeling se incorpora cuando aplica.
+Exige decisiones explícitas sobre arquitectura, seguridad, datos, base de datos autoritativa, auditoría, autenticación API, contrato de errores y versionado.
+
+### API Contract Ready
+
+Exige alcance API, inventario de endpoints, contrato de autenticación, permisos, mapeo de eventos, idempotencia y trazabilidad antes de escribir endpoints.
+
+### API Implemented
+
+Exige endpoints implementados, autorización, auditoría y pruebas backend. No equivale al API Gate.
+
+### OpenAPI Valid
+
+Exige que el contrato OpenAPI cubra la API implementada y valide correctamente.
+
+### Postman Ready
+
+Exige colección, entornos y cobertura operacional completa de los endpoints implementados.
+
+### API QA Pass
+
+Exige QA positivo, negativo, seguridad, auditoría y validación de contrato.
 
 ### API Gate
 
-Una vez implementada la API, no se inicia el diseño visual ni la implementación de los clientes web/Android hasta cumplir el API Gate.
-
-Secuencia mínima:
-
-`API -> OpenAPI -> Postman -> QA API -> Contract Validation -> API Gate PASS -> Inventarios UX -> Identidad/Design System -> Mockups -> React/Kotlin`
+Solo cuando todos los artefactos anteriores pasan se desbloquean inventarios de interfaces, diseño visual y clientes React/Kotlin.
 
 ### Release Gate
 
