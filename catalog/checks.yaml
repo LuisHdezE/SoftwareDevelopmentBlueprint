@@ -1,0 +1,117 @@
+version: 0.1.0
+checks:
+  - id: discovery.product_vision
+    phase: discovery
+    type: REQUIRED
+    verification: manual
+  - id: discovery.scope_mvp
+    phase: discovery
+    type: REQUIRED
+    verification: manual
+  - id: architecture.domain_model
+    phase: architecture_security_data
+    type: REQUIRED
+    verification: evidence
+  - id: architecture.security_model
+    phase: architecture_security_data
+    type: REQUIRED
+    verification: evidence
+  - id: architecture.threat_model
+    phase: architecture_security_data
+    type: CONDITIONAL
+    verification: evidence
+  - id: data.schema_migrations
+    phase: architecture_security_data
+    type: REQUIRED
+    verification: evidence
+  - id: audit.event_catalog
+    phase: architecture_security_data
+    type: REQUIRED
+    verification: evidence
+  - id: api.endpoints_implemented
+    phase: api_implementation
+    type: REQUIRED
+    verification: evidence
+  - id: api.auth_authorization
+    phase: api_implementation
+    type: REQUIRED
+    verification: evidence
+  - id: api.audit_logging
+    phase: api_implementation
+    type: REQUIRED
+    verification: evidence
+  - id: api.openapi
+    phase: api_contract_qa
+    type: GENERATED
+    verification: file
+  - id: api.postman_collection
+    phase: api_contract_qa
+    type: GENERATED
+    verification: file
+  - id: api.postman_environment
+    phase: api_contract_qa
+    type: GENERATED
+    verification: file
+  - id: api.qa_positive
+    phase: api_contract_qa
+    type: REQUIRED
+    verification: evidence
+  - id: api.qa_negative
+    phase: api_contract_qa
+    type: REQUIRED
+    verification: evidence
+  - id: api.contract_validation
+    phase: api_contract_qa
+    type: REQUIRED
+    verification: evidence
+  - id: ui.web_inventory
+    phase: interface_inventory
+    type: CONDITIONAL
+    capability: web
+    verification: evidence
+  - id: ui.android_inventory
+    phase: interface_inventory
+    type: CONDITIONAL
+    capability: android
+    verification: evidence
+  - id: design.identity
+    phase: visual_identity
+    type: REQUIRED
+    verification: manual
+  - id: design.logo
+    phase: visual_identity
+    type: REQUIRED
+    verification: manual
+  - id: design.system
+    phase: visual_identity
+    type: REQUIRED
+    verification: evidence
+  - id: mockups.inventory_preexists
+    phase: mockups
+    type: REQUIRED
+    verification: evidence
+  - id: mockups.batch_limit
+    phase: mockups
+    type: REQUIRED
+    verification: policy
+    rule: max_10_images_per_generation
+  - id: qa.integration
+    phase: integration_qa
+    type: REQUIRED
+    verification: evidence
+  - id: qa.security
+    phase: integration_qa
+    type: REQUIRED
+    verification: evidence
+  - id: release.documentation
+    phase: release_gate
+    type: REQUIRED
+    verification: evidence
+  - id: release.backup_restore
+    phase: release_gate
+    type: CONDITIONAL
+    verification: evidence
+  - id: operations.observability
+    phase: operations
+    type: REQUIRED
+    verification: evidence

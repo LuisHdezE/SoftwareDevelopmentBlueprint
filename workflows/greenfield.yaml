@@ -1,0 +1,25 @@
+version: 0.1.0
+mode: greenfield
+entry_condition: new_solution
+sequence:
+  - discovery
+  - target_definition
+  - requirements_domain
+  - architecture_security_data
+  - api_implementation
+  - api_contract_qa
+  - api_gate
+  - interface_inventory
+  - visual_identity
+  - mockups
+  - web_implementation
+  - android_implementation
+  - integration_qa
+  - release_gate
+  - operations
+rules:
+  - do_not_implement_before_discovery
+  - api_gate_must_pass_before_ui_design_or_client_implementation
+  - mockups_require_view_inventory
+  - max_10_mockups_per_generation
+  - preserve_traceability_from_requirement_to_test

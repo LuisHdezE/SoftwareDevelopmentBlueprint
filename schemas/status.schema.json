@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eliasworks.dev/blueprint/status.schema.json",
+  "title": "Blueprint Project Status",
+  "type": "object",
+  "required": ["blueprint_version", "updated_at", "phases", "checks", "gates"],
+  "properties": {
+    "blueprint_version": {"type": "string"},
+    "updated_at": {"type": "string", "format": "date-time"},
+    "phases": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": {"enum": ["NOT_STARTED", "IN_PROGRESS", "PASS", "FAIL", "BLOCKED", "N/A"]},
+          "progress": {"type": "integer", "minimum": 0, "maximum": 100},
+          "note": {"type": "string"}
+        }
+      }
+    },
+    "checks": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": {"enum": ["PENDING", "PASS", "FAIL", "BLOCKED", "N/A"]},
+          "verification": {"enum": ["manual", "automatic", "evidence", "file", "policy"]},
+          "note": {"type": "string"},
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["type", "value"],
+              "properties": {
+                "type": {"enum": ["file", "commit", "pull_request", "ci_run", "test_report", "postman_report", "openapi", "url", "manual_approval", "other"]},
+                "value": {"type": "string"},
+                "description": {"type": "string"}
+              },
+              "additionalProperties": true
+            }
+          }
+        }
+      }
+    },
+    "gates": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": {"enum": ["PENDING", "PASS", "FAIL", "BLOCKED"]},
+          "evaluated_at": {"type": ["string", "null"], "format": "date-time"},
+          "note": {"type": "string"}
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}
