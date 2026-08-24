@@ -13,7 +13,7 @@
         "type": "object",
         "required": ["status"],
         "properties": {
-          "status": {"enum": ["NOT_STARTED", "IN_PROGRESS", "PASS", "FAIL", "BLOCKED", "N/A"]},
+          "status": {"enum": ["NOT_STARTED", "IN_PROGRESS", "READY_FOR_REVIEW", "COMPLETE", "PASS", "FAIL", "BLOCKED", "N/A"]},
           "progress": {"type": "integer", "minimum": 0, "maximum": 100},
           "note": {"type": "string"}
         }
@@ -50,7 +50,7 @@
         "type": "object",
         "required": ["status"],
         "properties": {
-          "status": {"enum": ["PENDING", "PASS", "FAIL", "BLOCKED"]},
+          "status": {"enum": ["PENDING", "READY_FOR_REVIEW", "PASS", "FAIL", "BLOCKED"]},
           "evaluated_at": {"type": ["string", "null"], "format": "date-time"},
           "note": {"type": "string"}
         }

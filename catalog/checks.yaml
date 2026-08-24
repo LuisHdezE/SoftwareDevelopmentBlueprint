@@ -1,4 +1,4 @@
-version: 0.1.0
+version: 0.2.0
 checks:
   - id: discovery.product_vision
     phase: discovery
@@ -8,7 +8,62 @@ checks:
     phase: discovery
     type: REQUIRED
     verification: manual
+
+  - id: brownfield.technical_inventory
+    phase: brownfield_inspection
+    type: BROWNFIELD
+    verification: evidence
+  - id: brownfield.functional_reconstruction
+    phase: as_is
+    type: BROWNFIELD
+    verification: evidence
+  - id: brownfield.gap_analysis
+    phase: gap_analysis
+    type: BROWNFIELD
+    verification: evidence
+  - id: brownfield.target_definition
+    phase: target_definition
+    type: BROWNFIELD
+    verification: evidence
+  - id: brownfield.alignment_roadmap
+    phase: target_definition
+    type: BROWNFIELD
+    verification: evidence
+
+  - id: requirements.actors_authorization
+    phase: requirements_domain
+    type: REQUIRED
+    verification: evidence
+  - id: requirements.functional
+    phase: requirements_domain
+    type: REQUIRED
+    verification: evidence
+  - id: requirements.non_functional
+    phase: requirements_domain
+    type: REQUIRED
+    verification: evidence
+  - id: requirements.business_rules
+    phase: requirements_domain
+    type: REQUIRED
+    verification: evidence
+  - id: requirements.use_cases
+    phase: requirements_domain
+    type: REQUIRED
+    verification: evidence
+  - id: requirements.acceptance_criteria
+    phase: requirements_domain
+    type: REQUIRED
+    verification: evidence
+  - id: requirements.traceability
+    phase: requirements_domain
+    type: REQUIRED
+    verification: evidence
+
   - id: architecture.domain_model
+    phase: architecture_security_data
+    type: REQUIRED
+    verification: evidence
+  - id: architecture.decision_records
     phase: architecture_security_data
     type: REQUIRED
     verification: evidence
@@ -20,7 +75,15 @@ checks:
     phase: architecture_security_data
     type: CONDITIONAL
     verification: evidence
+  - id: data.architecture
+    phase: architecture_security_data
+    type: REQUIRED
+    verification: evidence
   - id: data.schema_migrations
+    phase: architecture_security_data
+    type: REQUIRED
+    verification: evidence
+  - id: data.authoritative_database
     phase: architecture_security_data
     type: REQUIRED
     verification: evidence
@@ -28,6 +91,23 @@ checks:
     phase: architecture_security_data
     type: REQUIRED
     verification: evidence
+  - id: audit.retention_policy
+    phase: architecture_security_data
+    type: REQUIRED
+    verification: evidence
+  - id: api.auth_strategy
+    phase: architecture_security_data
+    type: REQUIRED
+    verification: evidence
+  - id: api.error_contract
+    phase: architecture_security_data
+    type: REQUIRED
+    verification: evidence
+  - id: api.versioning_policy
+    phase: architecture_security_data
+    type: REQUIRED
+    verification: evidence
+
   - id: api.endpoints_implemented
     phase: api_implementation
     type: REQUIRED
@@ -64,6 +144,7 @@ checks:
     phase: api_contract_qa
     type: REQUIRED
     verification: evidence
+
   - id: ui.web_inventory
     phase: interface_inventory
     type: CONDITIONAL
@@ -95,6 +176,7 @@ checks:
     type: REQUIRED
     verification: policy
     rule: max_10_images_per_generation
+
   - id: qa.integration
     phase: integration_qa
     type: REQUIRED

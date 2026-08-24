@@ -1,4 +1,4 @@
-version: 0.1.0
+version: 0.2.0
 mode: brownfield
 entry_condition: existing_solution
 sequence:
@@ -19,6 +19,12 @@ sequence:
   - integration_qa
   - release_gate
   - operations
+gates:
+  after_target_definition: brownfield_baseline
+  after_requirements_domain: requirements_ready
+  after_architecture_security_data: architecture_ready
+  after_api_contract_qa: api_gate
+  before_release: release_gate
 rules:
   - describe_existing_state_before_proposing_changes
   - distinguish_observed_inferred_and_proposed_items
@@ -27,6 +33,8 @@ rules:
   - identify_documentation_drift
   - inventory_existing_api_ui_tests_security_and_dependencies
   - produce_as_is_gap_analysis_and_to_be_before_alignment_work
+  - requirements_ready_must_pass_before_api_design_or_implementation
+  - architecture_ready_must_pass_before_api_implementation
   - api_gate_must_pass_before_new_ui_design_or_client_alignment
   - mockups_require_view_inventory
   - max_10_mockups_per_generation
