@@ -82,7 +82,7 @@ Exige identidad visual documentada y un sistema de diseño utilizable por mockup
 Se evalúa por **interface slice**. Una imagen generada no equivale a una vista revisada ni a una vista aprobada. El gate exige assets versionados, trazabilidad al inventario, revisión de contrato/accesibilidad y aprobación explícita. Las referencias visuales aprobadas se convierten en entradas para IAs posteriores.
 
 ### Client Architecture Ready
-Se evalúa por **interface slice + plataforma**. Exige un contrato de arquitectura cliente suficiente para implementar el slice sin inventar auth, permisos, endpoints, estados, estrategia de errores o pruebas. La API sigue siendo el límite autoritativo de seguridad.
+Se evalúa por **interface slice + plataforma**. Exige un artefacto que valide contra `schemas/client-architecture.schema.json` y permita implementar el slice sin inventar auth, permisos, endpoints, estados, idempotencia, estrategia de errores/offline o pruebas. La API sigue siendo el límite autoritativo de seguridad. Un PASS para web no autoriza Android ni otro slice.
 
 ### Release Gate
 No se libera una solución sin QA de integración, QA de seguridad, documentación de release y backup/restore cuando aplique.
@@ -171,19 +171,43 @@ La revisión valida, como mínimo:
 
 ### 6.6 Client Architecture
 
-Antes de implementar un slice debe existir un contrato de cliente que cubra, como mínimo:
+Antes de implementar un slice web o Android debe existir un artefacto de arquitectura cliente que valide contra `schemas/client-architecture.schema.json`.
 
-- auth/session lifecycle;
-- API client y contrato;
-- permisos/presentación RBAC;
-- routing/navegación;
-- estrategia de datos/estado;
-- formularios y errores de validación;
-- estados async/error/offline;
-- mutaciones de riesgo/idempotencia cuando apliquen;
-- observabilidad/request correlation;
-- pruebas;
-- coexistencia/migración Brownfield cuando aplique.
+El contrato es **por slice + plataforma** y debe declarar como mínimo:
+
+- IDs de inventario incluidos y referencias visuales aprobadas;
+- Design System/tokens usados;
+- OpenAPI y operation IDs consumidos;
+- auth/session lifecycle, almacenamiento de credenciales, refresh/rotation y logout;
+- API client y contrato de errores;
+- permisos/presentación RBAC manteniendo la API como enforcement autoritativo;
+- routing/navegación pública, protegida y permission-aware;
+- separación de server state y estado local de UI;
+- cache e invalidación/refetch después de mutaciones;
+- formularios y mapeo de 422/409/429/errores globales;
+- estados loading, empty, error, 401, 403, 404, 409, 422, 429 y offline, marcados explícitamente como requeridos o no aplicables;
+- operaciones de riesgo que requieren idempotencia, generación de keys, replay y conflictos;
+- observabilidad/request correlation y redacción de secretos/PII;
+- accesibilidad;
+- estrategia unit/component-or-UI/integration/E2E;
+- modelo offline y política de sincronización/conflictos;
+- decisiones específicas de React o Kotlin/Android;
+- coexistencia, cutover y rollback Brownfield cuando aplique.
+
+Reglas normativas:
+
+1. `visual_review_pass` debe estar en PASS para el slice exacto antes de aprobar la arquitectura cliente.
+2. Web acepta únicamente inventario `WEB-###`; Android acepta únicamente `APP-###`.
+3. Un cliente no puede crear endpoints, permisos, estados de negocio ni transiciones no presentes en los contratos autoritativos.
+4. La UI puede ocultar o deshabilitar acciones por permisos, pero la API sigue autorizando o rechazando la operación.
+5. Las mutaciones de alto riesgo respetan la matriz de idempotencia de API y no duplican efectos locales ante replay.
+6. Request IDs se preservan para diagnóstico sin convertir telemetría cliente en un segundo sistema de auditoría.
+7. Un cache/offline store no se convierte silenciosamente en fuente de verdad de negocio.
+8. En Brownfield el cliente existente coexiste hasta que el slice nuevo pase integración/release y su cutover sea aprobado.
+9. `client_architecture_ready` para una combinación slice/plataforma no se hereda por otra combinación.
+10. La implementación React/Kotlin sigue este contrato; cambiarlo durante implementación requiere actualizar el artefacto y reevaluar el gate.
+
+La especificación completa se encuentra en `documentation/CLIENT_ARCHITECTURE_CONTRACT.md`.
 
 ## 7. Auditoría y eventos
 

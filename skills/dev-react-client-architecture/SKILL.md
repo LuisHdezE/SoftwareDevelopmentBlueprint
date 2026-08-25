@@ -12,72 +12,89 @@ phases:
 canonical_references:
   - BLUEPRINT.md
   - catalog/phases.yaml
+  - catalog/checks.yaml
   - catalog/gates.yaml
+  - schemas/client-architecture.schema.json
   - schemas/interface-inventory.schema.json
   - schemas/mockup-batch.schema.json
+  - documentation/CLIENT_ARCHITECTURE_CONTRACT.md
 ---
 
 # React Client Architecture
 
 ## Purpose
 
-Define the client-side architecture contract for an approved interface slice before React implementation begins.
+Produce a schema-valid client architecture contract for one approved web interface slice before React implementation begins.
 
 ## When to Use
 
-Use only after `visual_review_pass` for the target interface slice and before `web_implementation`. Revisit when API/auth/state architecture changes.
+Use only after `visual_review_pass` for the exact target slice and before `web_implementation`. Re-run when API/auth/state architecture or the approved visual slice changes materially.
 
 ## Inputs
 
-- Approved interface slice and mockups.
-- Validated API/OpenAPI contract.
-- Auth/refresh lifecycle and permission model.
-- Design system/tokens.
+- Approved interface slice and inventory IDs.
+- Approved/versioned visual references.
+- Validated API/OpenAPI contract and canonical operation IDs.
+- Auth/refresh lifecycle, permission and idempotency contracts.
+- Design System/tokens.
 - Project runtime/deployment constraints.
-- Existing web client for Brownfield projects.
+- Existing web client and migration constraints for Brownfield.
 
 ## Procedure
 
-1. Bind every implemented view/action to approved inventory IDs and API operations. Do not invent convenience endpoints or hidden permission semantics.
-2. Define routing and layout boundaries for the slice, including protected/public routes and permission-aware presentation. API authorization remains authoritative.
-3. Define the API client layer: base configuration, auth injection, token refresh/rotation, request ID propagation, cancellation/timeouts, Problem Details/error mapping, and idempotency headers for high-risk mutations.
-4. Define data-fetching/cache/state ownership. Separate server state from local UI state and document invalidation/refetch behavior after mutations.
-5. Define form strategy and how API validation/conflict/rate-limit errors map to accessible field/global feedback.
-6. Define standard loading, empty, error, 401, 403, 404, 409, 422, 429, and offline/degraded states as applicable.
-7. Define observability and correlation so client errors/support reports can retain request IDs without logging secrets.
-8. Define unit/component/integration/E2E test boundaries for the slice.
-9. For Brownfield, specify coexistence and migration boundaries. Existing working UI may remain until the approved slice is implemented and release migration is explicitly approved.
+1. Create one client architecture artifact using `schemas/client-architecture.schema.json` with `platform: web` and only approved `WEB-###` IDs for the target slice.
+2. Bind each implemented view/action to canonical API operation IDs. Never create convenience endpoints or hidden permission semantics in the client.
+3. Record React platform decisions: rendering mode, router, server-state library, form library, build tool and browser-support policy.
+4. Define the API client layer: base configuration, credential injection, refresh/rotation, concurrent-refresh handling, timeout/cancellation policy as applicable, Problem Details mapping, request ID propagation and idempotency headers.
+5. Define protected/public routing and permission-aware presentation. UI may hide/disable actions; API authorization remains authoritative.
+6. Separate server state from ephemeral UI state. Record cache ownership and invalidation/refetch behavior after each relevant mutation class.
+7. Define form validation and accessible mapping of 422, 409, 429 and global API errors.
+8. Classify loading, empty, error, 401, 403, 404, 409, 422, 429 and offline states explicitly.
+9. For every high-risk/idempotent operation, define key generation per user intent, replay handling and conflict behavior without duplicating local side effects.
+10. Define observability/request correlation with secret/PII redaction.
+11. Define accessibility behavior and unit/component/integration/E2E boundaries before implementation.
+12. For Brownfield, document coexistence, migration boundary, cutover trigger and rollback. Preserve unrelated working UI.
+13. Validate the artifact and attach evidence to scoped `client_architecture_ready` for the exact `interface_slice + web` scope.
 
 ## Outputs
 
-- Client architecture contract for the interface slice.
-- API/auth/state/error/testing strategy.
+- Schema-valid web client architecture JSON.
+- Explicit inventory/API/visual binding for the slice.
+- Auth, routing, state/cache, forms/error/offline, idempotency, observability and accessibility decisions.
+- Test strategy.
 - Brownfield coexistence/migration plan when applicable.
 - Evidence for scoped `client_architecture_ready`.
 
 ## Stop Conditions
 
-- Visual Review Gate is not PASS for the target slice.
-- API/auth lifecycle is undefined.
+- `visual_review_pass` is not PASS for the exact slice.
+- Any inventory view in the proposed implementation is not approved.
+- API/auth lifecycle or canonical operation IDs are undefined.
 - Client design weakens or bypasses server authorization.
 - High-risk mutation idempotency requirements are ignored.
-- Brownfield replacement would remove working behavior without approved coexistence/migration.
+- Brownfield replacement would remove working behavior before approved cutover.
+- The artifact fails `schemas/client-architecture.schema.json` or V4-4 semantic validation.
 
 ## Guardrails
 
-- Architecture is scoped to approved interfaces and platform.
-- React implementation must follow, not silently redefine, API and visual contracts.
-- Do not persist or log access/refresh secrets in unsafe client storage/telemetry.
-- This skill may be tightened by the V4-4 client architecture contract; downstream projects use the Blueprint version they declared.
+- Scope architecture to one approved interface slice and platform.
+- React implementation follows the client contract; it does not silently redefine it.
+- Do not persist or log credentials in weaker storage or telemetry for convenience.
+- API remains the source of authorization and business truth.
+- Approved visual references are implementation inputs and remain versioned.
+- `client_architecture_ready` for web does not authorize Android or another slice.
 
 ## Canonical References
 
 - `BLUEPRINT.md`
 - `catalog/phases.yaml`
+- `catalog/checks.yaml`
 - `catalog/gates.yaml`
+- `schemas/client-architecture.schema.json`
 - `schemas/interface-inventory.schema.json`
 - `schemas/mockup-batch.schema.json`
+- `documentation/CLIENT_ARCHITECTURE_CONTRACT.md`
 
 ## Completion Signal
 
-The skill is complete only when its required outputs exist in the repository, the relevant Blueprint checks/gates can be evaluated from evidence, and no stop condition remains unresolved.
+Complete only when a schema-valid web architecture artifact exists for the exact approved slice, all client architecture checks are evidenced, and scoped `client_architecture_ready` can legitimately evaluate to PASS for `interface_slice + web`.

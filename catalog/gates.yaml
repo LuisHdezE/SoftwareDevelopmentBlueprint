@@ -205,15 +205,28 @@ gates:
     blocks: [web_implementation, android_implementation]
     require_all:
       - client.architecture_contract
+      - client.visual_contract_binding
+      - client.auth_lifecycle
+      - client.api_client_strategy
       - client.api_contract_binding
       - client.authorization_presentation
-      - client.state_error_strategy
+      - client.routing_navigation
+      - client.state_cache_strategy
+      - client.forms_validation
+      - client.async_error_offline
+      - client.idempotency_strategy
+      - client.observability_correlation
+      - client.accessibility
       - client.testing_strategy
+      - client.platform_contract
     require_if_applicable: [client.brownfield_coexistence]
     result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
     rule: >-
-      Each approved interface slice is evaluated independently for each target
-      platform. Client architecture cannot weaken API authorization or invent contract behavior.
+      Evaluate this gate independently for the exact approved interface slice and
+      target platform. The architecture artifact must validate against the canonical
+      client architecture schema. A PASS for one slice/platform cannot authorize
+      another. API authorization remains authoritative, approved visual references
+      constrain implementation, and Brownfield clients coexist until cutover is approved.
 
   - id: release_gate
     name: Release Gate

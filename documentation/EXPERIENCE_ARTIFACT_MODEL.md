@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document defines the repository-owned artifact model introduced by V4-2. The goal is AI continuity: another agent must be able to inspect the project repository and determine what interfaces exist, which visuals are approved, which evidence supports a gate, and which slices are allowed to progress.
+This document defines the repository-owned artifact model introduced by V4-2 and extended by V4-4. The goal is AI continuity: another agent must be able to inspect the project repository and determine what interfaces exist, which visuals are approved, which client architecture applies, which evidence supports a gate, and which slices are allowed to progress.
 
 ## Canonical artifact families
 
@@ -28,6 +28,8 @@ Recommended layout:
       assets/
       evidence.md
   client-architecture/
+    <slice-id>.web.json
+    <slice-id>.android.json
 ```
 
 ## Interface inventory
@@ -76,6 +78,31 @@ Approved visual assets belong in the consumer repository or in another repositor
 
 A generated image must not become a reference input until review explicitly approves it.
 
+## Client architecture artifacts
+
+`schemas/client-architecture.schema.json` defines the pre-implementation contract for one approved `interface_slice + platform`.
+
+The artifact binds implementation to:
+
+- approved inventory IDs and visual references;
+- Design System/tokens;
+- OpenAPI and canonical operation IDs;
+- auth/refresh/logout behavior;
+- permissions and routing;
+- server/local state ownership and cache invalidation;
+- forms and API error mapping;
+- async/offline states;
+- high-risk mutation idempotency;
+- request correlation/observability;
+- accessibility;
+- unit/UI/integration/E2E strategy;
+- platform-specific React or Kotlin decisions;
+- Brownfield coexistence/cutover/rollback when applicable.
+
+A web contract accepts only `WEB-###` inventory and an Android contract accepts only `APP-###` inventory. A PASS for one slice/platform does not authorize another.
+
+Client architecture file existence does not itself imply `client_architecture_ready = PASS`; the artifact must validate and the scoped gate must have evidence.
+
 ## Evidence registry
 
 `schemas/evidence.schema.json` standardizes evidence metadata across files, commits, CI runs, reports, schemas, visual assets and manual approvals.
@@ -114,7 +141,9 @@ This keeps v0.3-style project status backward compatible while making V4-1 slice
 
 `scripts/validate-experience-artifacts.py` validates schemas/templates, cross-catalog references and a positive experience fixture.
 
-The validator specifically verifies that:
+`scripts/validate-client-architecture.py` validates the V4-4 client contract, platform-specific examples, scoped gate semantics, skill bindings and negative safety cases.
+
+The experience validator specifically verifies that:
 
 1. batches cannot exceed ten views;
 2. every batch inventory ID exists in the declared inventory;
@@ -124,10 +153,21 @@ The validator specifically verifies that:
 6. scoped gates use the correct scope;
 7. catalog phase/check/gate/workflow references remain internally consistent.
 
+The client architecture validator additionally verifies that:
+
+1. web and Android inventory namespaces cannot cross;
+2. Brownfield contracts require coexistence metadata;
+3. API authorization guardrails cannot be disabled;
+4. idempotent operation IDs belong to the slice API binding;
+5. request-correlation headers remain consistent;
+6. React and Android architecture skills resolve to materialized repository files;
+7. `client_architecture_ready` requires the complete V4-4 check set.
+
 ## Compatibility
 
-V4-2 additions are intentionally backward compatible with v0.3 consumer status files:
+V4 additions are intentionally backward compatible with v0.3 consumer status files:
 
 - existing project-scoped gates remain valid;
 - `interface_slices`, `scoped_gates`, `artifacts` and `artifact_locations` are optional;
+- client architecture is adopted by existing consumers through Compliance Review, not silent migration;
 - stable consumer projects remain on their declared Blueprint version until Compliance Review approves adoption.
