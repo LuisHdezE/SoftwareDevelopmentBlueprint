@@ -9,6 +9,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 CATALOG_PATH = ROOT / "catalog" / "skills.yaml"
+BLUEPRINT_VERSION = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
 
 REQUIRED_FRONTMATTER = {
     "id",
@@ -120,8 +121,11 @@ def validate_skill(skill_id: str, spec: dict) -> None:
             f"{skill_id}: category mismatch "
             f"catalog={spec.get('category')} file={frontmatter['category']}"
         )
-    if frontmatter["version"] != "0.4.0-dev":
-        fail(f"{skill_id}: expected version 0.4.0-dev")
+    if frontmatter["version"] != BLUEPRINT_VERSION:
+        fail(
+            f"{skill_id}: expected version {BLUEPRINT_VERSION}, "
+            f"got {frontmatter['version']}"
+        )
     if not isinstance(frontmatter["applies_to"], list) or not frontmatter["applies_to"]:
         fail(f"{skill_id}: applies_to must be a non-empty list")
     if not isinstance(frontmatter["phases"], list) or not frontmatter["phases"]:
@@ -154,9 +158,15 @@ def validate_skill(skill_id: str, spec: dict) -> None:
 
 
 def main() -> int:
+    if not BLUEPRINT_VERSION:
+        fail("VERSION must not be empty")
+
     catalog = yaml.safe_load(CATALOG_PATH.read_text(encoding="utf-8")) or {}
-    if catalog.get("version") != "0.4.0-dev":
-        fail("catalog/skills.yaml must be version 0.4.0-dev")
+    if catalog.get("version") != BLUEPRINT_VERSION:
+        fail(
+            "catalog/skills.yaml version must match VERSION "
+            f"({BLUEPRINT_VERSION})"
+        )
 
     skill_model = catalog.get("skill_model", {})
     contract = skill_model.get("contract", {})
@@ -203,8 +213,9 @@ def main() -> int:
         validate_skill(skill_id, spec)
 
     print(
-        "Blueprint V4-3 skill validation: PASS "
-        f"({len(materialized)} materialized, {len(planned)} planned)"
+        "Blueprint skill validation: PASS "
+        f"(version {BLUEPRINT_VERSION}; {len(materialized)} materialized, "
+        f"{len(planned)} planned)"
     )
     return 0
 
