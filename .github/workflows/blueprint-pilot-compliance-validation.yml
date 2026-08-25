@@ -1,0 +1,42 @@
+name: Blueprint Pilot Compliance Validation
+
+on:
+  push:
+    branches:
+      - "blueprint/core-v0.4-pilot-compliance-review"
+    paths:
+      - "schemas/compliance-review.schema.json"
+      - "documentation/BLUEPRINT_V0_4_CARESHIFT_COMPLIANCE_REVIEW.*"
+      - "catalog/reference-pilots.yaml"
+      - "scripts/validate-reference-pilot-compliance.py"
+      - ".github/workflows/blueprint-pilot-compliance-validation.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "schemas/compliance-review.schema.json"
+      - "documentation/BLUEPRINT_V0_4_CARESHIFT_COMPLIANCE_REVIEW.*"
+      - "catalog/reference-pilots.yaml"
+      - "scripts/validate-reference-pilot-compliance.py"
+      - ".github/workflows/blueprint-pilot-compliance-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+
+      - name: Install validator dependencies
+        run: python -m pip install --disable-pip-version-check jsonschema==4.26.0 PyYAML==6.0.2
+
+      - name: Validate reference pilot compliance review
+        run: python scripts/validate-reference-pilot-compliance.py

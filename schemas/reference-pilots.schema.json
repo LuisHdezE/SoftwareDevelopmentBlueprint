@@ -33,6 +33,21 @@
               "additionalProperties": false
             }
           },
+          "last_compliance_review": {
+            "type": "object",
+            "required": ["target_blueprint", "artifact", "report", "recommendation", "consumer_version_change"],
+            "properties": {
+              "target_blueprint": {"type": "string", "minLength": 1},
+              "artifact": {"type": "string", "minLength": 1},
+              "report": {"type": "string", "minLength": 1},
+              "recommendation": {"enum": ["ADOPT_INCREMENTALLY", "KEEP_BASELINE", "MIGRATE_NOW", "DEFER_ADOPTION", "REJECT"]},
+              "consumer_version_change": {"enum": ["APPLIED", "DEFERRED", "N/A"]},
+              "reviewed_consumer_main": {"type": "string", "pattern": "^[a-f0-9]{40}$"},
+              "reviewed_tracked_branch": {"type": "string", "pattern": "^[a-f0-9]{40}$"},
+              "rule": {"type": "string"}
+            },
+            "additionalProperties": false
+          },
           "notes": {"type": "array", "items": {"type": "string"}}
         },
         "additionalProperties": false

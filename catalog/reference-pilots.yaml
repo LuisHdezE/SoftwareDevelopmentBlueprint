@@ -13,6 +13,18 @@ pilots:
       - kind: branch
         value: blueprint/mockups-batch-01
         note: Pending visual pilot work used to validate v0.4 mockup and reference-asset semantics.
+    last_compliance_review:
+      target_blueprint: 0.4.0-dev
+      artifact: documentation/BLUEPRINT_V0_4_CARESHIFT_COMPLIANCE_REVIEW.json
+      report: documentation/BLUEPRINT_V0_4_CARESHIFT_COMPLIANCE_REVIEW.md
+      recommendation: ADOPT_INCREMENTALLY
+      consumer_version_change: DEFERRED
+      reviewed_consumer_main: afeb2f7928f884285d473f9989fb5acae650e9cc
+      reviewed_tracked_branch: 81822e07397397e3beab7eb8d317b5d2c0243ab7
+      rule: >-
+        The review records adoption decisions only. It does not mutate CareShift,
+        auto-upgrade its Blueprint version, regenerate visual assets or authorize
+        React implementation.
     notes:
       - CareShift proves or challenges Blueprint rules but does not define hidden product-specific requirements.
-      - Existing v0.3 evidence is subject to Compliance Review before any v0.4 migration.
+      - Existing v0.3 evidence is grandfathered by the V4-5 Compliance Review unless an explicit future consumer adoption change says otherwise.
