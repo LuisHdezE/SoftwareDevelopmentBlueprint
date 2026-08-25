@@ -1,0 +1,116 @@
+{
+  "schema_version": "0.4.0",
+  "architecture_id": "CLIENT-ANDROID-OPS-01",
+  "project_id": "example-project",
+  "mode": "greenfield",
+  "interface_slice": "ops-mobile",
+  "platform": "android",
+  "inventory_ids": ["APP-001", "APP-002"],
+  "status": "READY_FOR_REVIEW",
+  "visual_contract": {
+    "design_system_path": ".blueprint/design/design-system.json",
+    "tokens_path": ".blueprint/design/tokens.json",
+    "approved_reference_paths": [".blueprint/mockups/batch-02/assets/APP-001.png"],
+    "no_unapproved_interfaces": true
+  },
+  "api_contract": {
+    "openapi_path": "openapi.yaml",
+    "operation_ids": ["API-AUTH-001", "API-OPS-001"],
+    "authorization_boundary": "api",
+    "error_contract": "RFC 9457 Problem Details",
+    "request_id_header": "X-Request-ID",
+    "idempotency_header": "Idempotency-Key"
+  },
+  "auth_lifecycle": {
+    "mechanism": "bearer_jwt",
+    "access_credential_storage": "memory",
+    "refresh_credential_storage": "platform_secure_storage",
+    "refresh_enabled": true,
+    "refresh_rotation": true,
+    "concurrent_refresh_policy": "single_flight",
+    "unauthenticated_behavior": "Navigate to login and clear protected back stack.",
+    "forbidden_behavior": "Render permission state without exposing protected data.",
+    "logout_behavior": "Revoke refresh token and clear secure local credentials.",
+    "secrets_must_not_be_logged": true
+  },
+  "permissions": {
+    "source": "api_contract",
+    "ui_hides_or_disables_unauthorized_actions": true,
+    "api_remains_authoritative": true
+  },
+  "routing": {
+    "strategy": "Navigation Compose graph with auth and role destinations",
+    "public_routes": ["login"],
+    "protected_routes": ["home", "task-detail"],
+    "permission_aware_navigation": true
+  },
+  "state_management": {
+    "server_state_strategy": "Repository + ViewModel observable state.",
+    "ui_state_strategy": "ViewModel/SavedState for ephemeral screen state.",
+    "cache_strategy": "Explicit Room cache only for approved offline data.",
+    "invalidation_rules": ["Refresh affected aggregate after successful mutation."]
+  },
+  "forms_validation": {
+    "client_validation_strategy": "Local field validation mirrors contract constraints without redefining server rules.",
+    "api_validation_mapping": "Map 422 fields and detail to Compose error state.",
+    "conflict_mapping": "Map 409 to explicit conflict resolution prompt.",
+    "rate_limit_mapping": "Map 429 to retry-after guidance."
+  },
+  "async_states": {
+    "loading": "REQUIRED",
+    "empty": "REQUIRED",
+    "error": "REQUIRED",
+    "401": "REQUIRED",
+    "403": "REQUIRED",
+    "404": "REQUIRED",
+    "409": "REQUIRED",
+    "422": "REQUIRED",
+    "429": "REQUIRED",
+    "offline": "REQUIRED"
+  },
+  "idempotency": {
+    "required_operations": [],
+    "key_generation": "Generate UUID only for operations marked idempotent by the API contract.",
+    "replay_handling": "Use canonical response and avoid duplicate local side effects.",
+    "conflict_handling": "Block payload-changing reuse of an idempotency key."
+  },
+  "observability": {
+    "request_id_header": "X-Request-ID",
+    "client_error_strategy": "Attach request ID to sanitized crash/support context.",
+    "secret_redaction": true,
+    "pii_policy": "Redact credentials and sensitive domain payloads."
+  },
+  "accessibility": {
+    "target": "Android accessibility + WCAG-equivalent interaction principles",
+    "keyboard_or_switch_navigation": "Support switch/keyboard traversal where applicable.",
+    "screen_reader_or_talkback": "TalkBack semantics and meaningful content descriptions.",
+    "focus_management": "Predictable focus after navigation, validation and dialogs.",
+    "min_touch_target_px": 48
+  },
+  "testing": {
+    "unit": {"required": true, "strategy": "Use-case, mapper and ViewModel unit tests."},
+    "component_or_ui": {"required": true, "strategy": "Compose UI tests for states and accessibility semantics."},
+    "integration": {"required": true, "strategy": "Repository/network/auth lifecycle integration tests."},
+    "e2e": {"required": true, "strategy": "Critical approved-slice journeys on emulator/device against test API."}
+  },
+  "offline": {
+    "mode": "queued_writes",
+    "storage_strategy": "Room stores only approved offline entities and an explicit mutation queue.",
+    "sync_conflict_policy": "Server remains canonical; conflicts require documented merge/retry policy."
+  },
+  "implementation_guardrails": {
+    "no_new_api_behavior": true,
+    "no_auth_bypass": true,
+    "approved_inventory_only": true,
+    "high_risk_mutations_follow_idempotency": true
+  },
+  "android": {
+    "language": "kotlin",
+    "ui_toolkit": "jetpack_compose",
+    "architecture_pattern": "MVVM with repository/use-case boundaries",
+    "networking_library": "Retrofit/OkHttp",
+    "local_persistence": "Room",
+    "background_work": "WorkManager",
+    "min_sdk": 26
+  }
+}

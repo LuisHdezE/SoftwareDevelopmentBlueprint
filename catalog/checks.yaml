@@ -86,11 +86,21 @@ checks:
   - {id: mockups.approved_references, phase: visual_review_gate, type: REQUIRED, verification: evidence}
   - {id: mockups.no_implicit_approval, phase: visual_review_gate, type: REQUIRED, verification: policy, rule: generated_is_not_reviewed_or_approved}
 
-  - {id: client.architecture_contract, phase: client_architecture, type: REQUIRED, verification: evidence}
+  - {id: client.architecture_contract, phase: client_architecture, type: REQUIRED, verification: file}
+  - {id: client.visual_contract_binding, phase: client_architecture, type: REQUIRED, verification: evidence}
+  - {id: client.auth_lifecycle, phase: client_architecture, type: REQUIRED, verification: evidence}
+  - {id: client.api_client_strategy, phase: client_architecture, type: REQUIRED, verification: evidence}
   - {id: client.api_contract_binding, phase: client_architecture, type: REQUIRED, verification: evidence}
   - {id: client.authorization_presentation, phase: client_architecture, type: REQUIRED, verification: evidence}
-  - {id: client.state_error_strategy, phase: client_architecture, type: REQUIRED, verification: evidence}
+  - {id: client.routing_navigation, phase: client_architecture, type: REQUIRED, verification: evidence}
+  - {id: client.state_cache_strategy, phase: client_architecture, type: REQUIRED, verification: evidence}
+  - {id: client.forms_validation, phase: client_architecture, type: REQUIRED, verification: evidence}
+  - {id: client.async_error_offline, phase: client_architecture, type: REQUIRED, verification: evidence}
+  - {id: client.idempotency_strategy, phase: client_architecture, type: REQUIRED, verification: evidence}
+  - {id: client.observability_correlation, phase: client_architecture, type: REQUIRED, verification: evidence}
+  - {id: client.accessibility, phase: client_architecture, type: REQUIRED, verification: evidence}
   - {id: client.testing_strategy, phase: client_architecture, type: REQUIRED, verification: evidence}
+  - {id: client.platform_contract, phase: client_architecture, type: REQUIRED, verification: evidence}
   - {id: client.brownfield_coexistence, phase: client_architecture, type: BROWNFIELD, verification: evidence}
 
   - {id: qa.integration, phase: integration_qa, type: REQUIRED, verification: evidence}

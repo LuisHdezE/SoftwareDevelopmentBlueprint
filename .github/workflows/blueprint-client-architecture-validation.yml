@@ -1,0 +1,51 @@
+name: Blueprint Client Architecture Validation
+
+on:
+  push:
+    paths:
+      - 'BLUEPRINT.md'
+      - 'catalog/checks.yaml'
+      - 'catalog/gates.yaml'
+      - 'catalog/skills.yaml'
+      - 'schemas/client-architecture.schema.json'
+      - 'templates/client-architecture.*.example.json'
+      - 'documentation/CLIENT_ARCHITECTURE_CONTRACT.md'
+      - 'skills/dev-react-client-architecture/SKILL.md'
+      - 'skills/dev-android-client-architecture/SKILL.md'
+      - 'scripts/validate-client-architecture.py'
+      - '.github/workflows/blueprint-client-architecture-validation.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'BLUEPRINT.md'
+      - 'catalog/checks.yaml'
+      - 'catalog/gates.yaml'
+      - 'catalog/skills.yaml'
+      - 'schemas/client-architecture.schema.json'
+      - 'templates/client-architecture.*.example.json'
+      - 'documentation/CLIENT_ARCHITECTURE_CONTRACT.md'
+      - 'skills/dev-react-client-architecture/SKILL.md'
+      - 'skills/dev-android-client-architecture/SKILL.md'
+      - 'scripts/validate-client-architecture.py'
+      - '.github/workflows/blueprint-client-architecture-validation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+
+      - name: Install validator dependencies
+        run: python -m pip install --disable-pip-version-check jsonschema==4.26.0 PyYAML==6.0.2
+
+      - name: Validate client architecture contracts
+        run: python scripts/validate-client-architecture.py

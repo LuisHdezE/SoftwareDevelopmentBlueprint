@@ -76,6 +76,7 @@ categories:
       android: true
     skills:
       - dev-android-kotlin
+      - dev-android-client-architecture
       - dev-jetpack-compose
       - dev-mobile-security
       - dev-android-view-inventory
@@ -117,6 +118,7 @@ mandatory_v0_4_materialized:
   - dev-mockup-planning
   - dev-accessibility
   - dev-react-client-architecture
+  - dev-android-client-architecture
   - dev-event-logging-audit
 
 registry:
@@ -164,6 +166,10 @@ registry:
     status: materialized
     category: web
     path: skills/dev-react-client-architecture/SKILL.md
+  dev-android-client-architecture:
+    status: materialized
+    category: android
+    path: skills/dev-android-client-architecture/SKILL.md
   dev-event-logging-audit:
     status: materialized
     category: core
