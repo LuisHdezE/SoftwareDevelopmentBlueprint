@@ -1,10 +1,37 @@
-version: 0.1.0
+version: 0.4.0-dev
+
 skill_model:
   principles:
     - skills_are_versioned_with_blueprint
     - load_only_relevant_skills
     - project_specific_knowledge_stays_in_project
     - skills_reference_canonical_docs_instead_of_duplicating_them
+    - materialized_skills_must_resolve_to_repository_files
+    - generated_or_product_specific_knowledge_must_not_leak_into_dev_skills
+  contract:
+    root_pattern: skills/<skill-id>/SKILL.md
+    required_frontmatter:
+      - id
+      - title
+      - version
+      - status
+      - category
+      - applies_to
+      - phases
+      - canonical_references
+    required_sections:
+      - Purpose
+      - When to Use
+      - Inputs
+      - Procedure
+      - Outputs
+      - Stop Conditions
+      - Guardrails
+      - Canonical References
+      - Completion Signal
+    statuses:
+      - materialized
+      - planned
 
 categories:
   core:
@@ -37,9 +64,12 @@ categories:
       web: true
     skills:
       - dev-react
+      - dev-react-client-architecture
       - dev-tailwind
       - dev-accessibility
       - dev-web-view-inventory
+      - dev-design-system
+      - dev-mockup-planning
 
   android:
     conditional_on:
@@ -75,10 +105,108 @@ categories:
         capability: docker
         skills: [dev-docker]
 
+mandatory_v0_4_materialized:
+  - dev-git-workflow
+  - dev-brownfield-analysis
+  - dev-api-design
+  - dev-openapi
+  - dev-postman-qa
+  - dev-contract-testing
+  - dev-web-view-inventory
+  - dev-design-system
+  - dev-mockup-planning
+  - dev-accessibility
+  - dev-react-client-architecture
+  - dev-event-logging-audit
+
+registry:
+  dev-git-workflow:
+    status: materialized
+    category: core
+    path: skills/dev-git-workflow/SKILL.md
+  dev-brownfield-analysis:
+    status: materialized
+    category: brownfield
+    path: skills/dev-brownfield-analysis/SKILL.md
+  dev-api-design:
+    status: materialized
+    category: backend
+    path: skills/dev-api-design/SKILL.md
+  dev-openapi:
+    status: materialized
+    category: backend
+    path: skills/dev-openapi/SKILL.md
+  dev-postman-qa:
+    status: materialized
+    category: backend
+    path: skills/dev-postman-qa/SKILL.md
+  dev-contract-testing:
+    status: materialized
+    category: backend
+    path: skills/dev-contract-testing/SKILL.md
+  dev-web-view-inventory:
+    status: materialized
+    category: web
+    path: skills/dev-web-view-inventory/SKILL.md
+  dev-design-system:
+    status: materialized
+    category: web
+    path: skills/dev-design-system/SKILL.md
+  dev-mockup-planning:
+    status: materialized
+    category: web
+    path: skills/dev-mockup-planning/SKILL.md
+  dev-accessibility:
+    status: materialized
+    category: web
+    path: skills/dev-accessibility/SKILL.md
+  dev-react-client-architecture:
+    status: materialized
+    category: web
+    path: skills/dev-react-client-architecture/SKILL.md
+  dev-event-logging-audit:
+    status: materialized
+    category: core
+    path: skills/dev-event-logging-audit/SKILL.md
+
+planned_registry:
+  core:
+    - dev-code-review
+    - dev-debugging
+    - dev-refactoring
+    - dev-security-baseline
+    - dev-database-design
+    - dev-testing-strategy
+    - dev-documentation
+  backend:
+    - dev-laravel-setup
+    - dev-backend-security
+    - dev-database-migration
+    - dev-ddd-tactical-patterns
+  web:
+    - dev-react
+    - dev-tailwind
+  android:
+    - dev-android-kotlin
+    - dev-jetpack-compose
+    - dev-mobile-security
+    - dev-android-view-inventory
+  saas:
+    - dev-saas
+    - dev-multi-tenancy
+    - dev-tenant-security
+  brownfield:
+    - dev-gap-analysis
+    - dev-migration-planning
+  devops:
+    - dev-ci-cd
+    - dev-deployment
+    - dev-docker
+
 sources_for_initial_audit:
   - repository: LuisHdezE/VolquetasManager
     path: .agents/skills
     rule: >-
-      Reutilizar conocimiento genérico después de eliminar referencias específicas
-      de Volquetas Manager. Las skills vm-* se usan como patrón para skills de proyecto,
-      no como skills core del Blueprint.
+      Reutilizar solamente conocimiento genérico después de eliminar referencias
+      específicas del producto. Las skills del proyecto sirven como cantera/patrón,
+      no como fuente normativa del Blueprint.
