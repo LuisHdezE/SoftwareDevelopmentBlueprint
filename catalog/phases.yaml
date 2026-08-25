@@ -1,4 +1,4 @@
-version: 0.3.0
+version: 0.4.0-dev
 phases:
   - id: discovery
     name: Discovery
@@ -52,40 +52,86 @@ phases:
     name: API Gate
     applies_to: [greenfield, brownfield]
     order: 120
+
   - id: interface_inventory
     name: Interface Inventory
     applies_to: [greenfield, brownfield]
     order: 130
-    blocked_by: [api_gate]
+    requires_gates: [api_gate]
+    exit_gate: interface_inventory_ready
+
   - id: visual_identity
-    name: Brand, Logo & Design System
+    name: Visual Identity
     applies_to: [greenfield, brownfield]
     order: 140
-    blocked_by: [api_gate]
-  - id: mockups
-    name: Mockups & Visual Validation
+    requires_gates: [interface_inventory_ready]
+
+  - id: design_system
+    name: Design System
     applies_to: [greenfield, brownfield]
     order: 150
+    requires_phases: [visual_identity]
+    requires_gates: [interface_inventory_ready]
+    exit_gate: design_system_ready
+
+  - id: mockup_planning
+    name: Mockup Planning
+    applies_to: [greenfield, brownfield]
+    order: 160
+    execution_scope: interface_slice
+    requires_gates: [design_system_ready]
+
+  - id: mockups
+    name: Mockup Generation
+    applies_to: [greenfield, brownfield]
+    order: 170
+    execution_scope: interface_slice
+    requires_phases: [mockup_planning]
     max_images_per_batch: 10
+
+  - id: visual_review_gate
+    name: Visual Review Gate
+    applies_to: [greenfield, brownfield]
+    order: 180
+    execution_scope: interface_slice
+    requires_phases: [mockups]
+    exit_gate: visual_review_pass
+
+  - id: client_architecture
+    name: Client Architecture
+    applies_to: [greenfield, brownfield]
+    order: 190
+    execution_scope: interface_slice_platform
+    requires_gates: [visual_review_pass]
+    exit_gate: client_architecture_ready
+
   - id: web_implementation
     name: React Web Implementation
     applies_to: [greenfield, brownfield]
-    order: 160
+    order: 200
+    execution_scope: interface_slice
     conditional_capability: web
+    requires_gates: [client_architecture_ready]
+
   - id: android_implementation
     name: Kotlin Android Implementation
     applies_to: [greenfield, brownfield]
-    order: 170
+    order: 210
+    execution_scope: interface_slice
     conditional_capability: android
+    requires_gates: [client_architecture_ready]
+
   - id: integration_qa
     name: Integration & System QA
     applies_to: [greenfield, brownfield]
-    order: 180
+    order: 220
+
   - id: release_gate
     name: Release Gate
     applies_to: [greenfield, brownfield]
-    order: 190
+    order: 230
+
   - id: operations
     name: Operations & Maintenance
     applies_to: [greenfield, brownfield]
-    order: 200
+    order: 240

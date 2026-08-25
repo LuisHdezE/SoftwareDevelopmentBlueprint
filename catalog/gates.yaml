@@ -1,4 +1,4 @@
-version: 0.3.0
+version: 0.4.0-dev
 gates:
   - id: brownfield_baseline
     name: Brownfield Baseline Gate
@@ -108,7 +108,17 @@ gates:
   - id: api_gate
     name: API Gate
     phase: api_gate
-    blocks: [interface_inventory, visual_identity, mockups, web_implementation, android_implementation]
+    evaluation_scope: project
+    blocks:
+      - interface_inventory
+      - visual_identity
+      - design_system
+      - mockup_planning
+      - mockups
+      - visual_review_gate
+      - client_architecture
+      - web_implementation
+      - android_implementation
     require_all:
       - api.endpoints_implemented
       - api.auth_authorization
@@ -126,8 +136,84 @@ gates:
       - api.audit_qa
     result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
     rule: >-
-      No se inicia diseño visual ni implementación de clientes web/Android
+      No se inicia el pipeline visual ni la implementación de clientes web/Android
       mientras este gate no esté en PASS.
+
+  - id: interface_inventory_ready
+    name: Interface Inventory Ready Gate
+    phase: interface_inventory
+    evaluation_scope: project
+    blocks: [visual_identity, design_system, mockup_planning, mockups, visual_review_gate, client_architecture, web_implementation, android_implementation]
+    require_all:
+      - ui.inventory_traceability
+    require_if_applicable:
+      - ui.web_inventory
+      - ui.android_inventory
+      - ui.brownfield_observed_proposed_separation
+    result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
+    rule: >-
+      Every interface entering design must have a stable inventory identity and
+      explicit purpose, access, data, actions, states and API responsibilities when applicable.
+
+  - id: design_system_ready
+    name: Design System Ready Gate
+    phase: design_system
+    evaluation_scope: project
+    blocks: [mockup_planning, mockups, visual_review_gate, client_architecture, web_implementation, android_implementation]
+    require_all:
+      - design.identity
+      - design.system
+      - design.tokens
+      - design.accessibility
+      - design.responsive
+      - design.semantic_states
+    require_if_applicable: [design.logo]
+    result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
+    rule: >-
+      Mockups do not begin until the project has an evidence-backed visual identity
+      and reusable design system. A custom logo is not mandatory when it is not a real project need.
+
+  - id: visual_review_pass
+    name: Visual Review Pass Gate
+    phase: visual_review_gate
+    evaluation_scope: interface_slice
+    blocks: [client_architecture, web_implementation, android_implementation]
+    require_all:
+      - mockups.inventory_preexists
+      - mockups.plan
+      - mockups.batch_limit
+      - mockups.contract_traceability
+      - mockups.visuals_generated
+      - mockups.assets_versioned
+      - mockups.asset_mapping
+      - mockups.review_complete
+      - mockups.contract_review
+      - mockups.accessibility_review
+      - mockups.approved_references
+      - mockups.no_implicit_approval
+    require_if_applicable: [mockups.reference_inputs]
+    result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
+    rule: >-
+      This gate is evaluated per interface slice. GENERATED is not REVIEWED and
+      REVIEWED is not APPROVED. Only approved inventory views in the evaluated slice
+      may progress to client architecture and implementation.
+
+  - id: client_architecture_ready
+    name: Client Architecture Ready Gate
+    phase: client_architecture
+    evaluation_scope: interface_slice_platform
+    blocks: [web_implementation, android_implementation]
+    require_all:
+      - client.architecture_contract
+      - client.api_contract_binding
+      - client.authorization_presentation
+      - client.state_error_strategy
+      - client.testing_strategy
+    require_if_applicable: [client.brownfield_coexistence]
+    result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
+    rule: >-
+      Each approved interface slice is evaluated independently for each target
+      platform. Client architecture cannot weaken API authorization or invent contract behavior.
 
   - id: release_gate
     name: Release Gate

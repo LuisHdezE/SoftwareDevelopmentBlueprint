@@ -1,4 +1,4 @@
-version: 0.3.0
+version: 0.4.0-dev
 mode: greenfield
 entry_condition: new_solution
 sequence:
@@ -14,7 +14,11 @@ sequence:
   - api_gate
   - interface_inventory
   - visual_identity
+  - design_system
+  - mockup_planning
   - mockups
+  - visual_review_gate
+  - client_architecture
   - web_implementation
   - android_implementation
   - integration_qa
@@ -28,12 +32,43 @@ gates:
   after_openapi_validation: openapi_valid
   after_postman_contract: postman_ready
   after_api_qa: api_qa_pass
-  before_clients: api_gate
+  before_experience_pipeline: api_gate
+  after_interface_inventory: interface_inventory_ready
+  after_design_system: design_system_ready
+  per_interface_slice_after_visual_review: visual_review_pass
+  per_interface_slice_platform_before_implementation: client_architecture_ready
   before_release: release_gate
+interface_slice_pipeline:
+  scope_key: interface_slice
+  sequence:
+    - mockup_planning
+    - mockups
+    - visual_review_gate
+    - client_architecture
+    - client_implementation
+  client_implementation:
+    web: web_implementation
+    android: android_implementation
+  rules:
+    - slice_must_reference_inventory_ids
+    - visual_review_pass_is_scoped_to_slice
+    - client_architecture_ready_is_scoped_to_slice_and_platform
+    - approved_slice_may_progress_without_waiting_for_all_product_views
+    - unapproved_views_must_not_enter_client_implementation
 rules:
   - do_not_implement_before_discovery
+  - requirements_ready_must_pass_before_architecture_or_api_design
+  - architecture_ready_must_pass_before_api_contract_design
   - api_contract_ready_must_pass_before_api_implementation
-  - api_gate_must_pass_before_ui_design_or_client_implementation
+  - api_gate_must_pass_before_experience_pipeline
+  - interface_inventory_ready_must_pass_before_visual_identity_or_design_system
+  - design_system_ready_must_pass_before_mockup_planning
   - mockups_require_view_inventory
   - max_10_mockups_per_generation
+  - generated_visual_is_not_approved_visual
+  - approved_visual_assets_must_be_versioned_and_reusable_by_future_ai
+  - ui_must_not_invent_api_permissions_states_or_mutations
+  - api_remains_authorization_boundary
+  - visual_review_pass_must_apply_to_each_implemented_interface_slice
+  - client_architecture_ready_must_apply_to_each_target_platform_slice
   - preserve_traceability_from_requirement_to_test
