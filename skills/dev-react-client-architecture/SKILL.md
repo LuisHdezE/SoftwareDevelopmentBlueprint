@@ -1,7 +1,7 @@
 ---
 id: dev-react-client-architecture
 title: React Client Architecture
-version: 0.4.0-dev
+version: 0.4.0
 status: materialized
 category: web
 applies_to:

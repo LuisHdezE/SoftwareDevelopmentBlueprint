@@ -1,7 +1,7 @@
 ---
 id: dev-openapi
 title: OpenAPI Contract Validation
-version: 0.4.0-dev
+version: 0.4.0
 status: materialized
 category: backend
 applies_to:

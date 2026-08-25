@@ -4,7 +4,7 @@ project:
   description: Example Blueprint-enabled project
 
 blueprint:
-  version: 0.3.0
+  version: 0.4.0
   mode: brownfield
 
 stack:

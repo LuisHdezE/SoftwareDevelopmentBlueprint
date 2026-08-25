@@ -1,7 +1,7 @@
 ---
 id: dev-accessibility
 title: Accessibility Contract Review
-version: 0.4.0-dev
+version: 0.4.0
 status: materialized
 category: web
 applies_to:

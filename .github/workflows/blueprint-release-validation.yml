@@ -1,0 +1,60 @@
+name: Blueprint Release Validation
+
+on:
+  push:
+    branches:
+      - blueprint/release-v0.4.0
+    paths:
+      - VERSION
+      - README.md
+      - BLUEPRINT.md
+      - catalog/**
+      - workflows/**
+      - schemas/**
+      - templates/**
+      - skills/**
+      - scripts/**
+      - tests/**
+      - documentation/BLUEPRINT_CURRENT_STATE.md
+      - documentation/BLUEPRINT_V0_4_RELEASE.json
+      - documentation/BLUEPRINT_V0_4_RELEASE_NOTES.md
+      - .github/workflows/blueprint-release-validation.yml
+  pull_request:
+    branches:
+      - main
+    paths:
+      - VERSION
+      - README.md
+      - BLUEPRINT.md
+      - catalog/**
+      - workflows/**
+      - schemas/**
+      - templates/**
+      - skills/**
+      - scripts/**
+      - tests/**
+      - documentation/BLUEPRINT_CURRENT_STATE.md
+      - documentation/BLUEPRINT_V0_4_RELEASE.json
+      - documentation/BLUEPRINT_V0_4_RELEASE_NOTES.md
+      - .github/workflows/blueprint-release-validation.yml
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+
+      - name: Install validator dependencies
+        run: python -m pip install --disable-pip-version-check jsonschema==4.26.0 PyYAML==6.0.2
+
+      - name: Validate Blueprint 0.4.0 release
+        run: python scripts/validate-release.py

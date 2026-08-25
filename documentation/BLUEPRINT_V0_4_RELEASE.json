@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0.0",
+  "version": "0.4.0",
+  "status": "stable",
+  "release_date": "2026-08-25",
+  "previous_stable": "0.3.0",
+  "pre_release_main": "0d2b40bc88956d0f312234e81b1cb2a308575af7",
+  "tag": "v0.4.0",
+  "delivery_slices": [
+    {"id": "V4-0", "pull_request": 4},
+    {"id": "V4-1", "pull_request": 5},
+    {"id": "V4-2", "pull_request": 6},
+    {"id": "V4-3", "pull_request": 7},
+    {"id": "V4-4", "pull_request": 8},
+    {"id": "V4-5", "pull_request": 9}
+  ],
+  "counts": {
+    "phases": 25,
+    "checks": 92,
+    "gates": 14,
+    "materialized_skills": 13,
+    "planned_skills": 25
+  },
+  "compatibility": {
+    "consumer_auto_upgrade": false,
+    "brownfield_align_do_not_rewrite": true,
+    "grandfather_existing_evidence": true
+  },
+  "reference_pilot": {
+    "id": "careshift-manager",
+    "declared_blueprint": "0.3.0",
+    "recommendation": "ADOPT_INCREMENTALLY",
+    "version_change": "DEFERRED"
+  },
+  "historical_review_target": "0.4.0-dev",
+  "release_rule": "Create v0.4.0 only after the release PR merges and the approved tree is verified on main."
+}
