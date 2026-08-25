@@ -49,14 +49,24 @@
       },
       "additionalProperties": true
     },
+    "artifact_locations": {
+      "type": "object",
+      "properties": {
+        "status": {"type": "string", "minLength": 1},
+        "evidence_root": {"type": "string", "minLength": 1},
+        "interface_inventory": {"type": "string", "minLength": 1},
+        "visual_identity": {"type": "string", "minLength": 1},
+        "design_system": {"type": "string", "minLength": 1},
+        "design_tokens": {"type": "string", "minLength": 1},
+        "mockups_root": {"type": "string", "minLength": 1},
+        "client_architecture_root": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
     "skills": {
       "type": "object",
       "properties": {
-        "profiles": {
-          "type": "array",
-          "items": {"type": "string"},
-          "uniqueItems": true
-        }
+        "profiles": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
       },
       "additionalProperties": true
     }

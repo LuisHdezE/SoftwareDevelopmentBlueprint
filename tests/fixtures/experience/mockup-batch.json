@@ -1,0 +1,28 @@
+{
+  "schema_version": "0.4.0-dev",
+  "batch_id": "BATCH-99",
+  "interface_slice": "fixture-login",
+  "status": "PASS",
+  "max_views": 10,
+  "inventory_source": "tests/fixtures/experience/interface-inventory.json",
+  "design_system_source": "templates/design-system.example.json",
+  "design_tokens_source": "templates/design-tokens.example.json",
+  "views": [
+    {
+      "mockup_id": "M99-01",
+      "inventory_id": "WEB-001",
+      "title": "Login",
+      "platform": "web",
+      "api_ids": ["API-AUTH-001"],
+      "visual_asset_path": "tests/fixtures/experience/assets/WEB-001-login.svg",
+      "generation_status": "GENERATED",
+      "review_status": "APPROVED",
+      "contract_review_status": "PASS",
+      "accessibility_review_status": "PASS",
+      "reference_inputs": [],
+      "evidence_ids": [],
+      "notes": []
+    }
+  ],
+  "completion": {"specification": "PASS", "visuals": "PASS", "manual_review": "PASS", "batch_pass": "PASS"}
+}

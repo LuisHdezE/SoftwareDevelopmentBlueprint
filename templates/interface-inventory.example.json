@@ -1,0 +1,43 @@
+{
+  "schema_version": "0.4.0-dev",
+  "project": "owner/repository",
+  "mode": "brownfield",
+  "items": [
+    {
+      "id": "WEB-001",
+      "platform": "web",
+      "module": "Identity",
+      "name": "Login",
+      "purpose": "Authenticate an existing user.",
+      "source_classification": "OBSERVED",
+      "implementation_status": "EXISTING",
+      "roles": ["guest"],
+      "permissions": [],
+      "data": [{"name": "credentials", "source": "api", "api_ids": ["API-AUTH-001"]}],
+      "actions": [{"name": "Iniciar sesión", "kind": "create", "api_ids": ["API-AUTH-001"], "permission": null, "source_classification": "OBSERVED"}],
+      "states": ["default", "loading", "error", "429"],
+      "navigation": {"route": "/login", "entry_points": [], "destinations": ["WEB-004"]},
+      "api_ids": ["API-AUTH-001"],
+      "responsive": "Single-column on mobile; centered authentication container on larger screens.",
+      "notes": []
+    },
+    {
+      "id": "WEB-004",
+      "platform": "web",
+      "module": "Operations",
+      "name": "Dashboard",
+      "purpose": "Summarize daily operational state.",
+      "source_classification": "OBSERVED",
+      "implementation_status": "PARTIAL",
+      "roles": ["admin", "coordinator"],
+      "permissions": ["dashboard.view"],
+      "data": [{"name": "summary", "source": "api", "api_ids": ["API-DASH-001"]}],
+      "actions": [{"name": "Open alerts", "kind": "navigate", "api_ids": [], "permission": "alerts.view", "source_classification": "OBSERVED"}],
+      "states": ["default", "loading", "empty", "error", "offline", "403"],
+      "navigation": {"route": "/dashboard", "entry_points": ["WEB-001"], "destinations": ["WEB-005"]},
+      "api_ids": ["API-DASH-001"],
+      "responsive": "Cards reflow from multi-column desktop to one-column mobile.",
+      "notes": ["Static or proposed data must be labeled and not promoted to API contract."]
+    }
+  ]
+}

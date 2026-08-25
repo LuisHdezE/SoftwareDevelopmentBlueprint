@@ -1,0 +1,21 @@
+{
+  "schema_version": "0.4.0-dev",
+  "evidence": [
+    {
+      "id": "EVD-SCHEMA-001",
+      "type": "schema_validation",
+      "value": "ci://blueprint-schema-validation/run-123",
+      "description": "Schema and semantic validation passed.",
+      "scope": {"level": "project", "id": null},
+      "approval": {"status": "N/A", "note": "Automatic validation evidence."}
+    },
+    {
+      "id": "EVD-VISUAL-001",
+      "type": "visual_asset",
+      "value": ".blueprint/mockups/batch-01/assets/WEB-001-login.png",
+      "description": "Approved login visual reference.",
+      "scope": {"level": "interface", "id": "WEB-001"},
+      "approval": {"status": "APPROVED", "note": "Manual visual review completed."}
+    }
+  ]
+}

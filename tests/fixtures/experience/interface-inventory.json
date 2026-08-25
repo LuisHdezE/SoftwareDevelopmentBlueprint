@@ -1,0 +1,23 @@
+{
+  "schema_version": "0.4.0-dev",
+  "project": "fixture/project",
+  "mode": "greenfield",
+  "items": [
+    {
+      "id": "WEB-001",
+      "platform": "web",
+      "module": "Identity",
+      "name": "Login",
+      "purpose": "Authenticate.",
+      "source_classification": "PROPOSED",
+      "implementation_status": "PROPOSED",
+      "roles": ["guest"],
+      "permissions": [],
+      "data": [{"name": "credentials", "source": "api", "api_ids": ["API-AUTH-001"]}],
+      "actions": [{"name": "Login", "kind": "create", "api_ids": ["API-AUTH-001"], "permission": null, "source_classification": "PROPOSED"}],
+      "states": ["default", "loading", "error"],
+      "navigation": {"route": "/login", "entry_points": [], "destinations": []},
+      "api_ids": ["API-AUTH-001"]
+    }
+  ]
+}

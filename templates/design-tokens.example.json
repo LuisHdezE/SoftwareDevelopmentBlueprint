@@ -1,0 +1,14 @@
+{
+  "schema_version": "0.4.0-dev",
+  "colors": {
+    "brand": {"primary": "#123B6D", "accent": "#0F766E"},
+    "surface": {"canvas": "#F8FAFC", "primary": "#FFFFFF"},
+    "text": {"primary": "#0F172A", "secondary": "#475569"},
+    "semantic": {"info": "#2563EB", "success": "#15803D", "warning": "#B45309", "danger": "#B91C1C", "neutral": "#64748B"}
+  },
+  "typography": {"heading": "Manrope", "body": "Inter", "scale": {"sm": 14, "md": 16, "lg": 20, "xl": 28}},
+  "spacing": {"xs": 4, "sm": 8, "md": 16, "lg": 24, "xl": 32},
+  "radius": {"control": 8, "card": 12, "dialog": 16},
+  "breakpoints": {"mobile_max": 767, "tablet_min": 768, "desktop_min": 1280},
+  "accessibility": {"target": "WCAG 2.2 AA", "minimum_touch_target_px": 44, "minimum_text_contrast_ratio": 4.5}
+}

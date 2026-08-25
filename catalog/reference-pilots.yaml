@@ -1,0 +1,18 @@
+version: 0.4.0-dev
+pilots:
+  - id: careshift-manager
+    repository: LuisHdezE/CareShift_Manager
+    mode: brownfield
+    role: reference_pilot
+    normative: false
+    baseline_blueprint: 0.3.0
+    status: active
+    evidence_paths:
+      - .blueprint
+    tracked_work:
+      - kind: branch
+        value: blueprint/mockups-batch-01
+        note: Pending visual pilot work used to validate v0.4 mockup and reference-asset semantics.
+    notes:
+      - CareShift proves or challenges Blueprint rules but does not define hidden product-specific requirements.
+      - Existing v0.3 evidence is subject to Compliance Review before any v0.4 migration.
