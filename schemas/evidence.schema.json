@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eliasworks.dev/blueprint/evidence.schema.json",
+  "title": "Blueprint Evidence Registry",
+  "type": "object",
+  "required": ["schema_version", "evidence"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "value", "scope"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^EVD-[A-Z0-9][A-Z0-9._-]*$"},
+          "type": {"enum": ["file", "commit", "pull_request", "ci_run", "test_report", "postman_report", "openapi", "schema_validation", "design_system", "mockup_manifest", "visual_asset", "manual_approval", "url", "other"]},
+          "value": {"type": "string", "minLength": 1},
+          "description": {"type": "string"},
+          "scope": {
+            "type": "object",
+            "required": ["level"],
+            "properties": {
+              "level": {"enum": ["project", "phase", "gate", "interface_slice", "interface", "platform"]},
+              "id": {"type": ["string", "null"]},
+              "platform": {"enum": ["web", "android"]}
+            },
+            "additionalProperties": false
+          },
+          "sha256": {"type": "string", "pattern": "^[a-fA-F0-9]{64}$"},
+          "created_at": {"type": "string", "format": "date-time"},
+          "approval": {
+            "type": "object",
+            "required": ["status"],
+            "properties": {
+              "status": {"enum": ["PENDING", "APPROVED", "REJECTED", "N/A"]},
+              "note": {"type": "string"}
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

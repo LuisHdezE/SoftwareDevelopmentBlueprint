@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eliasworks.dev/blueprint/design-system.schema.json",
+  "title": "Blueprint Design System Contract",
+  "type": "object",
+  "required": ["schema_version", "identity", "tokens_path", "components", "responsive", "semantic_states", "accessibility"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "identity": {
+      "type": "object",
+      "required": ["product_name", "direction"],
+      "properties": {
+        "product_name": {"type": "string", "minLength": 1},
+        "direction": {"type": "string", "minLength": 1},
+        "logo_required": {"type": "boolean"},
+        "logo_path": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "tokens_path": {"type": "string", "minLength": 1},
+    "components": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "category"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "category": {"enum": ["navigation", "input", "feedback", "data_display", "layout", "overlay", "action", "calendar", "other"]},
+          "states": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+          "notes": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "responsive": {
+      "type": "object",
+      "required": ["mobile", "tablet", "desktop"],
+      "properties": {
+        "mobile": {"type": "string"},
+        "tablet": {"type": "string"},
+        "desktop": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "semantic_states": {
+      "type": "object",
+      "required": ["loading", "empty", "error", "offline", "forbidden", "validation", "conflict", "rate_limit"],
+      "additionalProperties": {"type": "string", "minLength": 1}
+    },
+    "accessibility": {
+      "type": "object",
+      "required": ["target", "keyboard", "focus", "color_not_only_signal"],
+      "properties": {
+        "target": {"const": "WCAG 2.2 AA"},
+        "keyboard": {"type": "boolean"},
+        "focus": {"type": "boolean"},
+        "color_not_only_signal": {"type": "boolean"}
+      },
+      "additionalProperties": true
+    },
+    "brownfield_notes": {"type": "array", "items": {"type": "string"}}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"identity": {"properties": {"logo_required": {"const": true}}}}},
+      "then": {"properties": {"identity": {"required": ["logo_path"], "properties": {"logo_path": {"type": "string", "minLength": 1}}}}}
+    }
+  ],
+  "additionalProperties": false
+}

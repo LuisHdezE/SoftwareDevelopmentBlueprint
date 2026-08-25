@@ -1,43 +1,78 @@
-blueprint_version: 0.1.0
-updated_at: 2026-08-24T00:00:00Z
+blueprint_version: 0.4.0-dev
+updated_at: "2026-08-25T00:00:00Z"
 
 phases:
-  brownfield_inspection:
-    status: IN_PROGRESS
-    progress: 25
-  as_is:
-    status: NOT_STARTED
-    progress: 0
   api_gate:
-    status: BLOCKED
-    progress: 0
+    status: PASS
+    progress: 100
   interface_inventory:
+    status: COMPLETE
+    progress: 100
+  design_system:
+    status: COMPLETE
+    progress: 100
+  mockups:
+    status: IN_PROGRESS
+    progress: 40
+  visual_review_gate:
+    status: IN_PROGRESS
+    progress: 40
+  client_architecture:
     status: BLOCKED
     progress: 0
 
 checks:
-  api.openapi:
-    status: PENDING
-    verification: file
-    evidence: []
-  api.postman_collection:
-    status: PENDING
-    verification: file
-    evidence: []
-  api.qa_positive:
-    status: PENDING
+  ui.web_inventory:
+    status: PASS
     verification: evidence
-    evidence: []
-  api.qa_negative:
+    evidence:
+      - type: file
+        value: .blueprint/ui/interface-inventory.json
+  design.system:
+    status: PASS
+    verification: evidence
+    evidence:
+      - type: design_system
+        value: .blueprint/ui/design-system.json
+  mockups.assets_versioned:
     status: PENDING
     verification: evidence
     evidence: []
 
 gates:
   api_gate:
+    status: PASS
+    evaluated_at: "2026-08-25T00:00:00Z"
+  interface_inventory_ready:
+    status: PASS
+    evaluated_at: "2026-08-25T00:00:00Z"
+  design_system_ready:
+    status: PASS
+    evaluated_at: "2026-08-25T00:00:00Z"
+
+interface_slices:
+  - id: operational-core
+    inventory_ids: [WEB-001, WEB-004]
+    platforms: [web]
+    status: IN_PROGRESS
+    mockup_batches: [BATCH-01]
+    approved_references: []
+
+scoped_gates:
+  - gate: visual_review_pass
+    scope: interface_slice
+    scope_id: operational-core
     status: PENDING
     evaluated_at: null
-    note: Awaiting API contract and QA evidence.
-  release_gate:
-    status: PENDING
+  - gate: client_architecture_ready
+    scope: interface_slice_platform
+    scope_id: operational-core
+    platform: web
+    status: BLOCKED
     evaluated_at: null
+
+artifacts:
+  - id: EVD-MANIFEST-001
+    type: mockup_manifest
+    value: .blueprint/mockups/batch-01/manifest.json
+    description: Operational Core mockup manifest.

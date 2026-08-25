@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eliasworks.dev/blueprint/interface-inventory.schema.json",
+  "title": "Blueprint Interface Inventory",
+  "type": "object",
+  "required": ["schema_version", "project", "items"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "project": {"type": "string", "minLength": 1},
+    "mode": {"enum": ["greenfield", "brownfield"]},
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "platform", "module", "name", "purpose", "roles", "data", "actions", "states", "navigation"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^(WEB|APP)-[0-9]{3}$"},
+          "platform": {"enum": ["web", "android"]},
+          "module": {"type": "string", "minLength": 1},
+          "name": {"type": "string", "minLength": 1},
+          "purpose": {"type": "string", "minLength": 1},
+          "source_classification": {"enum": ["OBSERVED", "INFERRED", "PROPOSED"]},
+          "implementation_status": {"enum": ["EXISTING", "PARTIAL", "MISSING", "PROPOSED", "N/A"]},
+          "roles": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+          "permissions": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "source"],
+              "properties": {
+                "name": {"type": "string", "minLength": 1},
+                "source": {"enum": ["api", "local", "derived", "static", "unknown"]},
+                "api_ids": {"type": "array", "items": {"type": "string", "pattern": "^API-[A-Z0-9]+-[0-9]{3}$"}, "uniqueItems": true},
+                "note": {"type": "string"}
+              },
+              "additionalProperties": false
+            }
+          },
+          "actions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "kind"],
+              "properties": {
+                "name": {"type": "string", "minLength": 1},
+                "kind": {"enum": ["navigate", "read", "create", "update", "delete", "transition", "download", "print", "local", "proposed"]},
+                "api_ids": {"type": "array", "items": {"type": "string", "pattern": "^API-[A-Z0-9]+-[0-9]{3}$"}, "uniqueItems": true},
+                "permission": {"type": ["string", "null"]},
+                "source_classification": {"enum": ["OBSERVED", "INFERRED", "PROPOSED"]},
+                "note": {"type": "string"}
+              },
+              "additionalProperties": false
+            }
+          },
+          "states": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"enum": ["default", "loading", "empty", "filtered_empty", "success", "error", "offline", "401", "403", "404", "409", "422", "429"]}
+          },
+          "navigation": {
+            "type": "object",
+            "properties": {
+              "route": {"type": ["string", "null"]},
+              "entry_points": {"type": "array", "items": {"type": "string"}},
+              "destinations": {"type": "array", "items": {"type": "string", "pattern": "^(WEB|APP)-[0-9]{3}$"}}
+            },
+            "additionalProperties": false
+          },
+          "api_ids": {"type": "array", "items": {"type": "string", "pattern": "^API-[A-Z0-9]+-[0-9]{3}$"}, "uniqueItems": true},
+          "responsive": {"type": "string"},
+          "notes": {"type": "array", "items": {"type": "string"}}
+        },
+        "allOf": [{"if": {"properties": {"source_classification": {"const": "PROPOSED"}}, "required": ["source_classification"]}, "then": {"properties": {"implementation_status": {"enum": ["PROPOSED", "MISSING"]}}}}],
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

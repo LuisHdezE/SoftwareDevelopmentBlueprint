@@ -1,0 +1,32 @@
+{
+  "schema_version": "0.4.0-dev",
+  "identity": {
+    "product_name": "Example Product",
+    "direction": "Calm operational clarity with restrained healthcare-adjacent visual language.",
+    "logo_required": false,
+    "logo_path": null
+  },
+  "tokens_path": ".blueprint/ui/design-tokens.json",
+  "components": [
+    {"name": "App shell", "category": "navigation", "states": ["default", "collapsed"]},
+    {"name": "Status chip", "category": "feedback", "states": ["info", "success", "warning", "danger", "neutral"]},
+    {"name": "Data table", "category": "data_display", "states": ["loading", "empty", "error"]}
+  ],
+  "responsive": {
+    "mobile": "Drawer navigation, one-column content, no horizontal page overflow.",
+    "tablet": "Compact navigation and reflowed grids.",
+    "desktop": "Persistent navigation and full operational density."
+  },
+  "semantic_states": {
+    "loading": "Contextual skeleton or spinner without replacing the shell.",
+    "empty": "Explain true empty versus filtered empty.",
+    "error": "Problem-oriented message with retry when appropriate.",
+    "offline": "Persistent connectivity feedback and safe retry.",
+    "forbidden": "Permission-aware 403 state.",
+    "validation": "Inline field feedback plus summary when useful.",
+    "conflict": "Explain 409 conflict without pretending the mutation succeeded.",
+    "rate_limit": "Explain 429 and retry timing when available."
+  },
+  "accessibility": {"target": "WCAG 2.2 AA", "keyboard": true, "focus": true, "color_not_only_signal": true},
+  "brownfield_notes": ["Preserve useful existing visual identity unless a documented TO-BE decision changes it."]
+}
