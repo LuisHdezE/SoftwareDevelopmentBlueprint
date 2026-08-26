@@ -1,4 +1,4 @@
-version: 0.4.0
+version: 0.5.0-dev
 gates:
   - id: brownfield_baseline
     name: Brownfield Baseline Gate
@@ -115,10 +115,13 @@ gates:
       - design_system
       - mockup_planning
       - mockups
-      - visual_review_gate
+      - mockup_review
       - client_architecture
+      - functional_interface_slice
       - web_implementation
       - android_implementation
+      - visual_functional_review
+      - integration_qa
     require_all:
       - api.endpoints_implemented
       - api.auth_authorization
@@ -136,48 +139,75 @@ gates:
       - api.audit_qa
     result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
     rule: >-
-      No se inicia el pipeline visual ni la implementación de clientes web/Android
-      mientras este gate no esté en PASS.
+      No client delivery work begins until this gate is PASS. The API remains the
+      authoritative security and business boundary for every downstream interface slice.
 
   - id: interface_inventory_ready
     name: Interface Inventory Ready Gate
     phase: interface_inventory
     evaluation_scope: project
-    blocks: [visual_identity, design_system, mockup_planning, mockups, visual_review_gate, client_architecture, web_implementation, android_implementation]
+    blocks:
+      - visual_identity
+      - design_system
+      - mockup_planning
+      - mockups
+      - mockup_review
+      - client_architecture
+      - functional_interface_slice
+      - web_implementation
+      - android_implementation
+      - visual_functional_review
+      - integration_qa
     require_all:
+      - ui.inventory_scope_complete
       - ui.inventory_traceability
+      - ui.inventory_requirement_links
+      - ui.inventory_permission_links
+      - ui.inventory_operation_links
+      - ui.inventory_dependencies
+      - ui.inventory_slice_backlog
     require_if_applicable:
       - ui.web_inventory
       - ui.android_inventory
       - ui.brownfield_observed_proposed_separation
     result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
     rule: >-
-      Every interface entering design must have a stable inventory identity and
-      explicit purpose, access, data, actions, states and API responsibilities when applicable.
+      The complete committed interface scope must exist as a stable executable backlog
+      before client architecture or functional implementation starts. Local/static
+      behavior may explicitly declare no API operation; missing authoritative behavior
+      must not be invented merely to complete the inventory.
 
   - id: design_system_ready
     name: Design System Ready Gate
     phase: design_system
     evaluation_scope: project
-    blocks: [mockup_planning, mockups, visual_review_gate, client_architecture, web_implementation, android_implementation]
+    blocks:
+      - mockup_planning
+      - mockups
+      - mockup_review
+      - client_architecture
+      - functional_interface_slice
+      - web_implementation
+      - android_implementation
+      - visual_functional_review
+      - integration_qa
     require_all:
-      - design.identity
       - design.system
       - design.tokens
       - design.accessibility
       - design.responsive
       - design.semantic_states
-    require_if_applicable: [design.logo]
+    require_if_applicable: [design.identity, design.logo]
     result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
     rule: >-
-      Mockups do not begin until the project has an evidence-backed visual identity
-      and reusable design system. A custom logo is not mandatory when it is not a real project need.
+      Functional clients and optional visual prototypes share the same evidence-backed
+      Design System. Visual Identity is conditional and a custom logo is never fabricated
+      solely to satisfy this gate.
 
-  - id: visual_review_pass
-    name: Visual Review Pass Gate
-    phase: visual_review_gate
+  - id: mockup_review_pass
+    name: Mockup / Prototype Review Pass
+    phase: mockup_review
     evaluation_scope: interface_slice
-    blocks: [client_architecture, web_implementation, android_implementation]
     require_all:
       - mockups.inventory_preexists
       - mockups.plan
@@ -194,15 +224,16 @@ gates:
     require_if_applicable: [mockups.reference_inputs]
     result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
     rule: >-
-      This gate is evaluated per interface slice. GENERATED is not REVIEWED and
-      REVIEWED is not APPROVED. Only approved inventory views in the evaluated slice
-      may progress to client architecture and implementation.
+      Conditional gate used only when mockups/prototypes are intentionally produced.
+      GENERATED is not REVIEWED and REVIEWED is not APPROVED. Blueprint core does not
+      universally require this gate before Client Architecture. A consumer may declare
+      it mandatory for a specific slice when prior visual approval is a real requirement.
 
   - id: client_architecture_ready
     name: Client Architecture Ready Gate
     phase: client_architecture
     evaluation_scope: interface_slice_platform
-    blocks: [web_implementation, android_implementation]
+    blocks: [functional_interface_slice, web_implementation, android_implementation]
     require_all:
       - client.architecture_contract
       - client.visual_contract_binding
@@ -222,18 +253,88 @@ gates:
     require_if_applicable: [client.brownfield_coexistence]
     result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
     rule: >-
-      Evaluate this gate independently for the exact approved interface slice and
-      target platform. The architecture artifact must validate against the canonical
-      client architecture schema. A PASS for one slice/platform cannot authorize
-      another. API authorization remains authoritative, approved visual references
-      constrain implementation, and Brownfield clients coexist until cutover is approved.
+      Evaluate independently for the exact interface slice + platform. Design System,
+      tokens and authoritative API bindings are mandatory. Static approved visual
+      references are conditional inputs, not a universal prerequisite. V5-3 will align
+      the client architecture schema/template to this dependency rule. API authorization
+      remains authoritative and Brownfield clients coexist until cutover is approved.
+
+  - id: functional_slice_ready
+    name: Functional Interface Slice Ready
+    phase: functional_interface_slice
+    evaluation_scope: interface_slice_platform
+    blocks: [visual_functional_review, integration_qa]
+    require_all:
+      - functional.inventory_binding
+      - functional.api_dependencies_resolved
+      - functional.real_api_integration
+      - functional.no_hardcoded_business_data
+      - functional.no_invented_capabilities
+      - functional.auth_rbac_runtime
+      - functional.forms_error_states
+      - functional.observability_runtime
+      - functional.responsive_runtime
+      - functional.accessibility_runtime
+      - functional.tests
+      - functional.traceability
+    require_if_applicable: [functional.idempotency_runtime]
+    result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
+    rule: >-
+      PASS authorizes lifecycle state FUNCTIONAL for the exact slice + platform.
+      Authoritative business data and mutations must use the real approved API/data
+      source. An unresolved server-contract gap produces BLOCKED_BY_API instead of
+      hardcoded business truth or invented client behavior.
+
+  - id: visual_functional_review_pass
+    name: Visual & Functional Review Pass
+    phase: visual_functional_review
+    evaluation_scope: interface_slice_platform
+    blocks: [integration_qa]
+    require_all:
+      - review.interface_fidelity
+      - review.design_system_fidelity
+      - review.api_permission_fidelity
+      - review.business_data_fidelity
+      - review.interaction_states
+      - review.responsive
+      - review.accessibility
+      - review.human_complete
+    require_if_applicable: [review.reference_comparison]
+    result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
+    rule: >-
+      Review the actual functional client that will ship, not only static images.
+      Approved mockups/prototypes are comparison inputs when they exist. Human review
+      is explicit and cannot be inferred from implementation or CI success.
+
+  - id: integration_qa_pass
+    name: Integration QA Pass
+    phase: integration_qa
+    evaluation_scope: interface_slice_platform
+    require_all:
+      - qa.functional
+      - qa.real_api_transport
+      - qa.integration
+      - qa.security
+      - qa.responsive
+      - qa.accessibility
+      - qa.e2e
+    require_if_applicable: [qa.idempotency, qa.offline]
+    result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
+    rule: >-
+      PASS applies only to the evaluated slice + platform. Release readiness requires
+      aggregation of every committed slice required by the release; one slice cannot
+      unlock the project Release Gate by itself.
 
   - id: release_gate
     name: Release Gate
     phase: release_gate
     require_all:
-      - qa.integration
-      - qa.security
+      - release.functional_slices_accepted
+      - release.security_accepted
       - release.documentation
     require_if_applicable: [release.backup_restore]
     result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
+    rule: >-
+      Release only after all committed Functional Interface Slices required by the
+      release have passed their scoped review/integration obligations and explicit
+      acceptance is evidenced.
