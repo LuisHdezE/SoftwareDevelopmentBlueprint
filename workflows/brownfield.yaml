@@ -1,4 +1,4 @@
-version: 0.4.0
+version: 0.5.0-dev
 mode: brownfield
 entry_condition: existing_solution
 sequence:
@@ -15,17 +15,14 @@ sequence:
   - api_qa
   - api_gate
   - interface_inventory
-  - visual_identity
   - design_system
-  - mockup_planning
-  - mockups
-  - visual_review_gate
   - client_architecture
-  - web_implementation
-  - android_implementation
+  - functional_interface_slice
+  - visual_functional_review
   - integration_qa
   - release_gate
   - operations
+
 gates:
   after_target_definition: brownfield_baseline
   after_requirements_domain: requirements_ready
@@ -35,29 +32,85 @@ gates:
   after_openapi_validation: openapi_valid
   after_postman_contract: postman_ready
   after_api_qa: api_qa_pass
-  before_experience_pipeline: api_gate
+  before_client_delivery: api_gate
   after_interface_inventory: interface_inventory_ready
   after_design_system: design_system_ready
-  per_interface_slice_after_visual_review: visual_review_pass
-  per_interface_slice_platform_before_implementation: client_architecture_ready
+  per_slice_platform_before_implementation: client_architecture_ready
+  per_slice_platform_after_functional_dod: functional_slice_ready
+  per_slice_platform_after_visual_functional_review: visual_functional_review_pass
+  per_slice_platform_after_integration_qa: integration_qa_pass
   before_release: release_gate
-interface_slice_pipeline:
-  scope_key: interface_slice
+
+functional_interface_slice_pipeline:
+  scope_key: interface_slice_platform
   sequence:
-    - mockup_planning
-    - mockups
-    - visual_review_gate
     - client_architecture
     - client_implementation
+    - functional_slice_gate
+    - visual_functional_review
+    - integration_qa
   client_implementation:
     web: web_implementation
     android: android_implementation
+  lifecycle:
+    - INVENTORIED
+    - READY
+    - IN_PROGRESS
+    - FUNCTIONAL
+    - VISUAL_FUNCTIONAL_REVIEW
+    - INTEGRATION_QA
+    - ACCEPTED
+  blocker_state: BLOCKED_BY_API
   rules:
     - slice_must_reference_inventory_ids
-    - visual_review_pass_is_scoped_to_slice
-    - client_architecture_ready_is_scoped_to_slice_and_platform
-    - approved_slice_may_progress_without_waiting_for_all_product_views
-    - unapproved_views_must_not_enter_client_implementation
+    - slice_platform_must_have_client_architecture_ready
+    - functional_requires_real_authoritative_api_when_business_data_or_actions_apply
+    - hardcoded_authoritative_business_data_cannot_be_functional
+    - unresolved_authoritative_api_gap_sets_blocked_by_api
+    - blocked_by_api_requires_separate_api_contract_resolution_before_resume
+    - functional_dod_is_scoped_to_slice_and_platform
+    - visual_functional_review_is_scoped_to_slice_and_platform
+    - integration_qa_is_scoped_to_slice_and_platform
+    - accepted_status_requires_explicit_human_acceptance
+    - one_platform_result_does_not_authorize_another
+    - brownfield_existing_client_coexists_until_approved_cutover
+    - preserve_unrelated_working_behavior
+
+conditional_capabilities:
+  visual_identity:
+    applicability: CONDITIONAL
+    requires_gate: interface_inventory_ready
+    before: design_system
+    use_when:
+      - existing_identity_must_be_preserved_normalized_or_intentionally_changed
+      - product_identity_gap_is_part_of_the_approved_target
+    rules:
+      - observed_identity_is_documented_before_change
+      - do_not_rebrand_by_default
+      - design_system_may_be_defined_without_custom_logo
+
+  mockups_prototypes:
+    applicability: CONDITIONAL
+    requires_gate: design_system_ready
+    sequence:
+      - mockup_planning
+      - mockups
+      - mockup_review
+    exit_gate: mockup_review_pass
+    default_blocks_functional_delivery: false
+    use_when:
+      - visual_or_ux_risk_is_material
+      - prior_human_visual_approval_is_required
+      - prototype_reduces_migration_or_cutover_risk
+      - versioned_visual_reference_will_help_future_agents
+    rules:
+      - mockups_must_reference_inventory_ids
+      - max_10_mockups_per_generation
+      - generated_visual_is_not_reviewed_or_approved
+      - approved_visual_assets_must_be_versioned
+      - consumer_may_require_mockup_review_pass_for_a_specific_slice
+      - mockups_never_override_observed_behavior_or_api_contract
+
 rules:
   - describe_existing_state_before_proposing_changes
   - distinguish_observed_inferred_and_proposed_items
@@ -69,18 +122,25 @@ rules:
   - requirements_ready_must_pass_before_api_design_or_implementation
   - architecture_ready_must_pass_before_api_contract_design
   - api_contract_ready_must_pass_before_api_implementation
-  - api_gate_must_pass_before_experience_pipeline
-  - interface_inventory_ready_must_pass_before_visual_identity_or_design_system
-  - design_system_ready_must_pass_before_mockup_planning
-  - mockups_require_view_inventory
-  - max_10_mockups_per_generation
-  - generated_visual_is_not_approved_visual
-  - approved_visual_assets_must_be_versioned_and_reusable_by_future_ai
-  - ui_must_not_invent_api_permissions_states_or_mutations
-  - api_remains_authorization_boundary
-  - visual_review_pass_must_apply_to_each_implemented_interface_slice
-  - client_architecture_ready_must_apply_to_each_target_platform_slice
+  - api_gate_must_pass_before_client_delivery
+  - interface_inventory_ready_must_pass_before_design_system_or_client_architecture
+  - interface_inventory_is_complete_committed_scope_backlog
+  - design_system_ready_must_pass_before_client_architecture_or_functional_implementation
+  - client_architecture_ready_must_apply_to_each_target_slice_and_platform
+  - functional_interface_slice_is_canonical_client_execution_unit
+  - ui_must_not_invent_api_permissions_states_mutations_or_business_rules
+  - api_remains_authorization_and_business_boundary
+  - hardcoded_authoritative_business_data_disqualifies_functional_status
+  - blocked_by_api_stops_affected_client_boundary_until_api_contract_is_resolved
+  - visual_functional_review_occurs_on_real_functional_client
+  - static_mockups_are_conditional_not_universal
+  - generated_is_not_reviewed_and_reviewed_is_not_approved
+  - preserve_traceability_interface_to_requirements_permissions_operationids_and_tests
+  - integration_qa_pass_is_scoped_and_release_gate_aggregates_required_slices
   - brownfield_client_coexistence_must_be_explicit_before_replacement
+  - brownfield_cutover_requires_approved_slice_and_release_boundary
+  - no_gate_advances_without_required_human_acceptance
+
 pilot:
   repository: LuisHdezE/CareShift_Manager
   role: reference_pilot

@@ -1,4 +1,4 @@
-version: 0.4.0
+version: 0.5.0-dev
 phases:
   - id: discovery
     name: Discovery
@@ -64,74 +64,105 @@ phases:
     name: Visual Identity
     applies_to: [greenfield, brownfield]
     order: 140
+    applicability: CONDITIONAL
     requires_gates: [interface_inventory_ready]
+    rule: >-
+      Use when brand/identity decisions are a real product need or when Brownfield
+      identity must be preserved or normalized. It is not a mandatory branding exercise.
 
   - id: design_system
     name: Design System
     applies_to: [greenfield, brownfield]
     order: 150
-    requires_phases: [visual_identity]
     requires_gates: [interface_inventory_ready]
     exit_gate: design_system_ready
 
   - id: mockup_planning
-    name: Mockup Planning
+    name: Mockup / Prototype Planning
     applies_to: [greenfield, brownfield]
-    order: 160
+    order: 155
+    applicability: CONDITIONAL
     execution_scope: interface_slice
     requires_gates: [design_system_ready]
 
   - id: mockups
-    name: Mockup Generation
+    name: Mockup / Prototype Generation
     applies_to: [greenfield, brownfield]
-    order: 170
+    order: 156
+    applicability: CONDITIONAL
     execution_scope: interface_slice
     requires_phases: [mockup_planning]
     max_images_per_batch: 10
 
-  - id: visual_review_gate
-    name: Visual Review Gate
+  - id: mockup_review
+    name: Mockup / Prototype Review
     applies_to: [greenfield, brownfield]
-    order: 180
+    order: 157
+    applicability: CONDITIONAL
     execution_scope: interface_slice
     requires_phases: [mockups]
-    exit_gate: visual_review_pass
+    exit_gate: mockup_review_pass
 
   - id: client_architecture
     name: Client Architecture
     applies_to: [greenfield, brownfield]
-    order: 190
+    order: 160
     execution_scope: interface_slice_platform
-    requires_gates: [visual_review_pass]
+    requires_gates: [interface_inventory_ready, design_system_ready]
     exit_gate: client_architecture_ready
 
-  - id: web_implementation
-    name: React Web Implementation
+  - id: functional_interface_slice
+    name: Functional Interface Slice
     applies_to: [greenfield, brownfield]
-    order: 200
-    execution_scope: interface_slice
+    order: 170
+    execution_scope: interface_slice_platform
+    requires_gates: [client_architecture_ready]
+    exit_gate: functional_slice_ready
+    rule: >-
+      Canonical client execution unit. Implementation is performed through the
+      applicable web or Android profile and can become FUNCTIONAL only after the
+      functional Definition of Done is evidenced.
+
+  - id: web_implementation
+    name: React Web Implementation Profile
+    applies_to: [greenfield, brownfield]
+    order: 171
+    execution_scope: interface_slice_platform
+    parent_phase: functional_interface_slice
     conditional_capability: web
     requires_gates: [client_architecture_ready]
 
   - id: android_implementation
-    name: Kotlin Android Implementation
+    name: Kotlin Android Implementation Profile
     applies_to: [greenfield, brownfield]
-    order: 210
-    execution_scope: interface_slice
+    order: 172
+    execution_scope: interface_slice_platform
+    parent_phase: functional_interface_slice
     conditional_capability: android
     requires_gates: [client_architecture_ready]
+
+  - id: visual_functional_review
+    name: Visual & Functional Review
+    applies_to: [greenfield, brownfield]
+    order: 180
+    execution_scope: interface_slice_platform
+    requires_gates: [functional_slice_ready]
+    exit_gate: visual_functional_review_pass
 
   - id: integration_qa
     name: Integration & System QA
     applies_to: [greenfield, brownfield]
-    order: 220
+    order: 190
+    execution_scope: interface_slice_platform
+    requires_gates: [visual_functional_review_pass]
+    exit_gate: integration_qa_pass
 
   - id: release_gate
     name: Release Gate
     applies_to: [greenfield, brownfield]
-    order: 230
+    order: 200
 
   - id: operations
     name: Operations & Maintenance
     applies_to: [greenfield, brownfield]
-    order: 240
+    order: 210

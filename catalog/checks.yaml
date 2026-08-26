@@ -1,4 +1,4 @@
-version: 0.4.0
+version: 0.5.0-dev
 checks:
   - {id: discovery.product_vision, phase: discovery, type: REQUIRED, verification: manual}
   - {id: discovery.scope_mvp, phase: discovery, type: REQUIRED, verification: manual}
@@ -58,10 +58,16 @@ checks:
 
   - {id: ui.web_inventory, phase: interface_inventory, type: CONDITIONAL, capability: web, verification: evidence}
   - {id: ui.android_inventory, phase: interface_inventory, type: CONDITIONAL, capability: android, verification: evidence}
+  - {id: ui.inventory_scope_complete, phase: interface_inventory, type: REQUIRED, verification: evidence}
   - {id: ui.inventory_traceability, phase: interface_inventory, type: REQUIRED, verification: evidence}
+  - {id: ui.inventory_requirement_links, phase: interface_inventory, type: REQUIRED, verification: evidence}
+  - {id: ui.inventory_permission_links, phase: interface_inventory, type: REQUIRED, verification: evidence}
+  - {id: ui.inventory_operation_links, phase: interface_inventory, type: REQUIRED, verification: evidence}
+  - {id: ui.inventory_dependencies, phase: interface_inventory, type: REQUIRED, verification: evidence}
+  - {id: ui.inventory_slice_backlog, phase: interface_inventory, type: REQUIRED, verification: evidence}
   - {id: ui.brownfield_observed_proposed_separation, phase: interface_inventory, type: BROWNFIELD, verification: evidence}
 
-  - {id: design.identity, phase: visual_identity, type: REQUIRED, verification: evidence}
+  - {id: design.identity, phase: visual_identity, type: CONDITIONAL, verification: evidence}
   - {id: design.logo, phase: visual_identity, type: CONDITIONAL, verification: evidence}
 
   - {id: design.system, phase: design_system, type: REQUIRED, verification: evidence}
@@ -80,14 +86,14 @@ checks:
   - {id: mockups.assets_versioned, phase: mockups, type: REQUIRED, verification: file}
   - {id: mockups.asset_mapping, phase: mockups, type: REQUIRED, verification: evidence}
 
-  - {id: mockups.review_complete, phase: visual_review_gate, type: REQUIRED, verification: evidence}
-  - {id: mockups.contract_review, phase: visual_review_gate, type: REQUIRED, verification: evidence}
-  - {id: mockups.accessibility_review, phase: visual_review_gate, type: REQUIRED, verification: evidence}
-  - {id: mockups.approved_references, phase: visual_review_gate, type: REQUIRED, verification: evidence}
-  - {id: mockups.no_implicit_approval, phase: visual_review_gate, type: REQUIRED, verification: policy, rule: generated_is_not_reviewed_or_approved}
+  - {id: mockups.review_complete, phase: mockup_review, type: REQUIRED, verification: evidence}
+  - {id: mockups.contract_review, phase: mockup_review, type: REQUIRED, verification: evidence}
+  - {id: mockups.accessibility_review, phase: mockup_review, type: REQUIRED, verification: evidence}
+  - {id: mockups.approved_references, phase: mockup_review, type: REQUIRED, verification: evidence}
+  - {id: mockups.no_implicit_approval, phase: mockup_review, type: REQUIRED, verification: policy, rule: generated_is_not_reviewed_or_approved}
 
   - {id: client.architecture_contract, phase: client_architecture, type: REQUIRED, verification: file}
-  - {id: client.visual_contract_binding, phase: client_architecture, type: REQUIRED, verification: evidence}
+  - {id: client.visual_contract_binding, phase: client_architecture, type: REQUIRED, verification: evidence, rule: design_system_required_visual_references_conditional}
   - {id: client.auth_lifecycle, phase: client_architecture, type: REQUIRED, verification: evidence}
   - {id: client.api_client_strategy, phase: client_architecture, type: REQUIRED, verification: evidence}
   - {id: client.api_contract_binding, phase: client_architecture, type: REQUIRED, verification: evidence}
@@ -103,8 +109,42 @@ checks:
   - {id: client.platform_contract, phase: client_architecture, type: REQUIRED, verification: evidence}
   - {id: client.brownfield_coexistence, phase: client_architecture, type: BROWNFIELD, verification: evidence}
 
+  - {id: functional.inventory_binding, phase: functional_interface_slice, type: REQUIRED, verification: evidence}
+  - {id: functional.api_dependencies_resolved, phase: functional_interface_slice, type: REQUIRED, verification: evidence}
+  - {id: functional.real_api_integration, phase: functional_interface_slice, type: REQUIRED, verification: evidence}
+  - {id: functional.no_hardcoded_business_data, phase: functional_interface_slice, type: REQUIRED, verification: evidence}
+  - {id: functional.no_invented_capabilities, phase: functional_interface_slice, type: REQUIRED, verification: policy}
+  - {id: functional.auth_rbac_runtime, phase: functional_interface_slice, type: REQUIRED, verification: evidence}
+  - {id: functional.forms_error_states, phase: functional_interface_slice, type: REQUIRED, verification: evidence}
+  - {id: functional.idempotency_runtime, phase: functional_interface_slice, type: CONDITIONAL, verification: evidence}
+  - {id: functional.observability_runtime, phase: functional_interface_slice, type: REQUIRED, verification: evidence}
+  - {id: functional.responsive_runtime, phase: functional_interface_slice, type: REQUIRED, verification: evidence}
+  - {id: functional.accessibility_runtime, phase: functional_interface_slice, type: REQUIRED, verification: evidence}
+  - {id: functional.tests, phase: functional_interface_slice, type: REQUIRED, verification: evidence}
+  - {id: functional.traceability, phase: functional_interface_slice, type: REQUIRED, verification: evidence}
+
+  - {id: review.interface_fidelity, phase: visual_functional_review, type: REQUIRED, verification: evidence}
+  - {id: review.design_system_fidelity, phase: visual_functional_review, type: REQUIRED, verification: evidence}
+  - {id: review.api_permission_fidelity, phase: visual_functional_review, type: REQUIRED, verification: evidence}
+  - {id: review.business_data_fidelity, phase: visual_functional_review, type: REQUIRED, verification: evidence}
+  - {id: review.interaction_states, phase: visual_functional_review, type: REQUIRED, verification: evidence}
+  - {id: review.responsive, phase: visual_functional_review, type: REQUIRED, verification: evidence}
+  - {id: review.accessibility, phase: visual_functional_review, type: REQUIRED, verification: evidence}
+  - {id: review.reference_comparison, phase: visual_functional_review, type: CONDITIONAL, verification: evidence}
+  - {id: review.human_complete, phase: visual_functional_review, type: REQUIRED, verification: manual}
+
+  - {id: qa.functional, phase: integration_qa, type: REQUIRED, verification: evidence}
+  - {id: qa.real_api_transport, phase: integration_qa, type: REQUIRED, verification: evidence}
   - {id: qa.integration, phase: integration_qa, type: REQUIRED, verification: evidence}
   - {id: qa.security, phase: integration_qa, type: REQUIRED, verification: evidence}
+  - {id: qa.responsive, phase: integration_qa, type: REQUIRED, verification: evidence}
+  - {id: qa.accessibility, phase: integration_qa, type: REQUIRED, verification: evidence}
+  - {id: qa.e2e, phase: integration_qa, type: REQUIRED, verification: evidence}
+  - {id: qa.idempotency, phase: integration_qa, type: CONDITIONAL, verification: evidence}
+  - {id: qa.offline, phase: integration_qa, type: CONDITIONAL, verification: evidence}
+
+  - {id: release.functional_slices_accepted, phase: release_gate, type: REQUIRED, verification: evidence}
+  - {id: release.security_accepted, phase: release_gate, type: REQUIRED, verification: evidence}
   - {id: release.documentation, phase: release_gate, type: REQUIRED, verification: evidence}
   - {id: release.backup_restore, phase: release_gate, type: CONDITIONAL, verification: evidence}
   - {id: operations.observability, phase: operations, type: REQUIRED, verification: evidence}
