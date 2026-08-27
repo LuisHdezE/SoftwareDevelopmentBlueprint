@@ -24,7 +24,7 @@
     },
     "implementation_revision": {
       "type": "string",
-      "pattern": "^[a-fA-F0-9]{7,40}$"
+      "pattern": "^[a-fA-F0-9]{40}$"
     },
     "approved_architecture_refs": {
       "type": "array",
@@ -155,6 +155,19 @@
             "enum": ["PASS", "FAIL"]
           }
         },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "required_in_ci": {"const": true}
+              },
+              "required": ["required_in_ci"]
+            },
+            "then": {
+              "required": ["command"]
+            }
+          }
+        ],
         "additionalProperties": false
       }
     },
