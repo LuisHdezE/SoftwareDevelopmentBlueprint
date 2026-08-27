@@ -1,4 +1,4 @@
-version: 0.5.0
+version: 0.5.1-dev
 phases:
   - id: discovery
     name: Discovery
@@ -41,6 +41,11 @@ phases:
     name: Architecture, Security & Data
     applies_to: [greenfield, brownfield]
     order: 60
+    rule: >-
+      Architecture decisions must be precise enough to verify in implementation. Define
+      dependency direction, framework/persistence boundaries, presentation responsibilities,
+      module boundaries and port/adapter obligations when applicable. Naming an architecture
+      style without verifiable implementation constraints is insufficient for Architecture Ready.
   - id: api_contract_design
     name: API Scope & Contract Design
     applies_to: [greenfield, brownfield]
@@ -49,6 +54,10 @@ phases:
     name: API Implementation
     applies_to: [greenfield, brownfield]
     order: 80
+    rule: >-
+      Functional correctness is necessary but not sufficient. The implementation revision
+      must conform to the approved architecture constraints and carry an executable CI guard
+      that detects dependency/boundary drift before API Implemented can PASS.
   - id: openapi_validation
     name: OpenAPI Formalization & Validation
     applies_to: [greenfield, brownfield]
