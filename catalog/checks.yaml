@@ -17,6 +17,10 @@ checks:
   - {id: requirements.acceptance_criteria, phase: requirements_domain, type: REQUIRED, verification: evidence}
   - {id: requirements.traceability, phase: requirements_domain, type: REQUIRED, verification: evidence}
 
+  - {id: ui.interface_scope_baseline, phase: interface_scope_baseline, type: REQUIRED, verification: evidence}
+  - {id: ui.interface_scope_traceability, phase: interface_scope_baseline, type: REQUIRED, verification: evidence}
+  - {id: ui.brownfield_observed_interface_scope, phase: interface_scope_baseline, type: BROWNFIELD, verification: evidence}
+
   - {id: architecture.domain_model, phase: architecture_security_data, type: REQUIRED, verification: evidence}
   - {id: architecture.decision_records, phase: architecture_security_data, type: REQUIRED, verification: evidence}
   - {id: architecture.security_model, phase: architecture_security_data, type: REQUIRED, verification: evidence}
@@ -37,6 +41,7 @@ checks:
   - {id: api.audit_event_mapping, phase: api_contract_design, type: REQUIRED, verification: evidence}
   - {id: api.idempotency_matrix, phase: api_contract_design, type: REQUIRED, verification: evidence}
   - {id: api.contract_traceability, phase: api_contract_design, type: REQUIRED, verification: evidence}
+  - {id: api.change_impact_analysis, phase: api_contract_design, type: CONDITIONAL, verification: evidence, rule: required_after_initial_api_gate_when_contract_change_can_affect_existing_consumers}
 
   - {id: api.endpoints_implemented, phase: api_implementation, type: REQUIRED, verification: evidence}
   - {id: api.auth_authorization, phase: api_implementation, type: REQUIRED, verification: evidence}
@@ -55,6 +60,7 @@ checks:
   - {id: api.contract_validation, phase: api_qa, type: REQUIRED, verification: evidence}
   - {id: api.security_qa, phase: api_qa, type: REQUIRED, verification: evidence}
   - {id: api.audit_qa, phase: api_qa, type: REQUIRED, verification: evidence}
+  - {id: api.affected_consumer_revalidation, phase: api_qa, type: CONDITIONAL, verification: evidence, rule: revalidate_impacted_slices_by_operationid_or_escalate_cross_cutting_changes}
 
   - {id: ui.web_inventory, phase: interface_inventory, type: CONDITIONAL, capability: web, verification: evidence}
   - {id: ui.android_inventory, phase: interface_inventory, type: CONDITIONAL, capability: android, verification: evidence}
