@@ -1,0 +1,17 @@
+openapi: 3.0.3
+info:
+  title: Artifact Graph Fixture API
+  version: 2.0.0
+paths:
+  /login:
+    post:
+      operationId: loginUser
+      responses:
+        '200':
+          description: OK
+  /dashboard:
+    get:
+      operationId: getDashboard
+      responses:
+        '200':
+          description: OK
