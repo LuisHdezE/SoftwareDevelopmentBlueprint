@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import pathlib
+import subprocess
 import sys
 from typing import Any
 
@@ -84,25 +85,29 @@ def validate_catalog_references() -> None:
                 )
 
 
-def validate_experience_pair(inventory_path: str, batch_path: str) -> None:
+def validate_mockup_pair(inventory_path: str, batch_path: str) -> None:
     inventory = load(inventory_path)
     batch = load(batch_path)
     inventory_ids = {item["id"] for item in inventory["items"]}
     views = batch["views"]
 
+    if inventory.get("maturity") != "EXECUTABLE_INVENTORY":
+        raise AssertionError("Mockups must bind to the executable interface inventory")
     if len(views) > 10:
-        raise AssertionError(
-            f"{batch_path} exceeds Blueprint batch limit: {len(views)}"
-        )
+        raise AssertionError(f"{batch_path} exceeds Blueprint batch limit: {len(views)}")
 
     assert_unique([v["mockup_id"] for v in views], "mockup IDs")
     assert_unique([v["inventory_id"] for v in views], "batch inventory IDs")
 
+    by_id = {item["id"]: item for item in inventory["items"]}
     for view in views:
         if view["inventory_id"] not in inventory_ids:
             raise AssertionError(
-                f"{view['mockup_id']} references missing inventory ID "
-                f"{view['inventory_id']}"
+                f"{view['mockup_id']} references missing inventory ID {view['inventory_id']}"
+            )
+        if by_id[view["inventory_id"]]["platform"] != view["platform"]:
+            raise AssertionError(
+                f"{view['mockup_id']} platform differs from inventory platform"
             )
 
         asset = view.get("visual_asset_path")
@@ -141,41 +146,54 @@ def validate_experience_pair(inventory_path: str, batch_path: str) -> None:
 
 
 def validate_scoped_gate_examples() -> None:
-    status = load("templates/status.example.yaml")
+    status = load("templates/status.v0.5-dev.example.yaml")
+    slice_keys = {
+        (item["id"], item["platform"])
+        for item in status.get("functional_slices", [])
+    }
     for gate in status.get("scoped_gates", []):
-        if gate["gate"] == "visual_review_pass" and gate["scope"] != "interface_slice":
+        if gate["gate"] == "mockup_review_pass":
+            if gate["scope"] != "interface_slice":
+                raise AssertionError("mockup_review_pass must use interface_slice scope")
+            continue
+        if gate["scope"] != "interface_slice_platform" or "platform" not in gate:
             raise AssertionError(
-                "visual_review_pass must use interface_slice scope"
+                f"{gate['gate']} must use interface_slice_platform with platform"
             )
-        if gate["gate"] == "client_architecture_ready":
-            if gate["scope"] != "interface_slice_platform" or "platform" not in gate:
-                raise AssertionError(
-                    "client_architecture_ready must use interface_slice_platform "
-                    "scope with platform"
-                )
+        if (gate["scope_id"], gate["platform"]) not in slice_keys:
+            raise AssertionError(
+                f"{gate['gate']} references unknown slice/platform"
+            )
+
+
+def run_artifact_graph_validator() -> None:
+    result = subprocess.run(
+        [sys.executable, "scripts/validate-artifact-graph.py"],
+        cwd=ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    )
+    print(result.stdout, end="")
+    if result.returncode != 0:
+        raise AssertionError(
+            f"artifact graph validator failed with exit {result.returncode}"
+        )
 
 
 def main() -> int:
     schema_pairs = [
-        ("schemas/project.schema.json", "templates/project.example.yaml"),
-        ("schemas/status.schema.json", "templates/status.example.yaml"),
-        (
-            "schemas/interface-inventory.schema.json",
-            "templates/interface-inventory.example.json",
-        ),
+        ("schemas/project.schema.json", "templates/project.v0.5-dev.example.yaml"),
+        ("schemas/status.schema.json", "templates/status.v0.5-dev.example.yaml"),
+        ("schemas/interface-inventory.schema.json", "templates/interface-scope-baseline.example.json"),
+        ("schemas/interface-inventory.schema.json", "templates/interface-inventory.example.json"),
+        ("schemas/functional-interface-slice.schema.json", "templates/functional-interface-slice.example.json"),
+        ("schemas/api-impact.schema.json", "templates/api-impact.example.json"),
         ("schemas/design-tokens.schema.json", "templates/design-tokens.example.json"),
         ("schemas/design-system.schema.json", "templates/design-system.example.json"),
         ("schemas/mockup-batch.schema.json", "templates/mockup-batch.example.json"),
         ("schemas/evidence.schema.json", "templates/evidence.example.json"),
         ("schemas/reference-pilots.schema.json", "catalog/reference-pilots.yaml"),
-        (
-            "schemas/interface-inventory.schema.json",
-            "tests/fixtures/experience/interface-inventory.json",
-        ),
-        (
-            "schemas/mockup-batch.schema.json",
-            "tests/fixtures/experience/mockup-batch.json",
-        ),
     ]
 
     for schema, instance in schema_pairs:
@@ -185,16 +203,18 @@ def main() -> int:
     validate_catalog_references()
     print("PASS catalog/workflow references")
 
-    validate_experience_pair(
-        "tests/fixtures/experience/interface-inventory.json",
-        "tests/fixtures/experience/mockup-batch.json",
+    validate_mockup_pair(
+        "templates/interface-inventory.example.json",
+        "templates/mockup-batch.example.json",
     )
-    print("PASS experience fixture: inventory IDs, <=10 views, approved asset exists")
+    print("PASS conditional mockup fixture")
 
     validate_scoped_gate_examples()
-    print("PASS scoped gate semantics")
+    print("PASS v0.5 scoped gate semantics")
 
-    print("Blueprint V4-2 schema/evidence validation: PASS")
+    run_artifact_graph_validator()
+
+    print("Blueprint v0.5 schema/evidence validation: PASS")
     return 0
 
 
