@@ -17,6 +17,7 @@ canonical_references:
   - catalog/gates.yaml
   - schemas/architecture-conformance.schema.json
   - templates/architecture-conformance.example.json
+  - scripts/validate-architecture-conformance.py
   - workflows/greenfield.yaml
   - workflows/brownfield.yaml
 ---
@@ -49,13 +50,14 @@ Use during Architecture / Security / Data to make implementation boundaries expl
 4. Map the implementation to the approved boundaries. Identify where business rules, orchestration, persistence, framework adapters and HTTP/UI concerns actually live.
 5. When the approved model is Clean Architecture or Hexagonal Architecture, verify inward dependency direction. Typical constraints include framework-independent Domain, Application depending inward rather than on concrete Infrastructure, Presentation avoiding direct persistence/business-rule ownership, and Infrastructure implementing ports/adapters. Apply only constraints that are part of the approved project contract.
 6. For other approved architectures, encode equivalent project-specific boundary rules rather than forcing Clean Architecture terminology.
-7. Create or update the architecture conformance artifact using `schemas/architecture-conformance.schema.json`. Pin it to the exact implementation revision being reviewed and reference the approved architecture sources.
-8. Add at least one executable guard that is required in CI. Suitable guards include architecture tests, dependency rules, static analysis or custom scripts. A manual review alone cannot satisfy `architecture.conformance_guard`.
+7. Create or update the architecture conformance artifact using `schemas/architecture-conformance.schema.json`. Pin it to the exact 40-character implementation commit SHA being reviewed and reference repository-owned approved architecture sources.
+8. Add at least one executable guard that is required in CI. Suitable guards include architecture tests, dependency rules, static analysis or custom scripts. Every required-in-CI guard declares both its repository artifact and the command CI executes. A manual review alone cannot satisfy `architecture.conformance_guard`.
 9. Make the guard fail on prohibited dependencies/boundary violations. Include negative cases where practical so the guard is proven capable of detecting drift, not merely capable of passing.
-10. Run normal backend tests as a separate dimension. Record architecture conformance and functional regression independently: `functional PASS != architecture PASS`.
-11. If conformance work changes the authoritative API contract, stop the architecture-only remediation and route the contract change through the normal API impact/revalidation process.
-12. For Brownfield, evaluate against the approved TO-BE/alignment decision. Do not rewrite working code solely for architectural aesthetics; record accepted legacy exceptions explicitly when the target architecture permits them.
-13. Do not mark the conformance artifact `PASS` while required constraints fail, violations remain open, or no required-in-CI guard passes on the reviewed revision.
+10. Validate a consumer artifact with the canonical validator, resolving architecture/guard paths from the consumer repository root and comparing the artifact against the exact CI revision, for example: `python scripts/validate-architecture-conformance.py .blueprint/architecture/architecture-conformance.json --project-root . --expected-revision <CURRENT_SHA>`.
+11. Run normal backend tests as a separate dimension. Record architecture conformance and functional regression independently: `functional PASS != architecture PASS`.
+12. If conformance work changes the authoritative API contract, stop the architecture-only remediation and route the contract change through the normal API impact/revalidation process.
+13. For Brownfield, evaluate against the approved TO-BE/alignment decision. Do not rewrite working code solely for architectural aesthetics; record accepted legacy exceptions explicitly when the target architecture permits them.
+14. Do not mark the conformance artifact `PASS` while required constraints fail, violations remain open, required architecture/guard references do not resolve, or no required-in-CI guard passes on the reviewed revision.
 
 ## Outputs
 
@@ -70,9 +72,10 @@ Use during Architecture / Security / Data to make implementation boundaries expl
 ## Stop Conditions
 
 - The architecture itself is not approved or is too vague to derive testable constraints.
-- The implementation revision cannot be pinned.
+- The implementation revision cannot be pinned to an exact 40-character commit SHA.
+- Approved architecture references or required guard artifacts do not resolve in the project repository.
 - A required architecture constraint is failing.
-- No architecture guard is actually required in CI.
+- No architecture guard is actually required in CI or its executable command is undefined.
 - The proposed “fix” changes API behavior but no API contract/impact boundary has been opened.
 - Brownfield refactoring is justified only by pattern preference rather than an approved target or concrete risk.
 - Evidence describes a different commit than the code being reviewed.
@@ -87,6 +90,7 @@ Use during Architecture / Security / Data to make implementation boundaries expl
 - Framework, ORM and transport technologies belong only where the approved architecture permits them.
 - Preserve `ALIGN, DO NOT REWRITE` in Brownfield systems.
 - Never change the external contract silently while performing an internal architecture remediation.
+- `implementation_revision` must match the exact revision validated in CI; abbreviated SHAs are not accepted by the 0.5.1 contract.
 
 ## Canonical References
 
@@ -96,9 +100,10 @@ Use during Architecture / Security / Data to make implementation boundaries expl
 - `catalog/gates.yaml`
 - `schemas/architecture-conformance.schema.json`
 - `templates/architecture-conformance.example.json`
+- `scripts/validate-architecture-conformance.py`
 - `workflows/greenfield.yaml`
 - `workflows/brownfield.yaml`
 
 ## Completion Signal
 
-Complete only when approved implementation constraints are explicit, the conformance artifact is pinned to the reviewed code revision, every required constraint passes, unresolved violations are zero, at least one executable architecture guard is required in CI and passes on that revision, and normal functional/API regression remains independently valid.
+Complete only when approved implementation constraints are explicit, the conformance artifact is pinned to the reviewed code revision, every required constraint passes, unresolved violations are zero, repository references and guard artifacts resolve, at least one executable architecture guard with a concrete command is required in CI and passes on that revision, the canonical consumer validator accepts the artifact against the exact expected revision, and normal functional/API regression remains independently valid.
