@@ -12,6 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 VERSION = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
 STABLE_V4 = "0.4.0"
 STABLE_V5 = "0.5.0"
+DEV_V51 = "0.5.1-dev"
 
 V4_COUNTS = {
     "phases": 25,
@@ -24,6 +25,14 @@ V4_COUNTS = {
 V5_COUNTS = {
     "phases": 28,
     "checks": 134,
+    "gates": 18,
+    "materialized_skills": 14,
+    "planned_skills": 25,
+}
+
+V51_DEV_COUNTS = {
+    "phases": 28,
+    "checks": 135,
     "gates": 18,
     "materialized_skills": 14,
     "planned_skills": 25,
@@ -93,6 +102,7 @@ VALIDATORS = [
     "scripts/validate-skills.py",
     "scripts/validate-client-architecture.py",
     "scripts/validate-reference-pilot-compliance.py",
+    "scripts/validate-architecture-conformance.py",
 ]
 
 
@@ -138,6 +148,13 @@ def catalog_counts() -> dict[str, int]:
     }
 
 
+def is_v51_dev() -> bool:
+    return (
+        load_yaml("catalog/checks.yaml").get("version") == DEV_V51
+        or load_yaml("catalog/gates.yaml").get("version") == DEV_V51
+    )
+
+
 def assert_contiguous(sequence: list[str], subsequence: list[str], label: str) -> None:
     for index in range(0, len(sequence) - len(subsequence) + 1):
         if sequence[index:index + len(subsequence)] == subsequence:
@@ -168,7 +185,7 @@ def validate_historical_v4_release_manifest() -> None:
 def validate_reference_pilot_history() -> None:
     catalog = load_yaml("catalog/reference-pilots.yaml")
     if catalog.get("version") != STABLE_V5:
-        fail("reference pilot registry must identify stable Blueprint 0.5.0")
+        fail("reference pilot registry must identify stable Blueprint 0.5.0 during 0.5.1-dev hardening")
     pilot = next((p for p in catalog.get("pilots", []) if p.get("id") == "careshift-manager"), None)
     if not pilot:
         fail("careshift-manager missing from reference pilot registry")
@@ -185,13 +202,13 @@ def validate_reference_pilot_history() -> None:
 def validate_release_manifest() -> None:
     release = load_json("documentation/BLUEPRINT_V0_5_RELEASE.json")
     if release.get("version") != STABLE_V5 or release.get("status") != "stable":
-        fail("v0.5 release manifest must declare stable 0.5.0")
+        fail("v0.5 release manifest must remain stable 0.5.0 during hardening")
     if release.get("previous_stable") != STABLE_V4:
         fail("v0.5 previous stable must be 0.4.0")
     if release.get("tag") != "v0.5.0":
-        fail("v0.5 release tag must be v0.5.0")
+        fail("v0.5 release tag must remain v0.5.0")
     if release.get("counts") != V5_COUNTS:
-        fail(f"v0.5 release counts drifted: {release.get('counts')}")
+        fail(f"historical v0.5 release counts drifted: {release.get('counts')}")
     compatibility = release.get("compatibility", {})
     for key, expected in {
         "consumer_auto_upgrade": False,
@@ -209,25 +226,43 @@ def validate_release_manifest() -> None:
     actual_boundaries = {(item.get("id"), item.get("pull_request")) for item in release.get("delivery_slices", [])}
     if actual_boundaries != expected_boundaries:
         fail(f"v0.5 delivery boundary manifest drifted: {actual_boundaries}")
-    print("PASS stable v0.5 release manifest")
+    print("PASS stable v0.5 release manifest preserved")
 
 
 def validate_version_identity() -> None:
     if VERSION != STABLE_V5:
-        fail(f"stable v0.5 release requires VERSION={STABLE_V5}, got {VERSION}")
-    for path in ACTIVE_VERSIONED_YAML:
-        if load_yaml(path).get("version") != STABLE_V5:
-            fail(f"{path} must declare stable 0.5.0")
+        fail(f"0.5.1-dev semantic hardening preserves VERSION={STABLE_V5} until release closure; got {VERSION}")
+
     project = load_yaml("templates/project.example.yaml")
     status = load_yaml("templates/status.example.yaml")
     if project.get("blueprint", {}).get("version") != STABLE_V5:
-        fail("canonical project example must target 0.5.0")
+        fail("canonical project example must remain on stable 0.5.0 before release closure")
     if status.get("blueprint_version") != STABLE_V5:
-        fail("canonical status example must target 0.5.0")
+        fail("canonical status example must remain on stable 0.5.0 before release closure")
+
     for stale in ("templates/project.v0.5-dev.example.yaml", "templates/status.v0.5-dev.example.yaml"):
         if (ROOT / stale).exists():
-            fail(f"development-only template must not survive stable release: {stale}")
+            fail(f"development-only 0.5 template must not reappear: {stale}")
+
     actual_counts = catalog_counts()
+    if is_v51_dev():
+        checks_version = load_yaml("catalog/checks.yaml").get("version")
+        gates_version = load_yaml("catalog/gates.yaml").get("version")
+        if checks_version != DEV_V51 or gates_version != DEV_V51:
+            fail("0.5.1-dev hardening requires checks and gates catalogs to move together")
+        for path in ACTIVE_VERSIONED_YAML:
+            if path in {"catalog/checks.yaml", "catalog/gates.yaml"}:
+                continue
+            if load_yaml(path).get("version") != STABLE_V5:
+                fail(f"{path} must remain stable 0.5.0 until 0.5.1 release closure")
+        if actual_counts != V51_DEV_COUNTS:
+            fail(f"0.5.1-dev core counts drifted: expected {V51_DEV_COUNTS}, got {actual_counts}")
+        print(f"PASS 0.5.1-dev hardening identity over stable VERSION={VERSION}: {V51_DEV_COUNTS}")
+        return
+
+    for path in ACTIVE_VERSIONED_YAML:
+        if load_yaml(path).get("version") != STABLE_V5:
+            fail(f"{path} must declare stable 0.5.0")
     if actual_counts != V5_COUNTS:
         fail(f"stable v0.5 core counts drifted: expected {V5_COUNTS}, got {actual_counts}")
     print(f"PASS stable v0.5 identity and counts: {V5_COUNTS}")
@@ -238,26 +273,26 @@ def validate_schema_provenance() -> None:
         schema = load_json(path)
         expected_fragment = "/blueprint/0.5.0/"
         if expected_fragment not in schema.get("$id", ""):
-            fail(f"{path} must use a version-pinned 0.5.0 $id")
+            fail(f"{path} must remain version-pinned to stable 0.5.0 before release closure")
     for path in SCHEMA_VERSION_CONST:
         schema = load_json(path)
         value = schema.get("properties", {}).get("schema_version", {}).get("const")
         if value != STABLE_V5:
-            fail(f"{path} schema_version must be const 0.5.0")
+            fail(f"{path} schema_version must remain const 0.5.0")
     project = load_json("schemas/project.schema.json")
     project_version = project["properties"]["blueprint"]["properties"]["version"].get("const")
     if project_version != STABLE_V5:
-        fail("project schema must pin consumer declaration to 0.5.0")
+        fail("project schema must pin consumer declaration to 0.5.0 before release closure")
     status = load_json("schemas/status.schema.json")
     if status["properties"]["blueprint_version"].get("const") != STABLE_V5:
-        fail("status schema must pin blueprint_version to 0.5.0")
+        fail("status schema must pin blueprint_version to 0.5.0 before release closure")
     refs = load_json("schemas/reference-pilots.schema.json")
     if refs["properties"]["version"].get("const") != STABLE_V5:
-        fail("reference pilot schema must pin registry version to 0.5.0")
+        fail("reference pilot schema must pin registry version to 0.5.0 before release closure")
     compliance_text = json.dumps(load_json("schemas/compliance-review.schema.json"))
     if "blueprint_change" not in compliance_text or "v0_4_change" not in compliance_text:
         fail("compliance review schema must support neutral future findings and historical v0.4 findings")
-    print("PASS version-pinned schema provenance and compliance compatibility")
+    print("PASS stable schema provenance preserved during hardening")
 
 
 def validate_catalog_semantics() -> None:
@@ -293,6 +328,17 @@ def validate_catalog_semantics() -> None:
         fail("API Contract Ready must support post-baseline impact analysis")
     if "api.affected_consumer_revalidation" not in set(gate_by_id["api_qa_pass"].get("require_if_applicable", [])):
         fail("API QA must support affected-consumer revalidation")
+
+    if is_v51_dev():
+        conformance = check_by_id.get("api.architecture_implementation_conformance")
+        if not conformance:
+            fail("0.5.1-dev missing api.architecture_implementation_conformance")
+        if conformance.get("phase") != "api_implementation" or conformance.get("type") != "REQUIRED" or conformance.get("verification") != "evidence":
+            fail("architecture implementation conformance check classification drifted")
+        for gate_id in ("api_implemented", "api_gate"):
+            if "api.architecture_implementation_conformance" not in set(gate_by_id[gate_id].get("require_all", [])):
+                fail(f"{gate_id} must require architecture implementation conformance")
+
     functional_required = set(gate_by_id["functional_slice_ready"].get("require_all", []))
     for check in ("functional.real_api_integration", "functional.no_hardcoded_business_data", "functional.no_invented_capabilities", "functional.traceability"):
         if check not in functional_required:
@@ -306,13 +352,13 @@ def validate_catalog_semantics() -> None:
     client_rule = gate_by_id["client_architecture_ready"].get("rule", "")
     if "Platform Client Architecture Baseline" not in client_rule or "slice-specific binding" not in client_rule:
         fail("Client Architecture gate must describe stable composed architecture")
-    print("PASS stable v0.5 catalog semantics")
+    print("PASS catalog semantics including 0.5.1-dev hardening when active")
 
 
 def validate_skill_semantics() -> None:
     skills = load_yaml("catalog/skills.yaml")
     if skills.get("version") != STABLE_V5:
-        fail("skill catalog must declare 0.5.0")
+        fail("skill catalog remains stable 0.5.0 until 0.5.1 release closure")
     registry = skills.get("registry", {})
     if set(skills.get("mandatory_v0_5_materialized", [])) != set(registry):
         fail("mandatory_v0_5_materialized must equal current materialized registry")
@@ -322,7 +368,7 @@ def validate_skill_semantics() -> None:
     for category in ("web", "android"):
         if "dev-functional-interface-slice" not in set(skills.get("categories", {}).get(category, {}).get("skills", [])):
             fail(f"{category} category must include dev-functional-interface-slice")
-    print("PASS stable v0.5 skill catalog semantics")
+    print("PASS stable v0.5 skill catalog semantics preserved")
 
 
 def validate_workflows() -> None:
@@ -362,7 +408,7 @@ def validate_workflows() -> None:
         mockups = workflow.get("conditional_capabilities", {}).get("mockups_prototypes", {})
         if mockups.get("default_blocks_functional_delivery") is not False or mockups.get("exit_gate") != "mockup_review_pass":
             fail(f"{path} conditional mockup policy drifted")
-    print("PASS stable v0.5 Greenfield/Brownfield workflows")
+    print("PASS stable v0.5 Greenfield/Brownfield workflows preserved")
 
 
 def validate_active_documentation() -> None:
@@ -393,7 +439,11 @@ def validate_active_documentation() -> None:
         for token in required_tokens[path]:
             if token not in text:
                 fail(f"{path} missing stable release token: {token}")
-    print("PASS stable v0.5 active documentation identity")
+    if is_v51_dev():
+        hardening = ROOT / "documentation/BLUEPRINT_V0_5_1_ARCHITECTURE_CONFORMANCE_HARDENING.md"
+        if not hardening.exists():
+            fail("0.5.1-dev architecture hardening note missing")
+    print("PASS stable documentation preserved with separate 0.5.1-dev hardening note")
 
 
 def run_validator(path: str) -> None:
@@ -416,7 +466,8 @@ def main() -> int:
     validate_active_documentation()
     for validator in VALIDATORS:
         run_validator(validator)
-    print(f"\nBlueprint stable release validation: PASS (VERSION={VERSION}; counts={catalog_counts()})")
+    state = DEV_V51 if is_v51_dev() else STABLE_V5
+    print(f"\nBlueprint release/development validation: PASS (state={state}; VERSION={VERSION}; counts={catalog_counts()})")
     return 0
 
 
