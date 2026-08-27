@@ -1,4 +1,4 @@
-version: 0.5.0
+version: 0.5.1-dev
 gates:
   - id: brownfield_baseline
     name: Brownfield Baseline Gate
@@ -52,6 +52,7 @@ gates:
       - architecture.domain_model
       - architecture.decision_records
       - architecture.security_model
+      - architecture.implementation_constraints
       - data.architecture
       - data.schema_migrations
       - data.authoritative_database
@@ -62,6 +63,11 @@ gates:
       - api.versioning_policy
     require_if_applicable: [architecture.threat_model]
     result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
+    rule: >-
+      Architecture Ready requires more than naming a style. The approved architecture must
+      state verifiable implementation constraints for dependency direction, framework and
+      persistence boundaries, presentation responsibilities, modules and ports/adapters when
+      applicable so later implementation conformance can be tested instead of inferred.
 
   - id: api_contract_ready
     name: API Contract Ready Gate
@@ -93,7 +99,15 @@ gates:
       - api.auth_authorization
       - api.audit_logging
       - api.backend_tests
+      - architecture.implementation_conformance
+      - architecture.conformance_guard
     result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
+    rule: >-
+      Functional correctness does not prove architecture conformance. PASS requires the
+      reviewed implementation revision to satisfy the approved architecture constraints and
+      an executable architecture guard to pass in CI on that revision. A framework/persistence
+      leak, forbidden dependency or boundary violation blocks API Implemented even when endpoint
+      tests are green.
 
   - id: openapi_valid
     name: OpenAPI Valid Gate
@@ -151,6 +165,9 @@ gates:
       - visual_functional_review
       - integration_qa
     require_all:
+      - architecture.implementation_constraints
+      - architecture.implementation_conformance
+      - architecture.conformance_guard
       - api.endpoints_implemented
       - api.auth_authorization
       - api.audit_logging
@@ -168,10 +185,13 @@ gates:
     result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
     rule: >-
       Project-scoped initial API baseline. No executable client delivery begins until this
-      gate is PASS. Later API changes do not automatically invalidate unrelated accepted
-      evidence; impact analysis and dependency bindings determine the required revalidation
-      scope. Cross-cutting security/auth/contract changes may invalidate broader scopes.
-      The API remains the authoritative security and business boundary.
+      gate is PASS. The exact reviewed API revision must be both functionally valid and
+      conformant with its approved architecture; green endpoint/OpenAPI/Postman/runtime QA
+      cannot compensate for failed architecture-conformance evidence or a failed CI guard.
+      Later API changes do not automatically invalidate unrelated accepted evidence; impact
+      analysis and dependency bindings determine the required revalidation scope. Cross-cutting
+      security/auth/contract changes may invalidate broader scopes. The API remains the
+      authoritative security and business boundary.
 
   - id: interface_inventory_ready
     name: Interface Inventory Ready Gate
