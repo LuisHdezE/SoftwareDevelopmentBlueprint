@@ -1,4 +1,4 @@
-version: 0.5.1-dev
+version: 0.5.1
 checks:
   - {id: discovery.product_vision, phase: discovery, type: REQUIRED, verification: manual}
   - {id: discovery.scope_mvp, phase: discovery, type: REQUIRED, verification: manual}
