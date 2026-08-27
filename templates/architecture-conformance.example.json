@@ -1,0 +1,73 @@
+{
+  "schema_version": "0.5.1-dev",
+  "project": "example/project",
+  "implementation_revision": "1111111111111111111111111111111111111111",
+  "approved_architecture_refs": [
+    "architecture/ARCHITECTURE_OVERVIEW.md",
+    "architecture/ADR-001.md"
+  ],
+  "architecture_style": "CLEAN_ARCHITECTURE",
+  "notes": "Example only. Consumer artifacts must reference their own approved architecture and exact reviewed revision.",
+  "constraints": [
+    {
+      "id": "ARC-DOMAIN-FRAMEWORK-FREE",
+      "category": "DOMAIN_PURITY",
+      "description": "Domain does not depend on framework, HTTP, ORM or infrastructure code.",
+      "source_ref": "architecture/ARCHITECTURE_OVERVIEW.md#dependency-direction",
+      "required": true,
+      "status": "PASS",
+      "verification": {
+        "method": "automatic",
+        "evidence": ["tests/Architecture/DomainBoundaryTest"]
+      }
+    },
+    {
+      "id": "ARC-APPLICATION-INWARD",
+      "category": "DEPENDENCY_DIRECTION",
+      "description": "Application depends on domain abstractions and ports, not concrete infrastructure adapters or presentation code.",
+      "source_ref": "architecture/ARCHITECTURE_OVERVIEW.md#application",
+      "required": true,
+      "status": "PASS",
+      "verification": {
+        "method": "automatic",
+        "evidence": ["tests/Architecture/ApplicationBoundaryTest"]
+      }
+    },
+    {
+      "id": "ARC-PRESENTATION-NO-PERSISTENCE",
+      "category": "PRESENTATION_BOUNDARY",
+      "description": "Presentation adapters do not own business rules or access persistence directly.",
+      "source_ref": "architecture/ADR-001.md",
+      "required": true,
+      "status": "PASS",
+      "verification": {
+        "method": "automatic",
+        "evidence": ["tests/Architecture/PresentationBoundaryTest"]
+      }
+    },
+    {
+      "id": "ARC-INFRASTRUCTURE-PORTS",
+      "category": "PORT_ADAPTER_BINDING",
+      "description": "Concrete infrastructure adapters implement approved application/domain ports.",
+      "source_ref": "architecture/ADR-001.md",
+      "required": true,
+      "status": "PASS",
+      "verification": {
+        "method": "evidence",
+        "evidence": ["architecture/conformance/port-bindings.txt"]
+      }
+    }
+  ],
+  "guards": [
+    {
+      "id": "GUARD-ARCHITECTURE-TESTS",
+      "type": "ARCHITECTURE_TEST",
+      "artifact": "tests/Architecture",
+      "command": "run architecture test suite",
+      "required_in_ci": true,
+      "status": "PASS"
+    }
+  ],
+  "violations": [],
+  "decision": "PASS"
+}
