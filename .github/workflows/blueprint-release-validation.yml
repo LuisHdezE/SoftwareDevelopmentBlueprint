@@ -26,9 +26,11 @@ on:
       - documentation/BLUEPRINT_V0_5_ROADMAP.md
       - documentation/BLUEPRINT_V0_5_RELEASE.json
       - documentation/BLUEPRINT_V0_5_RELEASE_NOTES.md
+      - documentation/BLUEPRINT_V0_5_1_ARCHITECTURE_CONFORMANCE_HARDENING.md
       - documentation/EXPERIENCE_ARTIFACT_MODEL.md
       - documentation/CLIENT_ARCHITECTURE_CONTRACT.md
       - documentation/SKILL_MODEL.md
+      - .github/workflows/blueprint-architecture-conformance-validation.yml
       - .github/workflows/blueprint-release-validation.yml
   pull_request:
     branches: [main]
@@ -51,9 +53,11 @@ on:
       - documentation/BLUEPRINT_V0_5_ROADMAP.md
       - documentation/BLUEPRINT_V0_5_RELEASE.json
       - documentation/BLUEPRINT_V0_5_RELEASE_NOTES.md
+      - documentation/BLUEPRINT_V0_5_1_ARCHITECTURE_CONFORMANCE_HARDENING.md
       - documentation/EXPERIENCE_ARTIFACT_MODEL.md
       - documentation/CLIENT_ARCHITECTURE_CONTRACT.md
       - documentation/SKILL_MODEL.md
+      - .github/workflows/blueprint-architecture-conformance-validation.yml
       - .github/workflows/blueprint-release-validation.yml
 
 permissions:
