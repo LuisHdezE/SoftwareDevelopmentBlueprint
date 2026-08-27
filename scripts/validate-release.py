@@ -12,6 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 VERSION = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
 STABLE_V4 = "0.4.0"
 STABLE_V5 = "0.5.0"
+DEV_V5_1 = "0.5.1-dev"
 
 V4_COUNTS = {
     "phases": 25,
@@ -29,12 +30,29 @@ V5_COUNTS = {
     "planned_skills": 25,
 }
 
-ACTIVE_VERSIONED_YAML = [
+V5_1_DEV_COUNTS = {
+    "phases": 28,
+    "checks": 137,
+    "gates": 18,
+    "materialized_skills": 15,
+    "planned_skills": 25,
+}
+
+STABLE_ACTIVE_VERSIONED_YAML = [
     "catalog/phases.yaml",
     "catalog/checks.yaml",
     "catalog/gates.yaml",
     "catalog/skills.yaml",
     "catalog/reference-pilots.yaml",
+    "workflows/greenfield.yaml",
+    "workflows/brownfield.yaml",
+]
+
+V5_1_DEV_VERSIONED_YAML = [
+    "catalog/phases.yaml",
+    "catalog/checks.yaml",
+    "catalog/gates.yaml",
+    "catalog/skills.yaml",
     "workflows/greenfield.yaml",
     "workflows/brownfield.yaml",
 ]
@@ -88,11 +106,18 @@ V5_REQUIRED_GATES = {
     "integration_qa_pass": "interface_slice_platform",
 }
 
+ARCHITECTURE_HARDENING_CHECKS = {
+    "architecture.implementation_constraints",
+    "architecture.implementation_conformance",
+    "architecture.conformance_guard",
+}
+
 VALIDATORS = [
     "scripts/validate-experience-artifacts.py",
     "scripts/validate-skills.py",
     "scripts/validate-client-architecture.py",
     "scripts/validate-reference-pilot-compliance.py",
+    "scripts/validate-architecture-conformance.py",
 ]
 
 
@@ -145,6 +170,10 @@ def assert_contiguous(sequence: list[str], subsequence: list[str], label: str) -
     fail(f"{label} does not contain expected pipeline contiguously: {subsequence}")
 
 
+def is_v5_1_dev() -> bool:
+    return all(load_yaml(path).get("version") == DEV_V5_1 for path in V5_1_DEV_VERSIONED_YAML)
+
+
 def validate_historical_v4_release_manifest() -> None:
     release = load_json("documentation/BLUEPRINT_V0_4_RELEASE.json")
     expected_compatibility = {
@@ -168,7 +197,7 @@ def validate_historical_v4_release_manifest() -> None:
 def validate_reference_pilot_history() -> None:
     catalog = load_yaml("catalog/reference-pilots.yaml")
     if catalog.get("version") != STABLE_V5:
-        fail("reference pilot registry must identify stable Blueprint 0.5.0")
+        fail("reference pilot registry remains pinned to stable Blueprint 0.5.0 during 0.5.1 development")
     pilot = next((p for p in catalog.get("pilots", []) if p.get("id") == "careshift-manager"), None)
     if not pilot:
         fail("careshift-manager missing from reference pilot registry")
@@ -185,11 +214,11 @@ def validate_reference_pilot_history() -> None:
 def validate_release_manifest() -> None:
     release = load_json("documentation/BLUEPRINT_V0_5_RELEASE.json")
     if release.get("version") != STABLE_V5 or release.get("status") != "stable":
-        fail("v0.5 release manifest must declare stable 0.5.0")
+        fail("v0.5 release manifest must remain stable 0.5.0 history")
     if release.get("previous_stable") != STABLE_V4:
         fail("v0.5 previous stable must be 0.4.0")
     if release.get("tag") != "v0.5.0":
-        fail("v0.5 release tag must be v0.5.0")
+        fail("v0.5 release tag must remain v0.5.0")
     if release.get("counts") != V5_COUNTS:
         fail(f"v0.5 release counts drifted: {release.get('counts')}")
     compatibility = release.get("compatibility", {})
@@ -209,28 +238,42 @@ def validate_release_manifest() -> None:
     actual_boundaries = {(item.get("id"), item.get("pull_request")) for item in release.get("delivery_slices", [])}
     if actual_boundaries != expected_boundaries:
         fail(f"v0.5 delivery boundary manifest drifted: {actual_boundaries}")
-    print("PASS stable v0.5 release manifest")
+    print("PASS stable v0.5 release manifest preserved")
 
 
 def validate_version_identity() -> None:
     if VERSION != STABLE_V5:
-        fail(f"stable v0.5 release requires VERSION={STABLE_V5}, got {VERSION}")
-    for path in ACTIVE_VERSIONED_YAML:
-        if load_yaml(path).get("version") != STABLE_V5:
-            fail(f"{path} must declare stable 0.5.0")
+        fail(f"0.5.1 development must preserve latest stable VERSION={STABLE_V5}, got {VERSION}")
+
+    development = is_v5_1_dev()
+    if development:
+        for path in V5_1_DEV_VERSIONED_YAML:
+            if load_yaml(path).get("version") != DEV_V5_1:
+                fail(f"{path} must declare {DEV_V5_1} during architecture hardening")
+        if load_yaml("catalog/reference-pilots.yaml").get("version") != STABLE_V5:
+            fail("reference pilot history must remain on stable 0.5.0 during patch development")
+        actual_counts = catalog_counts()
+        if actual_counts != V5_1_DEV_COUNTS:
+            fail(f"0.5.1-dev core counts drifted: expected {V5_1_DEV_COUNTS}, got {actual_counts}")
+        print(f"PASS 0.5.1-dev identity with stable VERSION {VERSION}: {V5_1_DEV_COUNTS}")
+    else:
+        for path in STABLE_ACTIVE_VERSIONED_YAML:
+            if load_yaml(path).get("version") != STABLE_V5:
+                fail(f"{path} must declare stable 0.5.0")
+        actual_counts = catalog_counts()
+        if actual_counts != V5_COUNTS:
+            fail(f"stable v0.5 core counts drifted: expected {V5_COUNTS}, got {actual_counts}")
+        print(f"PASS stable v0.5 identity and counts: {V5_COUNTS}")
+
     project = load_yaml("templates/project.example.yaml")
     status = load_yaml("templates/status.example.yaml")
     if project.get("blueprint", {}).get("version") != STABLE_V5:
-        fail("canonical project example must target 0.5.0")
+        fail("canonical project example remains stable 0.5.0 until patch release closure")
     if status.get("blueprint_version") != STABLE_V5:
-        fail("canonical status example must target 0.5.0")
+        fail("canonical status example remains stable 0.5.0 until patch release closure")
     for stale in ("templates/project.v0.5-dev.example.yaml", "templates/status.v0.5-dev.example.yaml"):
         if (ROOT / stale).exists():
-            fail(f"development-only template must not survive stable release: {stale}")
-    actual_counts = catalog_counts()
-    if actual_counts != V5_COUNTS:
-        fail(f"stable v0.5 core counts drifted: expected {V5_COUNTS}, got {actual_counts}")
-    print(f"PASS stable v0.5 identity and counts: {V5_COUNTS}")
+            fail(f"obsolete v0.5 development template must not reappear: {stale}")
 
 
 def validate_schema_provenance() -> None:
@@ -238,26 +281,39 @@ def validate_schema_provenance() -> None:
         schema = load_json(path)
         expected_fragment = "/blueprint/0.5.0/"
         if expected_fragment not in schema.get("$id", ""):
-            fail(f"{path} must use a version-pinned 0.5.0 $id")
+            fail(f"historical stable schema {path} must retain version-pinned 0.5.0 $id")
     for path in SCHEMA_VERSION_CONST:
         schema = load_json(path)
         value = schema.get("properties", {}).get("schema_version", {}).get("const")
         if value != STABLE_V5:
-            fail(f"{path} schema_version must be const 0.5.0")
+            fail(f"historical stable schema {path} schema_version must remain const 0.5.0")
+
     project = load_json("schemas/project.schema.json")
     project_version = project["properties"]["blueprint"]["properties"]["version"].get("const")
     if project_version != STABLE_V5:
-        fail("project schema must pin consumer declaration to 0.5.0")
+        fail("project schema must remain pinned to consumer declaration 0.5.0 during development")
     status = load_json("schemas/status.schema.json")
     if status["properties"]["blueprint_version"].get("const") != STABLE_V5:
-        fail("status schema must pin blueprint_version to 0.5.0")
+        fail("status schema must remain pinned to blueprint_version 0.5.0 during development")
     refs = load_json("schemas/reference-pilots.schema.json")
     if refs["properties"]["version"].get("const") != STABLE_V5:
-        fail("reference pilot schema must pin registry version to 0.5.0")
+        fail("reference pilot schema must remain pinned to registry version 0.5.0")
     compliance_text = json.dumps(load_json("schemas/compliance-review.schema.json"))
     if "blueprint_change" not in compliance_text or "v0_4_change" not in compliance_text:
         fail("compliance review schema must support neutral future findings and historical v0.4 findings")
-    print("PASS version-pinned schema provenance and compliance compatibility")
+
+    if is_v5_1_dev():
+        conformance = load_json("schemas/architecture-conformance.schema.json")
+        if "/blueprint/0.5.1-dev/" not in conformance.get("$id", ""):
+            fail("architecture conformance development schema must use 0.5.1-dev $id")
+        if conformance.get("properties", {}).get("schema_version", {}).get("const") != DEV_V5_1:
+            fail("architecture conformance development schema_version must be 0.5.1-dev")
+        example = load_json("templates/architecture-conformance.example.json")
+        if example.get("schema_version") != DEV_V5_1:
+            fail("architecture conformance development template must declare 0.5.1-dev")
+        print("PASS stable 0.5 schema history + 0.5.1-dev architecture schema provenance")
+    else:
+        print("PASS version-pinned stable 0.5 schema provenance and compliance compatibility")
 
 
 def validate_catalog_semantics() -> None:
@@ -275,7 +331,7 @@ def validate_catalog_semantics() -> None:
     }
     missing = sorted(required_phases - set(phase_by_id))
     if missing:
-        fail(f"v0.5 catalog missing phases: {missing}")
+        fail(f"catalog missing phases: {missing}")
     scope = phase_by_id["interface_scope_baseline"]
     if scope.get("requires_gates") != ["requirements_ready"] or scope.get("exit_gate") != "interface_scope_ready":
         fail("Interface Scope Baseline ownership drifted")
@@ -306,14 +362,45 @@ def validate_catalog_semantics() -> None:
     client_rule = gate_by_id["client_architecture_ready"].get("rule", "")
     if "Platform Client Architecture Baseline" not in client_rule or "slice-specific binding" not in client_rule:
         fail("Client Architecture gate must describe stable composed architecture")
-    print("PASS stable v0.5 catalog semantics")
+
+    if is_v5_1_dev():
+        for check_id in ARCHITECTURE_HARDENING_CHECKS:
+            if check_id not in check_by_id:
+                fail(f"0.5.1-dev missing architecture hardening check: {check_id}")
+        if check_by_id["architecture.implementation_constraints"].get("phase") != "architecture_security_data":
+            fail("architecture.implementation_constraints must belong to architecture_security_data")
+        if check_by_id["architecture.implementation_conformance"].get("phase") != "api_implementation":
+            fail("architecture.implementation_conformance must belong to api_implementation")
+        if check_by_id["architecture.conformance_guard"].get("verification") != "automatic":
+            fail("architecture.conformance_guard must be automatic")
+        if "architecture.implementation_constraints" not in set(gate_by_id["architecture_ready"].get("require_all", [])):
+            fail("Architecture Ready must require implementation constraints")
+        for check_id in ("architecture.implementation_conformance", "architecture.conformance_guard"):
+            if check_id not in set(gate_by_id["api_implemented"].get("require_all", [])):
+                fail(f"API Implemented must require {check_id}")
+        if not ARCHITECTURE_HARDENING_CHECKS <= set(gate_by_id["api_gate"].get("require_all", [])):
+            fail("API Gate must recheck every architecture hardening check")
+        print("PASS 0.5.1-dev catalog semantics including architecture implementation conformance")
+    else:
+        print("PASS stable v0.5 catalog semantics")
 
 
 def validate_skill_semantics() -> None:
     skills = load_yaml("catalog/skills.yaml")
+    registry = skills.get("registry", {})
+    if is_v5_1_dev():
+        if skills.get("version") != DEV_V5_1:
+            fail("skill catalog must declare 0.5.1-dev")
+        if set(skills.get("mandatory_v0_5_1_materialized", [])) != set(registry):
+            fail("mandatory_v0_5_1_materialized must equal current development registry")
+        entry = registry.get("dev-architecture-conformance")
+        if not entry or entry.get("path") != "skills/dev-architecture-conformance/SKILL.md":
+            fail("dev-architecture-conformance must be materialized at canonical path")
+        print("PASS 0.5.1-dev skill catalog semantics")
+        return
+
     if skills.get("version") != STABLE_V5:
         fail("skill catalog must declare 0.5.0")
-    registry = skills.get("registry", {})
     if set(skills.get("mandatory_v0_5_materialized", [])) != set(registry):
         fail("mandatory_v0_5_materialized must equal current materialized registry")
     entry = registry.get("dev-functional-interface-slice")
@@ -338,8 +425,12 @@ def validate_workflows() -> None:
         "before_release": "release_gate",
     }
     expected_lifecycle = ["INVENTORIED", "READY", "IN_PROGRESS", "FUNCTIONAL", "ACCEPTED"]
+    development = is_v5_1_dev()
     for path in ("workflows/greenfield.yaml", "workflows/brownfield.yaml"):
         workflow = load_yaml(path)
+        expected_version = DEV_V5_1 if development else STABLE_V5
+        if workflow.get("version") != expected_version:
+            fail(f"{path} must declare {expected_version}")
         sequence = workflow.get("sequence", [])
         assert_contiguous(sequence, V5_POST_API_PIPELINE, path)
         if not sequence.index("requirements_domain") < sequence.index("interface_scope_baseline") < sequence.index("architecture_security_data"):
@@ -362,10 +453,61 @@ def validate_workflows() -> None:
         mockups = workflow.get("conditional_capabilities", {}).get("mockups_prototypes", {})
         if mockups.get("default_blocks_functional_delivery") is not False or mockups.get("exit_gate") != "mockup_review_pass":
             fail(f"{path} conditional mockup policy drifted")
-    print("PASS stable v0.5 Greenfield/Brownfield workflows")
+        if development:
+            architecture = workflow.get("architecture_implementation_conformance", {})
+            if architecture.get("schema") != "schemas/architecture-conformance.schema.json":
+                fail(f"{path} missing architecture conformance schema binding")
+            if set(architecture.get("required_checks", [])) != ARCHITECTURE_HARDENING_CHECKS:
+                fail(f"{path} architecture hardening check set drifted")
+            required_rules = {
+                "architecture_ready_must_define_verifiable_implementation_constraints",
+                "api_implemented_requires_architecture_implementation_conformance",
+                "api_implemented_requires_ci_enforced_architecture_conformance_guard",
+                "functional_correctness_does_not_substitute_architecture_conformance",
+                "api_gate_must_revalidate_architecture_conformance_on_reviewed_revision",
+            }
+            missing_rules = required_rules - set(workflow.get("rules", []))
+            if missing_rules:
+                fail(f"{path} missing architecture conformance workflow rules: {sorted(missing_rules)}")
+    print("PASS 0.5.1-dev workflows" if development else "PASS stable v0.5 Greenfield/Brownfield workflows")
 
 
 def validate_active_documentation() -> None:
+    development = is_v5_1_dev()
+    stable_docs = [
+        "README.md",
+        "documentation/EXPERIENCE_ARTIFACT_MODEL.md",
+        "documentation/CLIENT_ARCHITECTURE_CONTRACT.md",
+        "documentation/BLUEPRINT_V0_5_RELEASE_NOTES.md",
+    ]
+    stable_tokens = {
+        "README.md": ["Blueprint 0.5.0", "28", "134", "18", "14"],
+        "documentation/EXPERIENCE_ARTIFACT_MODEL.md": ["Blueprint 0.5.0", "SCOPE_BASELINE", "EXECUTABLE_INVENTORY", "BLOCKED_BY_API"],
+        "documentation/CLIENT_ARCHITECTURE_CONTRACT.md": ["Blueprint 0.5.0", "Platform Client Architecture Baseline + Slice Architecture Binding", "visual_references.mode"],
+        "documentation/BLUEPRINT_V0_5_RELEASE_NOTES.md": ["0.5.0", "Functional Interface Slice", "no automatic"],
+    }
+    for path in stable_docs:
+        text = (ROOT / path).read_text(encoding="utf-8")
+        for token in stable_tokens[path]:
+            if token not in text:
+                fail(f"{path} missing stable 0.5 release token: {token}")
+
+    if development:
+        required = {
+            "BLUEPRINT.md": ["Stable release: **0.5.0**", "0.5.1-dev", "Architecture Implementation Conformance", "architecture.conformance_guard", "Functional correctness"],
+            "documentation/BLUEPRINT_CURRENT_STATE.md": ["0.5.0", "0.5.1-dev", "137", "15", "architecture.implementation_conformance"],
+            "documentation/BLUEPRINT_V0_5_1_ARCHITECTURE_CONFORMANCE_HARDENING.md": ["0.5.1-dev", "architecture.implementation_constraints", "architecture.implementation_conformance", "architecture.conformance_guard", "CUSA-Digital"],
+            "documentation/SKILL_MODEL.md": ["0.5.1-dev", "dev-architecture-conformance"],
+            "skills/README.md": ["0.5.1-dev", "dev-architecture-conformance"],
+        }
+        for path, tokens in required.items():
+            text = (ROOT / path).read_text(encoding="utf-8")
+            for token in tokens:
+                if token not in text:
+                    fail(f"{path} missing 0.5.1-dev architecture hardening token: {token}")
+        print("PASS stable 0.5 docs preserved + 0.5.1-dev hardening documentation")
+        return
+
     active_docs = [
         "BLUEPRINT.md",
         "README.md",
@@ -416,7 +558,8 @@ def main() -> int:
     validate_active_documentation()
     for validator in VALIDATORS:
         run_validator(validator)
-    print(f"\nBlueprint stable release validation: PASS (VERSION={VERSION}; counts={catalog_counts()})")
+    mode = DEV_V5_1 if is_v5_1_dev() else STABLE_V5
+    print(f"\nBlueprint release-state validation: PASS (stable VERSION={VERSION}; active={mode}; counts={catalog_counts()})")
     return 0
 
 
