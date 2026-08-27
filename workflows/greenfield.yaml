@@ -1,4 +1,4 @@
-version: 0.5.0
+version: 0.5.1-dev
 mode: greenfield
 entry_condition: new_solution
 sequence:
@@ -39,6 +39,21 @@ gates:
   per_slice_platform_after_visual_functional_review: visual_functional_review_pass
   per_slice_platform_after_integration_qa: integration_qa_pass
   before_release: release_gate
+
+architecture_implementation_conformance:
+  schema: schemas/architecture-conformance.schema.json
+  required_checks:
+    - architecture.implementation_constraints
+    - architecture.implementation_conformance
+    - architecture.conformance_guard
+  rules:
+    - approved_architecture_must_define_verifiable_implementation_constraints
+    - implementation_revision_must_match_the_revision_validated_by_conformance_evidence
+    - at_least_one_executable_architecture_guard_must_be_required_in_ci
+    - required_constraints_must_pass_before_api_implemented
+    - architecture_guard_must_pass_on_the_exact_reviewed_revision
+    - functional_backend_tests_do_not_substitute_architecture_conformance
+    - api_gate_rechecks_architecture_conformance_before_client_delivery
 
 api_contract_evolution:
   initial_baseline_gate: api_gate
@@ -131,8 +146,13 @@ rules:
   - requirements_ready_must_pass_before_interface_scope_baseline
   - interface_scope_ready_must_pass_before_architecture_or_api_design
   - interface_scope_is_non_executable_pre_api_planning
+  - architecture_ready_must_define_verifiable_implementation_constraints
   - architecture_ready_must_pass_before_api_contract_design
   - api_contract_ready_must_pass_before_api_implementation
+  - api_implemented_requires_architecture_implementation_conformance
+  - api_implemented_requires_ci_enforced_architecture_conformance_guard
+  - functional_correctness_does_not_substitute_architecture_conformance
+  - api_gate_must_revalidate_architecture_conformance_on_reviewed_revision
   - api_gate_must_pass_before_executable_client_delivery
   - interface_inventory_ready_must_pass_before_design_system_or_client_architecture
   - interface_inventory_reconciles_scope_baseline_with_authoritative_api
