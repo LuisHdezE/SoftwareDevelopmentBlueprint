@@ -12,6 +12,8 @@ CATALOG_PATH = ROOT / "catalog" / "skills.yaml"
 STABLE_VERSION = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
 STABLE_V4 = "0.4.0"
 DEV_V5 = "0.5.0-dev"
+STABLE_V5 = "0.5.0"
+STABLE_V51 = "0.5.1"
 
 REQUIRED_FRONTMATTER = {
     "id",
@@ -100,9 +102,13 @@ def validate_catalog_identity(catalog_version: str) -> None:
         return
     if STABLE_VERSION == STABLE_V4 and catalog_version == DEV_V5:
         return
+    # Blueprint 0.5.1 is a focused governance patch. No materialized skill
+    # procedure changed, so the stable 0.5.0 skill component is reused explicitly.
+    if STABLE_VERSION == STABLE_V51 and catalog_version == STABLE_V5:
+        return
     fail(
-        "catalog/skills.yaml version must match stable VERSION or the explicit "
-        f"V5 development transition ({STABLE_V4} -> {DEV_V5}); "
+        "catalog/skills.yaml version must match root VERSION or an explicitly "
+        "supported component-provenance compatibility transition; "
         f"VERSION={STABLE_VERSION}, catalog={catalog_version}"
     )
 
@@ -236,7 +242,7 @@ def main() -> int:
 
     print(
         "Blueprint skill validation: PASS "
-        f"(stable VERSION {STABLE_VERSION}; skill catalog {catalog_version}; "
+        f"(root VERSION {STABLE_VERSION}; skill component {catalog_version}; "
         f"{len(materialized)} materialized, {len(planned)} planned)"
     )
     return 0

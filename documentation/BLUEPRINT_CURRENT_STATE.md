@@ -1,8 +1,8 @@
 # Software Development Blueprint - Current State
 
 > CURRENT CHECKPOINT / DERIVED SUMMARY  
-> Fecha de cierre representada: **2026-08-26 America/Montevideo**.  
-> Release representada: **0.5.0**.
+> Fecha de cierre representada: **2026-08-27 America/Montevideo**.  
+> Release representada: **0.5.1**.
 
 Este documento es un resumen humano. No sustituye a `BLUEPRINT.md`, `VERSION`, `catalog/`, `workflows/`, `schemas/`, `templates/`, `skills/` ni a la evidencia de los repositorios consumidores.
 
@@ -22,30 +22,33 @@ GitHub versionado prevalece sobre handoffs conversacionales.
 
 Repositorio: `LuisHdezE/SoftwareDevelopmentBlueprint`
 
-Versión estable: **0.5.0**
+Versión estable: **0.5.1**
 
 Conteos del núcleo:
 
 - **28 fases**;
-- **134 checks**;
+- **135 checks**;
 - **18 gates**;
 - **14 skills materializadas**;
 - **25 skills planificadas**.
 
-## 3. Cambio central de 0.5.0
+El único incremento de catálogo respecto de 0.5.0 es un check REQUIRED de Architecture Implementation Conformance.
 
-0.5 separa dos momentos que 0.4 trataba demasiado tarde:
+## 3. Cambio central de 0.5.1
 
-```text
-Requirements Ready
-  -> Interface Scope Baseline
-  -> Architecture/API design
-  ...
-  -> API Gate
-  -> Executable Interface Inventory
-```
+El piloto CUSA-Digital demostró una brecha real: una arquitectura puede estar correctamente diseñada y aprobada y, al mismo tiempo, la implementación puede desviarse de ella aunque endpoints, OpenAPI, Postman y QA funcional estén verdes.
 
-El baseline temprano describe interfaces observadas/intencionadas y puede registrar necesidades API sin inventar bindings. El inventario ejecutable posterior al API Gate reconcilia el alcance con permisos, dependencias y `operationId` autoritativos.
+0.5.1 añade:
+
+`api.architecture_implementation_conformance`
+
+Invariante:
+
+`architecture design acceptance != architecture implementation conformance`
+
+El check pertenece a `api_implementation` y es requerido tanto por `api_implemented` como por `api_gate`.
+
+La evidencia debe verificar el contrato arquitectónico realmente aprobado. Cuando sea viable, se prefieren assertions ejecutables: dependency rules, architecture fitness functions, module-boundary tests, layer isolation tests o bindings de ports/adapters. El Blueprint no prescribe una arquitectura o framework universal.
 
 ## 4. Pipeline canónico
 
@@ -56,7 +59,7 @@ Discovery / Brownfield Inspection + AS-IS + Gap Analysis
   -> Interface Scope Baseline Ready
   -> Architecture / Security / Data Ready
   -> API Contract Ready
-  -> API Implementation
+  -> API Implementation + Architecture Implementation Conformance
   -> OpenAPI Valid
   -> Postman Ready
   -> API QA Pass
@@ -73,7 +76,22 @@ Discovery / Brownfield Inspection + AS-IS + Gap Analysis
 
 Visual Identity y Mockups/Prototypes son condicionales.
 
-## 5. Functional Interface Slice
+## 5. Interface Scope e Interface Inventory
+
+El modelo 0.5.x separa:
+
+```text
+Requirements Ready
+  -> Interface Scope Baseline
+  -> Architecture/API design
+  ...
+  -> API Gate
+  -> Executable Interface Inventory
+```
+
+El baseline temprano describe interfaces observadas/intencionadas sin inventar bindings. El inventario ejecutable posterior al API Gate reconcilia el alcance con permisos, dependencias y `operationId` autoritativos.
+
+## 6. Functional Interface Slice
 
 Unidad canónica de ejecución cliente: `interface_slice + platform`.
 
@@ -87,7 +105,7 @@ Visual & Functional Review e Integration QA son gates independientes, no estados
 
 `ACCEPTED` añade Review PASS, Integration QA PASS, aceptación humana explícita y cero blockers abiertos.
 
-## 6. BLOCKED_BY_API
+## 7. BLOCKED_BY_API
 
 `BLOCKED_BY_API` es un overlay sobre el lifecycle. Se usa solo ante una carencia o incompatibilidad autoritativa de API: data, operation, permission, state, transition o contract capability.
 
@@ -95,7 +113,7 @@ Conserva el último lifecycle válido. La solución se realiza en una frontera A
 
 Errores normales de frontend o incertidumbre visual no se etiquetan como `BLOCKED_BY_API`.
 
-## 7. Evolución API
+## 8. Evolución API
 
 El primer `api_gate` continúa siendo project-scoped.
 
@@ -105,7 +123,9 @@ Cambios posteriores usan `schemas/api-impact.schema.json`:
 - auth/authorization/security/error/versioning u otros cambios cross-cutting -> posible escalado a plataforma/proyecto;
 - evidencia aceptada no relacionada se preserva por defecto.
 
-## 8. Client Architecture
+Una remediación puramente arquitectónica no fabrica un API impact si el contrato externo no cambió.
+
+## 9. Client Architecture
 
 Modelo efectivo:
 
@@ -119,7 +139,7 @@ La baseline concentra decisiones reutilizables de plataforma. El binding declara
 
 `visual_references.mode = none` es válido. Mockups no son una dependencia universal.
 
-## 9. Experiencia visual
+## 10. Experiencia visual
 
 Design System es requerido para client delivery. Visual Identity es condicional.
 
@@ -129,7 +149,7 @@ Mockups/prototypes son condicionales y, cuando se usan:
 
 El review final se realiza sobre el cliente funcional real, no solo sobre imágenes.
 
-## 10. Cross-Artifact Semantic Integrity
+## 11. Cross-Artifact Semantic Integrity
 
 Los validadores comprueban la cadena real:
 
@@ -144,38 +164,32 @@ Validadores principales:
 - `scripts/validate-client-architecture.py`
 - `scripts/validate-skills.py`
 - `scripts/validate-reference-pilot-compliance.py`
+- `scripts/validate-architecture-conformance.py`
 - `scripts/validate-release.py`
 
-## 11. Skills 0.5.0
+## 12. Skills
 
-Materializadas:
+Se mantienen **14 skills materializadas** y **25 planned**.
 
-1. `dev-git-workflow`
-2. `dev-brownfield-analysis`
-3. `dev-api-design`
-4. `dev-openapi`
-5. `dev-postman-qa`
-6. `dev-contract-testing`
-7. `dev-web-view-inventory`
-8. `dev-design-system`
-9. `dev-mockup-planning`
-10. `dev-accessibility`
-11. `dev-react-client-architecture`
-12. `dev-android-client-architecture`
-13. `dev-functional-interface-slice`
-14. `dev-event-logging-audit`
+0.5.1 no modifica el procedimiento de ninguna skill materializada, por lo que el componente `catalog/skills.yaml` y sus frontmatters conservan provenance 0.5.0 y se reutilizan de forma compatible.
 
-Las 25 restantes siguen `planned`; catalogarlas no equivale a materializarlas.
+Catalogar no equivale a materializar.
 
-## 12. Brownfield y reference pilots
+## 13. Versionado de componentes
 
-Brownfield mantiene **ALIGN, DO NOT REWRITE** y la separación `OBSERVED / INFERRED / PROPOSED`.
+`VERSION = 0.5.1` identifica la release raíz.
 
-CareShift sigue siendo un reference pilot no normativo. Su Compliance Review histórico evaluó un snapshot 0.4 prerelease y su versión de consumidor no se modifica por la publicación de 0.5.
+Componentes modificados en este patch:
 
-Los manifests/reviews de 0.4 permanecen historia verificable.
+- `catalog/checks.yaml`: 0.5.1;
+- `catalog/gates.yaml`: 0.5.1;
+- `schemas/project.schema.json`: consumer declaration 0.5.1;
+- `schemas/status.schema.json`: consumer declaration 0.5.1;
+- templates canónicos project/status: 0.5.1.
 
-## 13. Consumidores y adopción
+Los componentes cuyo contrato no cambió pueden conservar provenance 0.5.0, incluidos phases, workflows, skills y schemas de experiencia. Los validadores hacen explícita esta matriz de compatibilidad.
+
+## 14. Consumidores y adopción
 
 No existe automatic consumer upgrade.
 
@@ -188,22 +202,25 @@ Una release estable del Master no cambia `.blueprint/status.yaml`, código, sche
 5. PR de adopción separada;
 6. revalidación según el impacto real.
 
-CUSA-Digital permaneció congelado durante la construcción de Blueprint 0.5.0. Su siguiente paso, después del cierre efectivo de la release y en un contexto nuevo/reverificado, es Compliance Review **0.4.0 -> 0.5.0**. Solo después de una adopción explícita se continúa con Interface Inventory Ready y Functional Interface Slices.
+CUSA-Digital consume actualmente Blueprint 0.5.0. Su `main` fue verificado en `95309161db3522f61b636b705b183b62e6395ede` tras PR #31, donde la implementación fue remediada para conformar con la arquitectura G3 sin cambiar las 45 operaciones API aceptadas.
 
-## 14. Release closure y tag
+Ese hallazgo originó el hardening 0.5.1, pero **CUSA no adopta 0.5.1 automáticamente**. Design System permanece fuera de autorización hasta un Compliance Review 0.5.0 -> 0.5.1 y una adopción explícita posterior al cierre estable de esta release.
 
-`VERSION`, catalogs, workflows, schemas, templates y skills activos convergen en 0.5.0. Los schema `$id` específicos están versionados.
+## 15. Release closure y tag
 
-El manifest machine-readable es `documentation/BLUEPRINT_V0_5_RELEASE.json` y las notas están en `documentation/BLUEPRINT_V0_5_RELEASE_NOTES.md`.
+El manifest machine-readable es `documentation/BLUEPRINT_V0_5_1_RELEASE.json` y las notas están en `documentation/BLUEPRINT_V0_5_1_RELEASE_NOTES.md`.
 
-La etiqueta `v0.5.0` se crea únicamente después de fusionar el PR de release, verificar el árbol aprobado en `main` y confirmar CI post-merge. Este checkpoint no debe usarse para afirmar que el tag existe antes de esa verificación.
+La etiqueta `v0.5.1` se crea únicamente después de fusionar el PR de release, verificar el árbol aprobado en `main` y confirmar CI post-merge.
 
-## 15. Fuera de 0.5.0
+Los manifests/tags de 0.4.0 y 0.5.0 permanecen historia verificable y no se reescriben.
+
+## 16. Fuera de 0.5.1
 
 No forma parte de la release:
 
 - mutar automáticamente consumidores;
-- iniciar la UI de CUSA desde el Master release PR;
+- iniciar Design System o UI de CUSA desde el Master release PR;
+- imponer Clean Architecture, Laravel o un layout de carpetas universal;
 - materializar las 25 skills todavía planned;
 - construir Blueprint Control Center;
 - declarar Blueprint 1.0.

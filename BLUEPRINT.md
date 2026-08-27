@@ -1,6 +1,6 @@
 # Software Development Blueprint
 
-> Stable release: **0.5.0**  
+> Stable release: **0.5.1**  
 > Canonical repository: `LuisHdezE/SoftwareDevelopmentBlueprint`
 
 ## 1. Purpose and authority
@@ -50,7 +50,7 @@ The governing rule is **ALIGN, DO NOT REWRITE**.
 
 Brownfield findings distinguish `OBSERVED`, `INFERRED` and `PROPOSED`. Existing behavior is inspected before replacement is proposed. Working functionality is preserved unless a change is justified, reviewed and safely cut over.
 
-## 4. Canonical 0.5.0 flow
+## 4. Canonical 0.5.1 flow
 
 ### 4.1 Planning and server baseline
 
@@ -61,7 +61,7 @@ Discovery / Brownfield reconstruction
   -> Interface Scope Baseline Ready
   -> Architecture / Security / Data Ready
   -> API Contract Ready
-  -> API Implementation
+  -> API Implementation + Architecture Implementation Conformance
   -> OpenAPI Validation
   -> Postman Operational Contract
   -> API QA
@@ -94,7 +94,7 @@ Technical/operational logs and durable business/security audit are separate conc
 
 ## 6. Interface Scope Baseline
 
-Blueprint 0.5.0 introduces an early interface maturity using `schemas/interface-inventory.schema.json` with:
+Blueprint 0.5.x uses an early interface maturity through `schemas/interface-inventory.schema.json` with:
 
 `maturity: SCOPE_BASELINE`
 
@@ -106,7 +106,7 @@ The baseline may contain unresolved API needs. It must not fabricate `operationI
 
 `interface_scope_ready` proves descriptive/planning completeness only. It never authorizes client implementation.
 
-## 7. API contract, OpenAPI and API Gate
+## 7. API contract, implementation, OpenAPI and API Gate
 
 The API is the authoritative security and business boundary for API-backed clients.
 
@@ -116,7 +116,27 @@ OpenAPI is the canonical machine-readable API contract. Every contracted HTTP op
 
 Initial `api_gate` is project-scoped and must PASS before executable client delivery begins.
 
-### 7.1 API evolution after the initial baseline
+### 7.1 Architecture Implementation Conformance
+
+Blueprint 0.5.1 adds the REQUIRED check:
+
+`api.architecture_implementation_conformance`
+
+The check proves that the implemented backend conforms to the architecture contract that was previously approved. Architecture design acceptance and architecture implementation conformance are distinct facts:
+
+`architecture design acceptance != architecture implementation conformance`
+
+Functional correctness, endpoint coverage, OpenAPI validity, Postman coverage and runtime QA do not by themselves prove architectural correctness.
+
+When the approved architecture defines dependency direction, module boundaries, layer ownership, ports/adapters, framework isolation or equivalent constraints, conformance evidence SHOULD be executable wherever practical. Examples include architecture fitness functions, static dependency rules, module-boundary tests and dependency-injection binding tests. Constraints that cannot reasonably be automated require explicit review evidence instead of silent assumption.
+
+Blueprint does not universally prescribe Clean Architecture, DDD, Laravel or any fixed folder layout. The assertions must reflect the architecture the project actually approved.
+
+`api_implemented` and `api_gate` both require this check in 0.5.1.
+
+A later conformance failure does not automatically erase unrelated historical functional/API evidence. Remediation is handled in a dedicated boundary, with API impact classified separately according to whether the authoritative external contract changed.
+
+### 7.2 API evolution after the initial baseline
 
 Later API changes use impact-based revalidation rather than automatic global invalidation.
 
@@ -285,9 +305,9 @@ Evidence files are not automatically truthful because they exist. File-backed ev
 
 ## 16. Skills
 
-Materialized `dev-*` skills are versioned with the Blueprint and teach an agent how to satisfy canonical contracts. They do not become product truth and cannot declare gates PASS on their own.
+Materialized `dev-*` skills teach an agent how to satisfy canonical contracts. They do not become product truth and cannot declare gates PASS on their own.
 
-Blueprint 0.5.0 materializes 14 reusable skills, including `dev-functional-interface-slice`. Project-specific knowledge remains in the consumer repository.
+Blueprint 0.5.1 reuses the 14 materialized skill contracts from component version 0.5.0 because no skill procedure changed in this patch. This reuse is explicit compatibility, not implicit consumer adoption. Project-specific knowledge remains in the consumer repository.
 
 ## 17. Git and human governance
 
@@ -297,11 +317,20 @@ Dependent boundaries follow:
 
 One active implementation PR per dependent boundary is the default. CI success is evidence, not merge authorization. Human review/acceptance remains explicit wherever required.
 
-## 18. Versioning and schema provenance
+## 18. Versioning and component provenance
 
-Blueprint uses SemVer. Active 0.5.0 catalogs/workflows, canonical templates, materialized skills and version-specific schemas identify stable `0.5.0`.
+Blueprint uses SemVer. Root `VERSION` identifies the stable Blueprint release consumed by projects.
 
-Version-specific schema `$id` values include `/0.5.0/`. Validators resolve repository-local pinned schemas; schema identity never causes consumer auto-upgrade.
+Patch releases may reuse unchanged versioned components from the previous stable release. Component provenance is preserved rather than mechanically relabeled when its contract did not change.
+
+For 0.5.1:
+
+- root release identity: `0.5.1`;
+- checks/gates catalogs: `0.5.1`;
+- project/status consumer schemas and canonical examples: `0.5.1`;
+- unchanged phase, workflow, skill and experience-artifact contracts may retain `0.5.0` component identity.
+
+Validators resolve repository-local pinned contracts and verify the allowed compatibility matrix. A component version never causes consumer auto-upgrade.
 
 Historical release manifests and Compliance Reviews remain historical truth. A later release does not rewrite what an older review actually evaluated.
 
@@ -309,10 +338,12 @@ Historical release manifests and Compliance Reviews remain historical truth. A l
 
 Reference pilots are non-normative. They prove or challenge Blueprint rules but cannot inject hidden product-specific requirements.
 
+CUSA-Digital, while consuming Blueprint 0.5.0, exposed the Architecture Implementation Conformance gap through a dedicated remediation boundary. That finding was generalized into 0.5.1 without copying CUSA-specific implementation structure into the Blueprint.
+
 Consumers remain on the version they explicitly declare. A stable Blueprint release is followed, when desired, by a separate Compliance Review that classifies changes as KEEP / ADOPT / MIGRATE / DEFER / N/A before the consumer version is changed.
 
-CUSA-Digital remained frozen while Blueprint 0.5.0 was constructed. Any CUSA 0.4.0 -> 0.5.0 adoption requires a new live verification, formal Compliance Review and explicit approval before Interface Inventory/client implementation continues.
+Publishing 0.5.1 does not mutate CUSA-Digital or any other consumer.
 
 ## 20. Strategic boundary
 
-Blueprint Control Center remains a documented future capability, not part of Blueprint Core 0.5.0. The preferred sequence is Blueprint Core -> reference/consumer pilots -> hardening -> Control Center when operating evidence justifies it.
+Blueprint Control Center remains a documented future capability, not part of Blueprint Core 0.5.1. The preferred sequence is Blueprint Core -> reference/consumer pilots -> hardening -> Control Center when operating evidence justifies it.

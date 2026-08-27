@@ -4,12 +4,14 @@ from __future__ import annotations
 from copy import deepcopy
 from pathlib import Path
 
+import json
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 CHECK_ID = "api.architecture_implementation_conformance"
 DEV_VERSION = "0.5.1-dev"
-STABLE_VERSION = "0.5.0"
+STABLE_V50 = "0.5.0"
+STABLE_V51 = "0.5.1"
 
 
 def fail(message: str) -> None:
@@ -74,27 +76,49 @@ def assert_contract(checks_doc: dict, gates_doc: dict) -> None:
         fail("api_gate must reject runtime-only substitution for architecture conformance")
 
 
-def validate_development_identity() -> None:
-    version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
-    if version != STABLE_VERSION:
-        fail(f"semantic hardening boundary must preserve stable VERSION={STABLE_VERSION}; got {version}")
-
+def validate_identity() -> str:
+    root_version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
     checks_doc = load_yaml("catalog/checks.yaml")
     gates_doc = load_yaml("catalog/gates.yaml")
-    if checks_doc.get("version") != DEV_VERSION:
-        fail(f"catalog/checks.yaml must declare {DEV_VERSION}")
-    if gates_doc.get("version") != DEV_VERSION:
-        fail(f"catalog/gates.yaml must declare {DEV_VERSION}")
+    checks_version = checks_doc.get("version")
+    gates_version = gates_doc.get("version")
+
+    if root_version == STABLE_V50:
+        expected_component = DEV_VERSION
+        state = DEV_VERSION
+    elif root_version == STABLE_V51:
+        expected_component = STABLE_V51
+        state = STABLE_V51
+    else:
+        fail(f"unsupported root VERSION for 0.5.1 conformance validator: {root_version}")
+
+    if checks_version != expected_component or gates_version != expected_component:
+        fail(
+            "checks/gates architecture-conformance component identity mismatch: "
+            f"expected {expected_component}, got checks={checks_version}, gates={gates_version}"
+        )
 
     phases = load_yaml("catalog/phases.yaml").get("phases", [])
     if len(phases) != 28:
         fail("0.5.1 architecture hardening must not add/remove phases")
     if len(checks_doc.get("checks", [])) != 135:
-        fail("0.5.1-dev must contain exactly one additional check over stable 0.5.0")
+        fail("0.5.1 must contain exactly one additional check over stable 0.5.0")
     if len(gates_doc.get("gates", [])) != 18:
         fail("0.5.1 architecture hardening must not add/remove gates")
 
     assert_contract(checks_doc, gates_doc)
+
+    if root_version == STABLE_V51:
+        manifest_path = ROOT / "documentation/BLUEPRINT_V0_5_1_RELEASE.json"
+        if not manifest_path.exists():
+            fail("stable 0.5.1 requires release manifest")
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if manifest.get("version") != STABLE_V51 or manifest.get("status") != "stable":
+            fail("0.5.1 release manifest must declare stable 0.5.1")
+        if manifest.get("counts", {}).get("checks") != 135:
+            fail("0.5.1 release manifest must record 135 checks")
+
+    return state
 
 
 def validate_negative_guards() -> None:
@@ -144,10 +168,10 @@ def validate_hardening_note() -> None:
 
 
 def main() -> int:
-    validate_development_identity()
+    state = validate_identity()
     validate_negative_guards()
     validate_hardening_note()
-    print("PASS Blueprint 0.5.1-dev architecture implementation conformance hardening")
+    print(f"PASS Blueprint {state} architecture implementation conformance hardening")
     return 0
 
 
