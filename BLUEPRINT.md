@@ -1,6 +1,7 @@
 # Software Development Blueprint
 
 > Stable release: **0.5.0**  
+> Active hardening line: **0.5.1-dev - Architecture Implementation Conformance**  
 > Canonical repository: `LuisHdezE/SoftwareDevelopmentBlueprint`
 
 ## 1. Purpose and authority
@@ -19,6 +20,8 @@ When sources conflict, use this order:
 6. chat/history.
 
 A new Blueprint release does **not** automatically upgrade consumers. Adoption requires Compliance Review and an explicit consumer change.
+
+During development of a later release, root `VERSION` continues to identify the latest stable release until a dedicated release-closure boundary promotes the new version. Development catalogs/workflows may therefore carry an explicit prerelease identity such as `0.5.1-dev` without mutating stable consumers.
 
 ## 2. Rule classifications
 
@@ -50,7 +53,9 @@ The governing rule is **ALIGN, DO NOT REWRITE**.
 
 Brownfield findings distinguish `OBSERVED`, `INFERRED` and `PROPOSED`. Existing behavior is inspected before replacement is proposed. Working functionality is preserved unless a change is justified, reviewed and safely cut over.
 
-## 4. Canonical 0.5.0 flow
+Architecture-conformance work in Brownfield is evaluated against the approved TO-BE/alignment decision. It does not authorize rewriting working software merely to satisfy an agent's preferred architectural style.
+
+## 4. Canonical 0.5 flow
 
 ### 4.1 Planning and server baseline
 
@@ -84,17 +89,30 @@ API Gate
 
 `Visual Identity` is CONDITIONAL. `Mockups / Prototypes` are a CONDITIONAL risk-reduction branch after Design System. Neither belongs to the mandatory principal sequence.
 
+The 0.5.1-dev hardening does not add a new phase or gate. It strengthens the existing Architecture Ready, API Implemented and API Gate obligations so architecture design and implementation cannot silently diverge.
+
 ## 5. Requirements, architecture, security and data
 
 Requirements define actors, authorization intent, functional and non-functional requirements, business rules, use cases, acceptance criteria and traceability before architecture/API implementation begins.
 
 Architecture establishes domain boundaries, decisions, security model, authoritative data model, migrations, authentication/error/versioning strategy and durable business/security audit obligations. Threat modeling is conditional on risk.
 
+Architecture must also be precise enough to verify in implementation. When applicable, the approved architecture defines explicit constraints for:
+
+- dependency direction;
+- framework coupling;
+- persistence access;
+- presentation responsibilities;
+- module/context boundaries;
+- ports/adapters or equivalent abstractions.
+
+Naming an architecture style such as Clean Architecture, Hexagonal, Layered or Modular Monolith is not sufficient by itself. `architecture.implementation_constraints` is REQUIRED in the 0.5.1 development line so later conformance can be tested rather than inferred from folder names or prose.
+
 Technical/operational logs and durable business/security audit are separate concerns. Critical authentication, role/permission, sensitive CRUD, meaningful state transition, financial, administrative, integration, tenant and security events require durable accountable evidence when applicable. Secrets must not leak into logs or audit.
 
 ## 6. Interface Scope Baseline
 
-Blueprint 0.5.0 introduces an early interface maturity using `schemas/interface-inventory.schema.json` with:
+Blueprint 0.5 introduces an early interface maturity using `schemas/interface-inventory.schema.json` with:
 
 `maturity: SCOPE_BASELINE`
 
@@ -106,7 +124,7 @@ The baseline may contain unresolved API needs. It must not fabricate `operationI
 
 `interface_scope_ready` proves descriptive/planning completeness only. It never authorizes client implementation.
 
-## 7. API contract, OpenAPI and API Gate
+## 7. API contract, implementation, OpenAPI and API Gate
 
 The API is the authoritative security and business boundary for API-backed clients.
 
@@ -116,7 +134,48 @@ OpenAPI is the canonical machine-readable API contract. Every contracted HTTP op
 
 Initial `api_gate` is project-scoped and must PASS before executable client delivery begins.
 
-### 7.1 API evolution after the initial baseline
+### 7.1 Architecture Implementation Conformance
+
+Blueprint 0.5.1-dev introduces an explicit invariant discovered through consumer-pilot evidence:
+
+```text
+functional correctness != architecture implementation conformance
+```
+
+A backend can satisfy endpoint tests, authorization checks, audit behavior, OpenAPI, Postman and runtime API QA while still violating the architecture previously approved by the project. Those are separate quality dimensions.
+
+The hardening introduces three REQUIRED checks:
+
+1. `architecture.implementation_constraints` during Architecture / Security / Data;
+2. `architecture.implementation_conformance` during API Implementation;
+3. `architecture.conformance_guard` during API Implementation, with automatic verification.
+
+`api_implemented` cannot PASS unless the exact reviewed implementation revision conforms to the approved constraints and at least one executable architecture guard required in CI passes on that revision.
+
+`api_gate` rechecks all three before executable client delivery. Green functional/API tests cannot compensate for failed architecture-conformance evidence.
+
+The machine-readable contract is:
+
+`schemas/architecture-conformance.schema.json`
+
+It records the exact implementation revision, approved architecture references, constraints, verification evidence, CI guards, violations and local decision.
+
+For a `PASS` decision:
+
+- every REQUIRED constraint must pass;
+- unresolved architecture violations must be zero;
+- at least one executable guard must be required in CI;
+- every required-in-CI architecture guard must pass.
+
+A directory layout alone is never proof of conformance. Dependencies and responsibilities are what matter.
+
+When the approved project architecture is Clean/Hexagonal, typical verifiable constraints include framework-independent Domain, inward Application dependencies, Presentation without direct persistence/business-rule ownership and Infrastructure implementing ports/adapters. Blueprint does **not** impose those exact rules on projects whose approved architecture is different; conformance is always against the approved project contract.
+
+If an architecture remediation changes the authoritative API contract, it stops being an architecture-only change and must use the normal API contract impact/revalidation path.
+
+The reusable procedure is `dev-architecture-conformance`, and Blueprint validates its own conformance artifact model through `scripts/validate-architecture-conformance.py` plus `.github/workflows/blueprint-architecture-conformance-validation.yml`.
+
+### 7.2 API evolution after the initial baseline
 
 Later API changes use impact-based revalidation rather than automatic global invalidation.
 
@@ -265,7 +324,7 @@ Release Gate aggregates every committed slice required by the release. One accep
 
 JSON Schema validates shape. Blueprint validators also validate semantic truth across artifacts.
 
-The canonical graph is:
+The canonical client-delivery graph is:
 
 ```text
 requirement
@@ -279,7 +338,20 @@ requirement
   -> human acceptance
 ```
 
+The 0.5.1-dev server-engineering hardening adds a second semantic chain:
+
+```text
+approved architecture
+  -> verifiable implementation constraints
+  -> exact implementation revision
+  -> architecture conformance evidence
+  -> CI architecture guard
+  -> API Implemented / API Gate
+```
+
 **Cross-Artifact Semantic Integrity** rejects syntactically valid but fictitious IDs, unknown operationIds, platform namespace mismatches, invented permissions, incompatible architecture baselines, invalid evidence references, accepted slices without quality gates and unresolved blockers hidden behind acceptance.
+
+Architecture-conformance validation likewise rejects PASS with failed required constraints, unresolved violations, no CI-enforced guard or a failed required guard.
 
 Evidence files are not automatically truthful because they exist. File-backed evidence must resolve; human approvals require explicit decision metadata; runtime claims require appropriate runtime/test evidence.
 
@@ -287,7 +359,9 @@ Evidence files are not automatically truthful because they exist. File-backed ev
 
 Materialized `dev-*` skills are versioned with the Blueprint and teach an agent how to satisfy canonical contracts. They do not become product truth and cannot declare gates PASS on their own.
 
-Blueprint 0.5.0 materializes 14 reusable skills, including `dev-functional-interface-slice`. Project-specific knowledge remains in the consumer repository.
+Stable Blueprint 0.5.0 materializes 14 reusable skills, including `dev-functional-interface-slice`.
+
+The active 0.5.1-dev hardening candidate materializes a fifteenth skill, `dev-architecture-conformance`, which operationalizes testable architecture constraints, exact-revision conformance evidence and CI-enforced architecture guards. Project-specific knowledge remains in the consumer repository.
 
 ## 17. Git and human governance
 
@@ -299,9 +373,13 @@ One active implementation PR per dependent boundary is the default. CI success i
 
 ## 18. Versioning and schema provenance
 
-Blueprint uses SemVer. Active 0.5.0 catalogs/workflows, canonical templates, materialized skills and version-specific schemas identify stable `0.5.0`.
+Blueprint uses SemVer.
 
-Version-specific schema `$id` values include `/0.5.0/`. Validators resolve repository-local pinned schemas; schema identity never causes consumer auto-upgrade.
+The latest stable release remains **0.5.0** while the architecture-conformance patch is developed as **0.5.1-dev**. Root `VERSION`, stable 0.5 schemas/templates, historical release manifest and existing consumer declarations are not silently mutated during this hardening boundary.
+
+New development-only architecture-conformance contracts use a version-pinned `/0.5.1-dev/` schema identity. A later dedicated release-closure boundary must converge active catalogs, workflows, schemas, templates, skills, README/current-state/release artifacts and `VERSION` to stable `0.5.1` before a `v0.5.1` tag may be created.
+
+Validators resolve repository-local pinned schemas; schema identity never causes consumer auto-upgrade.
 
 Historical release manifests and Compliance Reviews remain historical truth. A later release does not rewrite what an older review actually evaluated.
 
@@ -309,10 +387,12 @@ Historical release manifests and Compliance Reviews remain historical truth. A l
 
 Reference pilots are non-normative. They prove or challenge Blueprint rules but cannot inject hidden product-specific requirements.
 
+CUSA-Digital exposed the architecture-conformance gap by proving that functional/API correctness could coexist with implementation drift. Its remediation is evidence for the reusable rule; its Laravel structure and product specifics are not copied into the Master as hidden requirements.
+
 Consumers remain on the version they explicitly declare. A stable Blueprint release is followed, when desired, by a separate Compliance Review that classifies changes as KEEP / ADOPT / MIGRATE / DEFER / N/A before the consumer version is changed.
 
-CUSA-Digital remained frozen while Blueprint 0.5.0 was constructed. Any CUSA 0.4.0 -> 0.5.0 adoption requires a new live verification, formal Compliance Review and explicit approval before Interface Inventory/client implementation continues.
+CUSA-Digital remains a Blueprint 0.5.0 consumer after its own architecture remediation. Development or merge of this 0.5.1-dev Master boundary does not upgrade CUSA automatically. A future stable 0.5.1 adoption requires a separate `0.5.0 -> 0.5.1` Compliance Review and explicit consumer approval.
 
 ## 20. Strategic boundary
 
-Blueprint Control Center remains a documented future capability, not part of Blueprint Core 0.5.0. The preferred sequence is Blueprint Core -> reference/consumer pilots -> hardening -> Control Center when operating evidence justifies it.
+Blueprint Control Center remains a documented future capability, not part of this Core hardening. The preferred sequence is Blueprint Core -> reference/consumer pilots -> hardening -> Control Center when operating evidence justifies it.
