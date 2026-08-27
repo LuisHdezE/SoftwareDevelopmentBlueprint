@@ -11,7 +11,9 @@ ROOT = Path(__file__).resolve().parents[1]
 CATALOG_PATH = ROOT / "catalog" / "skills.yaml"
 STABLE_VERSION = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
 STABLE_V4 = "0.4.0"
+STABLE_V5 = "0.5.0"
 DEV_V5 = "0.5.0-dev"
+DEV_V5_1 = "0.5.1-dev"
 
 REQUIRED_FRONTMATTER = {
     "id",
@@ -100,14 +102,21 @@ def validate_catalog_identity(catalog_version: str) -> None:
         return
     if STABLE_VERSION == STABLE_V4 and catalog_version == DEV_V5:
         return
+    if STABLE_VERSION == STABLE_V5 and catalog_version == DEV_V5_1:
+        return
     fail(
-        "catalog/skills.yaml version must match stable VERSION or the explicit "
-        f"V5 development transition ({STABLE_V4} -> {DEV_V5}); "
+        "catalog/skills.yaml version must match stable VERSION or an explicit "
+        "development transition; "
         f"VERSION={STABLE_VERSION}, catalog={catalog_version}"
     )
 
 
-def validate_skill(skill_id: str, spec: dict, catalog_version: str) -> None:
+def validate_skill(
+    skill_id: str,
+    spec: dict,
+    catalog_version: str,
+    historical_v5: set[str],
+) -> None:
     if spec.get("status") != "materialized":
         fail(f"{skill_id}: registry status must be materialized")
     path_value = spec.get("path")
@@ -135,11 +144,19 @@ def validate_skill(skill_id: str, spec: dict, catalog_version: str) -> None:
             f"{skill_id}: category mismatch "
             f"catalog={spec.get('category')} file={frontmatter['category']}"
         )
-    if frontmatter["version"] != catalog_version:
+
+    allowed_versions = {catalog_version}
+    if catalog_version == DEV_V5_1 and skill_id in historical_v5:
+        # During patch development, unchanged stable 0.5.0 skills may remain pinned
+        # to the last stable release. Release closure will promote all materialized
+        # skill frontmatter to stable 0.5.1 in one reviewed boundary.
+        allowed_versions.add(STABLE_V5)
+    if frontmatter["version"] not in allowed_versions:
         fail(
-            f"{skill_id}: expected version {catalog_version}, "
+            f"{skill_id}: expected version in {sorted(allowed_versions)}, "
             f"got {frontmatter['version']}"
         )
+
     if not isinstance(frontmatter["applies_to"], list) or not frontmatter["applies_to"]:
         fail(f"{skill_id}: applies_to must be a non-empty list")
     if not isinstance(frontmatter["phases"], list) or not frontmatter["phases"]:
@@ -195,15 +212,22 @@ def main() -> int:
     if not isinstance(registry, dict):
         fail("registry must be a mapping")
 
-    historical_v4 = catalog.get("mandatory_v0_4_materialized", [])
-    if not isinstance(historical_v4, list) or len(historical_v4) != len(set(historical_v4)):
+    historical_v4_list = catalog.get("mandatory_v0_4_materialized", [])
+    if not isinstance(historical_v4_list, list) or len(historical_v4_list) != len(set(historical_v4_list)):
         fail("mandatory_v0_4_materialized must be a unique list")
 
-    current_mandatory_key = (
-        "mandatory_v0_5_materialized"
-        if catalog_version.startswith("0.5.0")
-        else "mandatory_v0_4_materialized"
-    )
+    historical_v5_list = catalog.get("mandatory_v0_5_materialized", [])
+    if not isinstance(historical_v5_list, list) or len(historical_v5_list) != len(set(historical_v5_list)):
+        fail("mandatory_v0_5_materialized must be a unique list")
+    historical_v5 = set(historical_v5_list)
+
+    if catalog_version == DEV_V5_1 or catalog_version == "0.5.1":
+        current_mandatory_key = "mandatory_v0_5_1_materialized"
+    elif catalog_version.startswith("0.5.0"):
+        current_mandatory_key = "mandatory_v0_5_materialized"
+    else:
+        current_mandatory_key = "mandatory_v0_4_materialized"
+
     mandatory = catalog.get(current_mandatory_key, [])
     if not isinstance(mandatory, list) or not mandatory or len(mandatory) != len(set(mandatory)):
         fail(f"{current_mandatory_key} must be a non-empty unique list")
@@ -231,8 +255,16 @@ def main() -> int:
             f"{sorted(unreferenced_materialized)}"
         )
 
+    if catalog_version == DEV_V5_1:
+        expected_new = set(mandatory) - historical_v5
+        if expected_new != {"dev-architecture-conformance"}:
+            fail(
+                "0.5.1-dev must add only the architecture conformance skill in this "
+                f"hardening boundary, got {sorted(expected_new)}"
+            )
+
     for skill_id, spec in registry.items():
-        validate_skill(skill_id, spec, catalog_version)
+        validate_skill(skill_id, spec, catalog_version, historical_v5)
 
     print(
         "Blueprint skill validation: PASS "
