@@ -139,7 +139,7 @@ Initial `api_gate` is project-scoped and must PASS before executable client deli
 Blueprint 0.5.1-dev introduces an explicit invariant discovered through consumer-pilot evidence:
 
 ```text
-functional correctness != architecture implementation conformance
+Functional correctness != architecture implementation conformance
 ```
 
 A backend can satisfy endpoint tests, authorization checks, audit behavior, OpenAPI, Postman and runtime API QA while still violating the architecture previously approved by the project. Those are separate quality dimensions.
