@@ -1,0 +1,43 @@
+name: Blueprint Architecture Conformance Validation
+
+on:
+  push:
+    branches:
+      - main
+      - 'blueprint/**'
+    paths:
+      - 'catalog/**'
+      - 'workflows/**'
+      - 'schemas/architecture-conformance.schema.json'
+      - 'templates/architecture-conformance.example.json'
+      - 'skills/dev-architecture-conformance/**'
+      - 'scripts/validate-architecture-conformance.py'
+      - '.github/workflows/blueprint-architecture-conformance-validation.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'catalog/**'
+      - 'workflows/**'
+      - 'schemas/architecture-conformance.schema.json'
+      - 'templates/architecture-conformance.example.json'
+      - 'skills/dev-architecture-conformance/**'
+      - 'scripts/validate-architecture-conformance.py'
+      - '.github/workflows/blueprint-architecture-conformance-validation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+      - name: Install validator dependencies
+        run: python -m pip install --disable-pip-version-check jsonschema==4.26.0 PyYAML==6.0.2
+      - name: Validate architecture conformance contract and guards
+        run: python scripts/validate-architecture-conformance.py
