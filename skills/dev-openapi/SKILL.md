@@ -1,7 +1,7 @@
 ---
 id: dev-openapi
 title: OpenAPI Contract Validation
-version: 0.4.0
+version: 0.5.0-dev
 status: materialized
 category: backend
 applies_to:
@@ -13,6 +13,8 @@ canonical_references:
   - BLUEPRINT.md
   - catalog/checks.yaml
   - catalog/gates.yaml
+  - schemas/interface-inventory.schema.json
+  - schemas/api-impact.schema.json
   - workflows/greenfield.yaml
   - workflows/brownfield.yaml
 ---
@@ -21,59 +23,70 @@ canonical_references:
 
 ## Purpose
 
-Turn the approved API contract into a lintable, machine-readable OpenAPI description and prove parity with the implemented routes.
+Turn the approved API contract into the canonical machine-readable OpenAPI description, prove parity with runtime routes and provide stable `operationId` links consumed by executable Interface Inventory, Client Architecture and Functional Interface Slices.
 
 ## When to Use
 
-Use after API implementation is complete and before Postman Contract. Use again whenever an approved API contract or route changes.
+Use after API implementation is complete and before Postman Contract. Re-run whenever an approved API route/contract changes, especially after the initial API Gate when existing clients may depend on affected operations.
 
 ## Inputs
 
-- Approved endpoint inventory and operation IDs.
+- Approved endpoint inventory and stable operation identifiers.
 - Implemented route list.
 - Request/response/resource definitions.
-- Authentication, permission, idempotency, error, and request-ID rules.
+- Authentication, permission, idempotency, error and request-ID rules.
+- Existing downstream `operationId` dependencies when revising an established API baseline.
 
 ## Procedure
 
-1. Generate or maintain OpenAPI from the approved contract, not from guesswork. Stable Blueprint endpoint IDs should map to unique `operationId` values or explicit traceability metadata.
-2. Model success and error responses, including the project-standard problem representation and correlation/request ID headers.
-3. Model authentication globally and override public operations explicitly. Document required permissions with machine-readable extensions when the project uses them.
-4. Mark secrets/write-only fields correctly and verify response schemas do not expose passwords, hashes, refresh/reset secrets, or internal metadata.
-5. Model pagination, enums, decimal/date formats, path/query parameters, and idempotency headers exactly as runtime behavior requires.
-6. Lint and bundle the document with pinned tooling. Warnings that represent contract ambiguity are not gate-success noise; resolve or explicitly classify them.
-7. Compare endpoint inventory, runtime routes, and OpenAPI by method+path and stable operation ID. Missing, extra, duplicate, or renamed operations fail validation.
-8. Persist evidence from the exact final head and mark OpenAPI valid only after parity is proven.
+1. Generate or maintain OpenAPI from the approved API contract, never from UI guesswork. Every HTTP operation that is part of the contract receives a unique, stable `operationId`.
+2. Treat `operationId` as a canonical downstream key. Executable Interface Inventory, Client Architecture, Functional Interface Slices, impact reports and tests may depend on it; rename only through an explicit contract change with impact analysis.
+3. Model success and error responses, including Problem Details or the approved equivalent plus request/correlation headers.
+4. Model authentication globally and override public operations explicitly. Represent required permissions using the project’s documented machine-readable convention where applicable.
+5. Mark secrets/write-only fields correctly and ensure responses cannot expose passwords, hashes, reset/refresh secrets, credentials or private implementation metadata.
+6. Model pagination, enums, decimal/date formats, path/query parameters, state values and idempotency headers exactly as runtime behavior requires.
+7. Lint and bundle with pinned tooling. Resolve warnings that represent ambiguity rather than treating them as harmless noise.
+8. Compare endpoint inventory, runtime routes and OpenAPI by method + path + stable `operationId`. Missing, extra, duplicate or silently renamed operations fail validation.
+9. Verify that executable client artifacts reference only operationIds present in the validated current OpenAPI revision. Cross-artifact validators must reject fictitious operationIds.
+10. For post-baseline API changes, feed changed operationIds and cross-cutting contract areas into API impact analysis. Revalidate affected client slices proportionally rather than discarding unrelated evidence.
+11. Persist exact-final-head lint/parity evidence and mark OpenAPI valid only after the current revision is proven coherent.
 
 ## Outputs
 
-- Version-controlled OpenAPI source.
+- Version-controlled OpenAPI source/bundle.
+- Unique stable `operationId` set.
 - Lint/bundle evidence.
 - Inventory-route-OpenAPI parity evidence.
-- Traceability from stable endpoint IDs to operations.
+- Downstream client linkage and API-impact evidence when applicable.
 
 ## Stop Conditions
 
 - API implementation gate is not PASS.
-- Route parity differs from the approved inventory.
+- Route parity differs from approved inventory.
+- `operationId` values are duplicate, missing or renamed without an approved contract change.
 - Protected/public security semantics are wrong or ambiguous.
 - Secrets appear in response schemas.
-- The lint/bundle/parity result is not green on the exact final head.
+- Downstream artifacts reference operations absent from the current OpenAPI revision.
+- Lint/bundle/parity is not green on the exact final head.
 
 ## Guardrails
 
-- OpenAPI is the formal API contract, not merely documentation.
-- Postman is downstream operational verification and must not replace OpenAPI.
-- Do not hand-edit the contract to hide runtime drift; fix the drift or return to API contract design.
+- OpenAPI is the formal machine-readable API contract, not decorative documentation.
+- `operationId` stability is part of compatibility governance.
+- Postman is downstream operational verification and does not replace OpenAPI.
+- Do not edit OpenAPI merely to hide runtime drift; fix the drift or return to API contract design.
+- Client convenience never authorizes an invented endpoint or permission.
 
 ## Canonical References
 
 - `BLUEPRINT.md`
 - `catalog/checks.yaml`
 - `catalog/gates.yaml`
+- `schemas/interface-inventory.schema.json`
+- `schemas/api-impact.schema.json`
 - `workflows/greenfield.yaml`
 - `workflows/brownfield.yaml`
 
 ## Completion Signal
 
-The skill is complete only when its required outputs exist in the repository, the relevant Blueprint checks/gates can be evaluated from evidence, and no stop condition remains unresolved.
+Complete only when the current OpenAPI revision validates, runtime route parity is proven, every operationId is unique/stable, downstream client references resolve to real operations, and any post-baseline change has the necessary impact/revalidation evidence on the exact final head.

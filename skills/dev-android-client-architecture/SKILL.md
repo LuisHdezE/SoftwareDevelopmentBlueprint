@@ -1,7 +1,7 @@
 ---
 id: dev-android-client-architecture
 title: Android Client Architecture
-version: 0.4.0
+version: 0.5.0-dev
 status: materialized
 category: android
 applies_to:
@@ -14,9 +14,10 @@ canonical_references:
   - catalog/phases.yaml
   - catalog/checks.yaml
   - catalog/gates.yaml
+  - schemas/client-platform-architecture.schema.json
   - schemas/client-architecture.schema.json
   - schemas/interface-inventory.schema.json
-  - schemas/mockup-batch.schema.json
+  - schemas/functional-interface-slice.schema.json
   - documentation/CLIENT_ARCHITECTURE_CONTRACT.md
 ---
 
@@ -24,68 +25,67 @@ canonical_references:
 
 ## Purpose
 
-Produce a schema-valid client architecture contract for one approved Android interface slice before Kotlin implementation begins.
+Produce the effective Client Architecture contract for one Android Functional Interface Slice while keeping reusable Kotlin/platform decisions in one baseline instead of duplicating them across slices.
 
 ## When to Use
 
-Use only after `visual_review_pass` for the exact Android slice and before `android_implementation`. Re-run when API/auth/offline/state architecture or the approved visual slice changes materially.
+Use after `interface_inventory_ready` and `design_system_ready`, with the initial `api_gate` already PASS, and before functional Android implementation. Static mockups are optional. Revalidate when platform architecture, API revision/operationIds, offline policy, inventory scope or slice-specific behavior changes materially.
 
 ## Inputs
 
-- Approved Android interface slice and `APP-###` inventory IDs.
-- Approved/versioned visual references.
-- Validated API/OpenAPI contract and canonical operation IDs.
-- Auth/refresh lifecycle, permission and idempotency contracts.
+- Executable Interface Inventory and exact `APP-###` IDs for the slice.
 - Design System/tokens.
-- Android runtime constraints, minimum supported SDK and device requirements.
-- Offline requirements when applicable.
-- Existing Android client and migration constraints for Brownfield.
+- Validated OpenAPI and current API revision.
+- Auth/session, permission, Problem Details, request-ID and idempotency contracts.
+- Existing Android platform baseline if already approved.
+- Offline/runtime/device constraints.
+- Optional approved/versioned visual references when they exist.
+- Existing Android client/coexistence constraints for Brownfield.
 
 ## Procedure
 
-1. Create one client architecture artifact using `schemas/client-architecture.schema.json` with `platform: android` and only approved `APP-###` IDs for the target slice.
-2. Bind each screen/action to canonical API operation IDs. Do not invent mobile-only business endpoints, permission rules or state transitions.
-3. Record Kotlin platform decisions: UI toolkit, architecture pattern, networking library, local persistence, background-work strategy and minimum SDK.
-4. Define credential storage using platform-appropriate secure storage. Define refresh/rotation, concurrent refresh and logout cleanup without exposing tokens in logs or crash reports.
-5. Define Navigation/route boundaries, protected destinations and permission-aware presentation. API authorization remains authoritative.
-6. Define repository/ViewModel/state ownership and make server state distinct from transient UI state.
-7. Define cache/offline behavior explicitly. If writes can queue offline, document durable queueing, synchronization, conflict handling, retry and idempotency behavior.
-8. Define form validation and mapping of 422, 409, 429 and global API errors into accessible UI state.
-9. Classify loading, empty, error, 401, 403, 404, 409, 422, 429 and offline states explicitly.
-10. Define request-ID propagation/support context, secret/PII redaction and client observability.
-11. Define TalkBack semantics, focus/navigation behavior, switch/keyboard behavior where applicable and minimum touch targets.
-12. Define unit, Compose/UI, integration and device/emulator E2E boundaries before implementation.
-13. For Brownfield, document coexistence, migration boundary, cutover trigger and rollback. Preserve unrelated working mobile behavior.
-14. Validate the artifact and attach evidence to scoped `client_architecture_ready` for the exact `interface_slice + android` scope.
+1. Reuse an approved Android Platform Client Architecture Baseline when still applicable; otherwise create/revise one using `schemas/client-platform-architecture.schema.json`.
+2. In the platform baseline define Kotlin/UI toolkit, architecture pattern, networking, local persistence, background work, minimum SDK, API client, secure credential lifecycle, state ownership, forms/errors, observability, accessibility, testing and offline policy.
+3. Keep server/API authority explicit even when Room or another local store is used. Offline data cannot silently become a competing business authority.
+4. For Brownfield, keep coexistence, migration boundary, cutover trigger and rollback in the platform baseline. Preserve unrelated working mobile behavior.
+5. Create one slice binding with `schemas/client-architecture.schema.json` for the exact `interface_slice + android` scope.
+6. Bind only executable `APP-###` IDs and resolve the exact permissions, routes/destinations and OpenAPI `operationId` values from repository artifacts.
+7. Record the API revision consumed by the slice. Post-baseline API changes use impact-based revalidation and may affect only dependent slices unless a cross-cutting contract changes.
+8. Use `visual_references.mode = none` when no approved static visual references exist. If references are used, `approved_optional` must point to real approved/versioned assets.
+9. Define async/error/offline states explicitly. If queued writes are enabled, document synchronization/conflict/idempotency behavior without bypassing server authorization.
+10. Define idempotent operations only from the bound `operationId` set and protect retries from duplicate local effects.
+11. Record slice-specific cache invalidation, offline overrides and testing notes only where the slice specializes the platform baseline.
+12. Keep permissions presentation-aware but API-authoritative. Do not invent mobile-only business operations, permissions or transitions.
+13. Run `scripts/validate-client-architecture.py` to validate schema and cross-artifact integrity. Fake inventory IDs, permissions, operationIds, visual paths or incompatible baselines must fail.
+14. Attach evidence to scoped `client_architecture_ready` for the exact `interface_slice + android` boundary.
 
 ## Outputs
 
-- Schema-valid Android client architecture JSON.
-- Explicit inventory/API/visual binding for the slice.
-- Kotlin/UI/network/storage/offline/auth/navigation decisions.
-- Accessibility and testing strategy.
-- Brownfield coexistence/migration plan when applicable.
+- Validated/reused Android Platform Client Architecture Baseline.
+- Schema-valid Android Slice Architecture Binding.
+- Effective Client Architecture for the exact slice/platform.
+- Inventory/permission/OpenAPI/API-revision traceability.
+- Explicit offline specialization where applicable.
 - Evidence for scoped `client_architecture_ready`.
 
 ## Stop Conditions
 
-- `visual_review_pass` is not PASS for the exact Android slice.
-- Any `APP-###` target is not approved.
-- API/auth lifecycle or canonical operation IDs are undefined.
-- Client design weakens API authorization or server business rules.
-- Offline queueing is proposed without conflict/idempotency semantics.
-- Credentials would be stored or logged unsafely.
+- Initial API Gate, Interface Inventory Ready or Design System Ready is not PASS.
+- `APP-###` IDs or canonical operationIds are unresolved.
+- The binding invents permissions/endpoints/transitions.
+- Credential storage or logging weakens the platform security model.
+- Offline queueing lacks conflict/idempotency semantics.
+- A fake visual reference is being created merely to satisfy structure.
 - Brownfield replacement would remove working behavior before approved cutover.
-- The artifact fails `schemas/client-architecture.schema.json` or V4-4 semantic validation.
+- Cross-artifact Client Architecture validation fails.
 
 ## Guardrails
 
-- Scope architecture to one approved interface slice and Android platform.
-- Kotlin implementation follows the client contract; it does not silently redefine it.
-- Server/API remains authoritative for authorization and business validation.
-- Offline storage does not become an undocumented competing source of truth.
-- Approved visual references remain versioned inputs.
-- `client_architecture_ready` for Android does not authorize web or another slice.
+- Reusable Android decisions belong to the platform baseline; slice-specific choices belong to the binding.
+- Static mockups are conditional and never a hidden prerequisite for architecture.
+- API remains authoritative for authorization, validation, transitions and business truth.
+- Offline persistence is explicit and bounded.
+- `client_architecture_ready` for Android does not authorize Web or another slice.
 
 ## Canonical References
 
@@ -93,11 +93,12 @@ Use only after `visual_review_pass` for the exact Android slice and before `andr
 - `catalog/phases.yaml`
 - `catalog/checks.yaml`
 - `catalog/gates.yaml`
+- `schemas/client-platform-architecture.schema.json`
 - `schemas/client-architecture.schema.json`
 - `schemas/interface-inventory.schema.json`
-- `schemas/mockup-batch.schema.json`
+- `schemas/functional-interface-slice.schema.json`
 - `documentation/CLIENT_ARCHITECTURE_CONTRACT.md`
 
 ## Completion Signal
 
-Complete only when a schema-valid Android architecture artifact exists for the exact approved slice, all client architecture checks are evidenced, and scoped `client_architecture_ready` can legitimately evaluate to PASS for `interface_slice + android`.
+Complete only when the Android platform baseline and slice binding compose into a semantically valid effective contract, all referenced inventory/permissions/operationIds exist, offline behavior is explicit, optional visual references are legitimate, and scoped `client_architecture_ready` can truthfully evaluate to PASS for the exact slice + Android platform.

@@ -9,7 +9,9 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 CATALOG_PATH = ROOT / "catalog" / "skills.yaml"
-BLUEPRINT_VERSION = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+STABLE_VERSION = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+STABLE_V4 = "0.4.0"
+DEV_V5 = "0.5.0-dev"
 
 REQUIRED_FRONTMATTER = {
     "id",
@@ -85,7 +87,7 @@ def category_references(categories: dict) -> set[str]:
                 refs.update(values)
         conditional = category.get("conditional", {})
         if isinstance(conditional, dict):
-            for _, conditional_spec in conditional.items():
+            for conditional_spec in conditional.values():
                 if isinstance(conditional_spec, dict):
                     values = conditional_spec.get("skills", [])
                     if values:
@@ -93,7 +95,19 @@ def category_references(categories: dict) -> set[str]:
     return refs
 
 
-def validate_skill(skill_id: str, spec: dict) -> None:
+def validate_catalog_identity(catalog_version: str) -> None:
+    if catalog_version == STABLE_VERSION:
+        return
+    if STABLE_VERSION == STABLE_V4 and catalog_version == DEV_V5:
+        return
+    fail(
+        "catalog/skills.yaml version must match stable VERSION or the explicit "
+        f"V5 development transition ({STABLE_V4} -> {DEV_V5}); "
+        f"VERSION={STABLE_VERSION}, catalog={catalog_version}"
+    )
+
+
+def validate_skill(skill_id: str, spec: dict, catalog_version: str) -> None:
     if spec.get("status") != "materialized":
         fail(f"{skill_id}: registry status must be materialized")
     path_value = spec.get("path")
@@ -121,9 +135,9 @@ def validate_skill(skill_id: str, spec: dict) -> None:
             f"{skill_id}: category mismatch "
             f"catalog={spec.get('category')} file={frontmatter['category']}"
         )
-    if frontmatter["version"] != BLUEPRINT_VERSION:
+    if frontmatter["version"] != catalog_version:
         fail(
-            f"{skill_id}: expected version {BLUEPRINT_VERSION}, "
+            f"{skill_id}: expected version {catalog_version}, "
             f"got {frontmatter['version']}"
         )
     if not isinstance(frontmatter["applies_to"], list) or not frontmatter["applies_to"]:
@@ -158,15 +172,14 @@ def validate_skill(skill_id: str, spec: dict) -> None:
 
 
 def main() -> int:
-    if not BLUEPRINT_VERSION:
+    if not STABLE_VERSION:
         fail("VERSION must not be empty")
 
     catalog = yaml.safe_load(CATALOG_PATH.read_text(encoding="utf-8")) or {}
-    if catalog.get("version") != BLUEPRINT_VERSION:
-        fail(
-            "catalog/skills.yaml version must match VERSION "
-            f"({BLUEPRINT_VERSION})"
-        )
+    catalog_version = catalog.get("version")
+    if not isinstance(catalog_version, str):
+        fail("catalog/skills.yaml requires string version")
+    validate_catalog_identity(catalog_version)
 
     skill_model = catalog.get("skill_model", {})
     contract = skill_model.get("contract", {})
@@ -182,9 +195,18 @@ def main() -> int:
     if not isinstance(registry, dict):
         fail("registry must be a mapping")
 
-    mandatory = catalog.get("mandatory_v0_4_materialized", [])
-    if not isinstance(mandatory, list) or len(mandatory) != len(set(mandatory)):
+    historical_v4 = catalog.get("mandatory_v0_4_materialized", [])
+    if not isinstance(historical_v4, list) or len(historical_v4) != len(set(historical_v4)):
         fail("mandatory_v0_4_materialized must be a unique list")
+
+    current_mandatory_key = (
+        "mandatory_v0_5_materialized"
+        if catalog_version.startswith("0.5.0")
+        else "mandatory_v0_4_materialized"
+    )
+    mandatory = catalog.get(current_mandatory_key, [])
+    if not isinstance(mandatory, list) or not mandatory or len(mandatory) != len(set(mandatory)):
+        fail(f"{current_mandatory_key} must be a non-empty unique list")
 
     planned = flatten_planned(catalog.get("planned_registry", {}))
     materialized = set(registry)
@@ -210,12 +232,12 @@ def main() -> int:
         )
 
     for skill_id, spec in registry.items():
-        validate_skill(skill_id, spec)
+        validate_skill(skill_id, spec, catalog_version)
 
     print(
         "Blueprint skill validation: PASS "
-        f"(version {BLUEPRINT_VERSION}; {len(materialized)} materialized, "
-        f"{len(planned)} planned)"
+        f"(stable VERSION {STABLE_VERSION}; skill catalog {catalog_version}; "
+        f"{len(materialized)} materialized, {len(planned)} planned)"
     )
     return 0
 
