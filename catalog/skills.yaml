@@ -1,4 +1,4 @@
-version: 0.5.0
+version: 0.5.1-dev
 
 skill_model:
   principles:
@@ -44,6 +44,7 @@ categories:
       - dev-database-design
       - dev-testing-strategy
       - dev-event-logging-audit
+      - dev-architecture-conformance
       - dev-documentation
 
   backend:
@@ -58,6 +59,7 @@ categories:
       - dev-openapi
       - dev-postman-qa
       - dev-contract-testing
+      - dev-architecture-conformance
 
   web:
     conditional_on:
@@ -139,6 +141,23 @@ mandatory_v0_5_materialized:
   - dev-functional-interface-slice
   - dev-event-logging-audit
 
+mandatory_v0_5_1_materialized:
+  - dev-git-workflow
+  - dev-brownfield-analysis
+  - dev-api-design
+  - dev-openapi
+  - dev-postman-qa
+  - dev-contract-testing
+  - dev-web-view-inventory
+  - dev-design-system
+  - dev-mockup-planning
+  - dev-accessibility
+  - dev-react-client-architecture
+  - dev-android-client-architecture
+  - dev-functional-interface-slice
+  - dev-event-logging-audit
+  - dev-architecture-conformance
+
 registry:
   dev-git-workflow:
     status: materialized
@@ -196,6 +215,10 @@ registry:
     status: materialized
     category: core
     path: skills/dev-event-logging-audit/SKILL.md
+  dev-architecture-conformance:
+    status: materialized
+    category: core
+    path: skills/dev-architecture-conformance/SKILL.md
 
 planned_registry:
   core:
