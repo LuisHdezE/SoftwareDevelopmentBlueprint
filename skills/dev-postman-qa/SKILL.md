@@ -1,7 +1,7 @@
 ---
 id: dev-postman-qa
 title: Postman Operational Contract
-version: 0.5.0-dev
+version: 0.5.0
 status: materialized
 category: backend
 applies_to:

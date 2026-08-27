@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0.0",
+  "version": "0.5.0",
+  "status": "stable",
+  "release_date": "2026-08-26",
+  "previous_stable": "0.4.0",
+  "pre_release_main": "9e5c2d2fb8414b3a8abff69ad3e07da2eb42097c",
+  "tag": "v0.5.0",
+  "delivery_slices": [
+    {"id": "V5-0", "pull_request": 11},
+    {"id": "V5-1", "pull_request": 12},
+    {"id": "V5-1A", "pull_request": 13},
+    {"id": "V5-2", "pull_request": 14},
+    {"id": "V5-3", "pull_request": 15},
+    {"id": "V5-4", "pull_request": 16}
+  ],
+  "counts": {
+    "phases": 28,
+    "checks": 134,
+    "gates": 18,
+    "materialized_skills": 14,
+    "planned_skills": 25
+  },
+  "compatibility": {
+    "consumer_auto_upgrade": false,
+    "brownfield_align_do_not_rewrite": true,
+    "grandfather_existing_evidence": true,
+    "mockups_conditional": true,
+    "impact_based_api_revalidation": true
+  },
+  "release_highlights": [
+    "interface_scope_baseline_before_api_design",
+    "executable_interface_inventory_after_api_gate",
+    "functional_interface_slice",
+    "blocked_by_api_overlay",
+    "impact_based_api_revalidation",
+    "composed_client_architecture",
+    "conditional_mockups",
+    "cross_artifact_semantic_integrity"
+  ],
+  "consumer_policy": {
+    "automatic_adoption": false,
+    "compliance_review_required": true,
+    "explicit_consumer_change_required": true
+  },
+  "release_rule": "Create v0.5.0 only after the release PR merges, the approved tree is verified on main, and post-merge validation passes."
+}

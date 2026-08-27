@@ -1,14 +1,10 @@
-# Experience Artifact Model — Blueprint 0.4.0-dev
+# Experience Artifact Model - Blueprint 0.5.0
 
 ## Purpose
 
-This document defines the repository-owned artifact model introduced by V4-2 and extended by V4-4. The goal is AI continuity: another agent must be able to inspect the project repository and determine what interfaces exist, which visuals are approved, which client architecture applies, which evidence supports a gate, and which slices are allowed to progress.
+Define the repository-owned machine-readable graph that lets a human or AI determine what interfaces exist, which API capabilities they consume, how they are grouped into Functional Interface Slices, which client architecture applies, whether a blocker exists and what evidence supports review, QA and acceptance.
 
-## Canonical artifact families
-
-A consumer project may choose different paths, but should declare them in `project.yaml` through `artifact_locations`.
-
-Recommended layout:
+## Recommended consumer layout
 
 ```text
 .blueprint/
@@ -16,158 +12,133 @@ Recommended layout:
   status.yaml
   evidence/
   ui/
+    interface-scope-baseline.json
     interface-inventory.json
-    visual-identity.md
+    visual-identity.md              # conditional
     design-system.json
     design-tokens.json
-  mockups/
-    batch-01/
-      manifest.json
-      specification.md
-      prompts.md
-      assets/
-      evidence.md
+  mockups/                          # conditional
+    <batch>/manifest.json
   client-architecture/
-    <slice-id>.web.json
-    <slice-id>.android.json
+    web.platform.json
+    android.platform.json
+    <slice>.web.json
+    <slice>.android.json
+  functional-slices/
+    <slice>.web.json
+    <slice>.android.json
+  api-impacts/
+    API-IMPACT-###.json
 ```
 
-## Interface inventory
+Consumer paths may differ when declared in `artifact_locations`.
 
-`schemas/interface-inventory.schema.json` gives each interface a stable `WEB-###` or `APP-###` identity and captures purpose, roles, data, actions, states, navigation and API responsibilities.
+## Interface maturity
 
-Brownfield inventory may additionally classify evidence as `OBSERVED`, `INFERRED` or `PROPOSED`. Proposed behavior must not be silently represented as existing functionality.
+`schemas/interface-inventory.schema.json` owns two maturity levels with stable `WEB-###` / `APP-###` identifiers.
 
-## Design system and tokens
+### SCOPE_BASELINE
 
-`schemas/design-system.schema.json` captures the reusable visual/interaction contract. `schemas/design-tokens.schema.json` captures machine-readable tokens and the accessibility baseline.
+Created after Requirements Ready. Brownfield records observed/reconciled current interfaces; Greenfield records intended surfaces from requirements/journeys. Unresolved API needs are legal. Missing `operationId` values are not invented.
 
-A custom logo is conditional. The system must not fabricate branding solely to satisfy a template.
+This maturity is descriptive/planning input and never authorizes implementation.
 
-## Mockup batches
+### EXECUTABLE_INVENTORY
 
-`schemas/mockup-batch.schema.json` enforces a maximum of ten inventory views per batch.
+Created after the initial API Gate. It reconciles every baseline ID as COMMITTED, DEFERRED or DROPPED and records requirements, roles, permissions, data/actions, states, navigation, dependencies, priority and slice ownership.
 
-Each view records:
+API-backed semantics use canonical OpenAPI `operationId` values. Local/static behavior is declared explicitly.
 
-- mockup ID;
-- inventory ID;
-- platform;
-- API responsibilities when applicable;
-- visual asset path;
-- generation status;
-- review status;
-- contract review status;
-- accessibility review status;
-- prior approved reference inputs;
-- evidence IDs.
+## Design System and identity
 
-The state model is explicit:
+Design System/tokens define reusable visual and interaction rules, responsive behavior, semantic states and accessibility.
 
-```text
-PENDING → GENERATED → REVIEWED → APPROVED
-```
+Visual Identity is conditional. The model does not require fabricated branding or a custom logo.
 
-These states are not interchangeable. File existence proves generation, not approval.
+## Mockups / prototypes
 
-When a batch is `PASS`, every view must be generated and approved and the batch must have passed specification, visual and manual review.
+Mockups are conditional risk-reduction artifacts.
 
-## Versioned visual references
+When activated, `schemas/mockup-batch.schema.json` limits a batch to 10 inventory views and records generation/review/accessibility evidence.
 
-Approved visual assets belong in the consumer repository or in another repository-owned location declared by path. Later AI agents inspect those approved assets before generating or implementing related interfaces.
+State remains explicit:
 
-A generated image must not become a reference input until review explicitly approves it.
+`PENDING -> GENERATED -> REVIEWED -> APPROVED`
 
-## Client architecture artifacts
+File existence proves generation only. `GENERATED != REVIEWED != APPROVED`.
 
-`schemas/client-architecture.schema.json` defines the pre-implementation contract for one approved `interface_slice + platform`.
+A normal Functional Interface Slice may have zero mockups.
 
-The artifact binds implementation to:
+## Client Architecture
 
-- approved inventory IDs and visual references;
-- Design System/tokens;
-- OpenAPI and canonical operation IDs;
-- auth/refresh/logout behavior;
-- permissions and routing;
-- server/local state ownership and cache invalidation;
-- forms and API error mapping;
-- async/offline states;
-- high-risk mutation idempotency;
-- request correlation/observability;
-- accessibility;
-- unit/UI/integration/E2E strategy;
-- platform-specific React or Kotlin decisions;
-- Brownfield coexistence/cutover/rollback when applicable.
+The effective model is:
 
-A web contract accepts only `WEB-###` inventory and an Android contract accepts only `APP-###` inventory. A PASS for one slice/platform does not authorize another.
+**Platform Client Architecture Baseline + Slice Architecture Binding = Effective Client Architecture Contract**.
 
-Client architecture file existence does not itself imply `client_architecture_ready = PASS`; the artifact must validate and the scoped gate must have evidence.
+`schemas/client-platform-architecture.schema.json` owns reusable platform/project decisions. `schemas/client-architecture.schema.json` owns exact slice/platform binding and overrides.
+
+The binding references executable inventory, API revision, canonical operationIds, permissions/routes, async states and idempotency. `visual_references.mode = none` is valid; `approved_optional` requires real repository-owned approved paths.
+
+## Functional Interface Slice
+
+`schemas/functional-interface-slice.schema.json` is the canonical client execution artifact.
+
+Lifecycle:
+
+`INVENTORIED -> READY -> IN_PROGRESS -> FUNCTIONAL -> ACCEPTED`
+
+The slice records inventory IDs, dependencies, API revision/operationIds, Client Architecture reference, functional DoD, Visual & Functional Review, Integration QA, human acceptance and evidence IDs.
+
+Review/QA are gates, not lifecycle states.
+
+## BLOCKED_BY_API
+
+A missing authoritative API data source/operation/permission/state/transition may create a `BLOCKED_BY_API` overlay.
+
+The blocker preserves the last valid lifecycle state and records contract/evidence/resolution metadata. An unresolved blocker cannot coexist with `ACCEPTED`.
+
+Ordinary frontend defects are not API blockers.
+
+## API impact artifacts
+
+`schemas/api-impact.schema.json` represents post-baseline API evolution.
+
+It records changed operationIds or cross-cutting areas, affected slices/platforms and the revalidation policy. Operation-local changes preserve unrelated evidence; cross-cutting auth/security/error/versioning changes may widen scope.
 
 ## Evidence registry
 
-`schemas/evidence.schema.json` standardizes evidence metadata across files, commits, CI runs, reports, schemas, visual assets and manual approvals.
+`schemas/evidence.schema.json` standardizes file, CI, test, OpenAPI, functional slice, QA, accessibility, blocker, API-impact and human-decision evidence.
 
-Evidence may be scoped to:
+File-backed evidence must resolve to a real path when repository-local. Human approval/acceptance requires explicit decision metadata. The mere existence of an empty path is not proof of runtime behavior.
 
-- project;
-- phase;
-- gate;
-- interface slice;
-- interface;
-- platform.
+## Status ownership
 
-Checks and gates may keep lightweight inline evidence in `status.yaml`; larger evidence collections should live under the declared evidence root.
+`status.yaml` is a projection/index, not a competing owner of slice lifecycle.
 
-## Scoped gates
+- Functional slice artifact owns lifecycle and blocker state.
+- Scoped gates own Client Architecture, functional, review and Integration QA outcomes.
+- Project status aggregates/indexes those artifacts for humans and future tooling.
 
-Project gates remain represented by the existing `gates` map in `status.yaml`.
+Scoped gates:
 
-V4-2 adds optional `scoped_gates` for gates that can occur more than once:
+- `mockup_review_pass` -> `interface_slice` when the conditional branch applies;
+- `client_architecture_ready` -> `interface_slice_platform`;
+- `functional_slice_ready` -> `interface_slice_platform`;
+- `visual_functional_review_pass` -> `interface_slice_platform`;
+- `integration_qa_pass` -> `interface_slice_platform`.
 
-- `visual_review_pass` uses scope `interface_slice`;
-- `client_architecture_ready` uses scope `interface_slice_platform`.
+## Cross-Artifact Semantic Integrity
 
-This keeps v0.3-style project status backward compatible while making V4-1 slice delivery representable.
+Shape validation alone is insufficient. `scripts/validate-artifact-graph.py` resolves the graph among baseline/inventory, OpenAPI, Functional Interface Slice, status, evidence and API impact.
 
-## Interface slices
+It rejects unknown inventory IDs, fictitious operationIds, missing reconciliation, cross-platform IDs, invalid evidence, acceptance without QA and unresolved blockers.
 
-`interface_slices` groups stable inventory IDs into coherent delivery units. A slice may be approved and implemented without waiting for every interface in the product, but an unapproved inventory view cannot inherit another slice's gate result.
+`scripts/validate-client-architecture.py` extends the graph through platform baselines and slice bindings, rejecting unknown inventory, permissions, operationIds, incompatible platform baselines, invalid idempotency bindings and fake optional visual references.
 
-## Reference pilots
+`scripts/validate-experience-artifacts.py` validates canonical templates, conditional mockup semantics, catalog/workflow references and invokes artifact-graph validation.
 
-`catalog/reference-pilots.yaml` is a non-normative registry. Reference pilots provide evidence that a rule works or expose a gap in the Blueprint. They never inject hidden product-specific rules into the standard.
+## Brownfield compatibility
 
-## Validation
+Existing evidence is not destroyed merely because a newer Blueprint exists. Brownfield consumers adopt this model through Compliance Review and explicit migration decisions. Existing working clients coexist until approved cutover.
 
-`scripts/validate-experience-artifacts.py` validates schemas/templates, cross-catalog references and a positive experience fixture.
-
-`scripts/validate-client-architecture.py` validates the V4-4 client contract, platform-specific examples, scoped gate semantics, skill bindings and negative safety cases.
-
-The experience validator specifically verifies that:
-
-1. batches cannot exceed ten views;
-2. every batch inventory ID exists in the declared inventory;
-3. generated/approved views have repository-owned asset paths;
-4. approved views pass contract/accessibility review;
-5. file existence alone does not imply approval;
-6. scoped gates use the correct scope;
-7. catalog phase/check/gate/workflow references remain internally consistent.
-
-The client architecture validator additionally verifies that:
-
-1. web and Android inventory namespaces cannot cross;
-2. Brownfield contracts require coexistence metadata;
-3. API authorization guardrails cannot be disabled;
-4. idempotent operation IDs belong to the slice API binding;
-5. request-correlation headers remain consistent;
-6. React and Android architecture skills resolve to materialized repository files;
-7. `client_architecture_ready` requires the complete V4-4 check set.
-
-## Compatibility
-
-V4 additions are intentionally backward compatible with v0.3 consumer status files:
-
-- existing project-scoped gates remain valid;
-- `interface_slices`, `scoped_gates`, `artifacts` and `artifact_locations` are optional;
-- client architecture is adopted by existing consumers through Compliance Review, not silent migration;
-- stable consumer projects remain on their declared Blueprint version until Compliance Review approves adoption.
+Reference pilots remain evidence sources and are never hidden normative dependencies.

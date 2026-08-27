@@ -1,7 +1,7 @@
 ---
 id: dev-git-workflow
 title: Git Workflow and Review Boundaries
-version: 0.5.0-dev
+version: 0.5.0
 status: materialized
 category: core
 applies_to:

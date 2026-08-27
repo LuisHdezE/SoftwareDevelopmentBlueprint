@@ -1,7 +1,7 @@
 ---
 id: dev-event-logging-audit
 title: Technical Logging and Business/Security Audit
-version: 0.5.0-dev
+version: 0.5.0
 status: materialized
 category: core
 applies_to:

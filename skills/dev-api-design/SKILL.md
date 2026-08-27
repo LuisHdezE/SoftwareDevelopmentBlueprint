@@ -1,7 +1,7 @@
 ---
 id: dev-api-design
 title: API Contract Design
-version: 0.5.0-dev
+version: 0.5.0
 status: materialized
 category: backend
 applies_to:

@@ -1,7 +1,7 @@
 ---
 id: dev-functional-interface-slice
 title: Functional Interface Slice Execution
-version: 0.5.0-dev
+version: 0.5.0
 status: materialized
 category: core
 applies_to:
