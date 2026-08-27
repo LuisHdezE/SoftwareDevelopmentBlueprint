@@ -1,5 +1,5 @@
-blueprint_version: 0.5.0
-updated_at: '2026-08-27T01:30:00Z'
+blueprint_version: 0.5.1
+updated_at: '2026-08-27T14:15:00Z'
 phases:
   api_gate:
     status: PASS
@@ -17,6 +17,10 @@ phases:
     status: COMPLETE
     progress: 100
 checks:
+  api.architecture_implementation_conformance:
+    status: PASS
+    verification: evidence
+    evidence_ids: [EVD-ARCH-CONFORMANCE-001]
   functional.traceability:
     status: PASS
     verification: evidence
@@ -32,16 +36,17 @@ checks:
 gates:
   api_gate:
     status: PASS
-    evaluated_at: '2026-08-27T00:30:00Z'
+    evaluated_at: '2026-08-27T13:55:00Z'
+    evidence_ids: [EVD-ARCH-CONFORMANCE-001]
   interface_scope_ready:
     status: PASS
-    evaluated_at: '2026-08-27T00:35:00Z'
+    evaluated_at: '2026-08-27T14:00:00Z'
   interface_inventory_ready:
     status: PASS
-    evaluated_at: '2026-08-27T00:40:00Z'
+    evaluated_at: '2026-08-27T14:05:00Z'
   design_system_ready:
     status: PASS
-    evaluated_at: '2026-08-27T00:45:00Z'
+    evaluated_at: '2026-08-27T14:10:00Z'
 functional_slices:
   - id: operational-core
     platform: web
@@ -52,27 +57,27 @@ scoped_gates:
     scope_id: operational-core
     platform: web
     status: PASS
-    evaluated_at: '2026-08-27T00:50:00Z'
+    evaluated_at: '2026-08-27T14:11:00Z'
   - gate: functional_slice_ready
     scope: interface_slice_platform
     scope_id: operational-core
     platform: web
     status: PASS
-    evaluated_at: '2026-08-27T01:00:00Z'
+    evaluated_at: '2026-08-27T14:12:00Z'
     evidence_ids: [EVD-FUNC-001]
   - gate: visual_functional_review_pass
     scope: interface_slice_platform
     scope_id: operational-core
     platform: web
     status: PASS
-    evaluated_at: '2026-08-27T01:05:00Z'
+    evaluated_at: '2026-08-27T14:13:00Z'
     evidence_ids: [EVD-REVIEW-001]
   - gate: integration_qa_pass
     scope: interface_slice_platform
     scope_id: operational-core
     platform: web
     status: PASS
-    evaluated_at: '2026-08-27T01:10:00Z'
+    evaluated_at: '2026-08-27T14:14:00Z'
     evidence_ids: [EVD-QA-001]
 blockers: []
 api_impacts:
@@ -80,6 +85,9 @@ api_impacts:
     artifact: templates/api-impact.example.json
     status: RESOLVED
 artifacts:
+  - id: EVD-ARCH-CONFORMANCE-001
+    type: architecture_conformance
+    value: ci://architecture-conformance/example/1
   - id: EVD-FUNC-001
     type: functional_slice
     value: templates/functional-interface-slice.example.json
