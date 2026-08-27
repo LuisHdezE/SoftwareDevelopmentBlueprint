@@ -1,8 +1,9 @@
 # Software Development Blueprint - Current State
 
 > CURRENT CHECKPOINT / DERIVED SUMMARY  
-> Fecha de cierre representada: **2026-08-26 America/Montevideo**.  
-> Release representada: **0.5.0**.
+> Fecha representada: **2026-08-27 America/Montevideo**.  
+> Última release estable: **0.5.0**.  
+> Línea activa de hardening: **0.5.1-dev**.
 
 Este documento es un resumen humano. No sustituye a `BLUEPRINT.md`, `VERSION`, `catalog/`, `workflows/`, `schemas/`, `templates/`, `skills/` ni a la evidencia de los repositorios consumidores.
 
@@ -18,19 +19,31 @@ Cuando exista contradicción:
 
 GitHub versionado prevalece sobre handoffs conversacionales.
 
-## 2. Blueprint estable
+## 2. Blueprint estable y desarrollo activo
 
 Repositorio: `LuisHdezE/SoftwareDevelopmentBlueprint`
 
-Versión estable: **0.5.0**
+Última versión estable: **0.5.0**.
 
-Conteos del núcleo:
+`VERSION` permanece en **0.5.0** durante el hardening de patch. No se publica una nueva versión estable por modificar una rama de desarrollo.
+
+Conteos estables 0.5.0:
 
 - **28 fases**;
 - **134 checks**;
 - **18 gates**;
 - **14 skills materializadas**;
 - **25 skills planificadas**.
+
+Candidata 0.5.1-dev de Architecture Implementation Conformance:
+
+- **28 fases**;
+- **137 checks**;
+- **18 gates**;
+- **15 skills materializadas**;
+- **25 skills planificadas**.
+
+El delta es deliberadamente pequeño: tres checks REQUIRED y una nueva skill, sin crear fases ni gates artificiales.
 
 ## 3. Cambio central de 0.5.0
 
@@ -47,7 +60,35 @@ Requirements Ready
 
 El baseline temprano describe interfaces observadas/intencionadas y puede registrar necesidades API sin inventar bindings. El inventario ejecutable posterior al API Gate reconcilia el alcance con permisos, dependencias y `operationId` autoritativos.
 
-## 4. Pipeline canónico
+## 4. Hardening 0.5.1-dev: Architecture Implementation Conformance
+
+El piloto CUSA-Digital demostró una brecha del Core 0.5.0: era posible tener Architecture Ready, API Implemented y API QA en PASS mientras nadie comprobaba que la implementación real respetara las fronteras arquitectónicas aprobadas.
+
+La corrección introduce tres checks canónicos:
+
+1. `architecture.implementation_constraints` en `architecture_security_data`;
+2. `architecture.implementation_conformance` en `api_implementation`;
+3. `architecture.conformance_guard` en `api_implementation`, con verificación `automatic`.
+
+La nueva regla es:
+
+```text
+functional correctness != architecture implementation conformance
+```
+
+`architecture_ready` exige restricciones implementables y verificables. `api_implemented` exige conformidad de la revisión exacta y un guard ejecutable requerido en CI. `api_gate` vuelve a exigir las tres comprobaciones antes de client delivery.
+
+El contrato machine-readable es `schemas/architecture-conformance.schema.json`, con ejemplo en `templates/architecture-conformance.example.json`.
+
+La skill reusable es `dev-architecture-conformance`.
+
+La validación automática está en `scripts/validate-architecture-conformance.py` y `.github/workflows/blueprint-architecture-conformance-validation.yml`.
+
+Clean Architecture no se convierte en un dogma universal. El Blueprint exige conformidad con la arquitectura aprobada por cada proyecto. Si el proyecto aprueba Clean/Hexagonal, entonces se validan sus restricciones de dependencia y separación; si aprueba otra arquitectura, se validan las restricciones equivalentes de ese contrato.
+
+## 5. Pipeline canónico
+
+La forma de la secuencia permanece estable:
 
 ```text
 Discovery / Brownfield Inspection + AS-IS + Gap Analysis
@@ -73,7 +114,9 @@ Discovery / Brownfield Inspection + AS-IS + Gap Analysis
 
 Visual Identity y Mockups/Prototypes son condicionales.
 
-## 5. Functional Interface Slice
+La diferencia 0.5.1-dev es que Architecture Ready, API Implemented y API Gate tienen ahora obligaciones explícitas de conformidad de implementación.
+
+## 6. Functional Interface Slice
 
 Unidad canónica de ejecución cliente: `interface_slice + platform`.
 
@@ -87,7 +130,7 @@ Visual & Functional Review e Integration QA son gates independientes, no estados
 
 `ACCEPTED` añade Review PASS, Integration QA PASS, aceptación humana explícita y cero blockers abiertos.
 
-## 6. BLOCKED_BY_API
+## 7. BLOCKED_BY_API
 
 `BLOCKED_BY_API` es un overlay sobre el lifecycle. Se usa solo ante una carencia o incompatibilidad autoritativa de API: data, operation, permission, state, transition o contract capability.
 
@@ -95,7 +138,7 @@ Conserva el último lifecycle válido. La solución se realiza en una frontera A
 
 Errores normales de frontend o incertidumbre visual no se etiquetan como `BLOCKED_BY_API`.
 
-## 7. Evolución API
+## 8. Evolución API
 
 El primer `api_gate` continúa siendo project-scoped.
 
@@ -105,7 +148,9 @@ Cambios posteriores usan `schemas/api-impact.schema.json`:
 - auth/authorization/security/error/versioning u otros cambios cross-cutting -> posible escalado a plataforma/proyecto;
 - evidencia aceptada no relacionada se preserva por defecto.
 
-## 8. Client Architecture
+Un refactor de conformidad arquitectónica que no cambia contrato puede preservar la API baseline, pero debe probar por separado regresión funcional y conformidad arquitectónica. Si el refactor cambia el contrato autoritativo, vuelve al flujo normal de API impact.
+
+## 9. Client Architecture
 
 Modelo efectivo:
 
@@ -119,7 +164,7 @@ La baseline concentra decisiones reutilizables de plataforma. El binding declara
 
 `visual_references.mode = none` es válido. Mockups no son una dependencia universal.
 
-## 9. Experiencia visual
+## 10. Experiencia visual
 
 Design System es requerido para client delivery. Visual Identity es condicional.
 
@@ -129,11 +174,15 @@ Mockups/prototypes son condicionales y, cuando se usan:
 
 El review final se realiza sobre el cliente funcional real, no solo sobre imágenes.
 
-## 10. Cross-Artifact Semantic Integrity
+## 11. Cross-Artifact Semantic Integrity
 
 Los validadores comprueban la cadena real:
 
 `requirement -> interface -> permission -> operationId -> slice -> client architecture -> evidence/test -> review/QA -> acceptance`.
+
+El hardening 0.5.1 añade una cadena previa de ingeniería del servidor:
+
+`approved architecture -> verifiable constraints -> implementation revision -> CI conformance guard -> api_implemented/api_gate`.
 
 Se rechazan IDs ficticios, operationIds inexistentes, namespaces de plataforma incompatibles, permisos inventados, evidencias inexistentes, acceptance sin gates y blockers ocultos.
 
@@ -144,38 +193,26 @@ Validadores principales:
 - `scripts/validate-client-architecture.py`
 - `scripts/validate-skills.py`
 - `scripts/validate-reference-pilot-compliance.py`
+- `scripts/validate-architecture-conformance.py`
 - `scripts/validate-release.py`
 
-## 11. Skills 0.5.0
+## 12. Skills
 
-Materializadas:
+Estables en 0.5.0: **14** materializadas.
 
-1. `dev-git-workflow`
-2. `dev-brownfield-analysis`
-3. `dev-api-design`
-4. `dev-openapi`
-5. `dev-postman-qa`
-6. `dev-contract-testing`
-7. `dev-web-view-inventory`
-8. `dev-design-system`
-9. `dev-mockup-planning`
-10. `dev-accessibility`
-11. `dev-react-client-architecture`
-12. `dev-android-client-architecture`
-13. `dev-functional-interface-slice`
-14. `dev-event-logging-audit`
+Candidata 0.5.1-dev: **15** materializadas, añadiendo `dev-architecture-conformance`.
 
 Las 25 restantes siguen `planned`; catalogarlas no equivale a materializarlas.
 
-## 12. Brownfield y reference pilots
+## 13. Brownfield y reference pilots
 
 Brownfield mantiene **ALIGN, DO NOT REWRITE** y la separación `OBSERVED / INFERRED / PROPOSED`.
 
-CareShift sigue siendo un reference pilot no normativo. Su Compliance Review histórico evaluó un snapshot 0.4 prerelease y su versión de consumidor no se modifica por la publicación de 0.5.
+Architecture Conformance en Brownfield se evalúa contra el TO-BE aprobado. No autoriza reescrituras solo por estética arquitectónica y puede registrar excepciones legacy aceptadas cuando el contrato objetivo lo permita.
 
-Los manifests/reviews de 0.4 permanecen historia verificable.
+CareShift sigue siendo un reference pilot no normativo. CUSA-Digital aportó la evidencia que reveló la brecha de conformidad, pero tampoco es una dependencia normativa del Master.
 
-## 13. Consumidores y adopción
+## 14. Consumidores y adopción
 
 No existe automatic consumer upgrade.
 
@@ -188,22 +225,33 @@ Una release estable del Master no cambia `.blueprint/status.yaml`, código, sche
 5. PR de adopción separada;
 6. revalidación según el impacto real.
 
-CUSA-Digital permaneció congelado durante la construcción de Blueprint 0.5.0. Su siguiente paso, después del cierre efectivo de la release y en un contexto nuevo/reverificado, es Compliance Review **0.4.0 -> 0.5.0**. Solo después de una adopción explícita se continúa con Interface Inventory Ready y Functional Interface Slices.
+CUSA-Digital sigue declarando Blueprint **0.5.0** después de su propia remediación de Clean Architecture. El desarrollo o eventual merge de 0.5.1-dev no lo actualiza automáticamente.
 
-## 14. Release closure y tag
+Solo después de publicar una release estable 0.5.1 podrá evaluarse una Compliance Review `0.5.0 -> 0.5.1` separada.
 
-`VERSION`, catalogs, workflows, schemas, templates y skills activos convergen en 0.5.0. Los schema `$id` específicos están versionados.
+## 15. Release closure 0.5.1
 
-El manifest machine-readable es `documentation/BLUEPRINT_V0_5_RELEASE.json` y las notas están en `documentation/BLUEPRINT_V0_5_RELEASE_NOTES.md`.
+Este hardening no publica 0.5.1.
 
-La etiqueta `v0.5.0` se crea únicamente después de fusionar el PR de release, verificar el árbol aprobado en `main` y confirmar CI post-merge. Este checkpoint no debe usarse para afirmar que el tag existe antes de esa verificación.
+La futura frontera de release debe:
 
-## 15. Fuera de 0.5.0
+- promover identidad estable `0.5.1`;
+- reconciliar schemas/templates/skills activos;
+- actualizar `VERSION`, README, Current State, release notes y manifest;
+- ejecutar validación completa sobre el head exacto;
+- requerir aprobación humana;
+- mergear y verificar `main`;
+- crear `v0.5.1` solo después de la validación post-merge.
 
-No forma parte de la release:
+Hasta entonces, 0.5.0 sigue siendo la última release estable.
+
+## 16. Fuera de esta frontera
+
+No forma parte del hardening 0.5.1-dev actual:
 
 - mutar automáticamente consumidores;
-- iniciar la UI de CUSA desde el Master release PR;
-- materializar las 25 skills todavía planned;
+- reabrir o cambiar el contrato API de CUSA;
+- iniciar Design System de CUSA desde el Master;
+- materializar otras skills planned;
 - construir Blueprint Control Center;
 - declarar Blueprint 1.0.
