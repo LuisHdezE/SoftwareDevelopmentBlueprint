@@ -1,4 +1,4 @@
-version: 0.5.0
+version: 0.5.1-dev
 checks:
   - {id: discovery.product_vision, phase: discovery, type: REQUIRED, verification: manual}
   - {id: discovery.scope_mvp, phase: discovery, type: REQUIRED, verification: manual}
@@ -25,6 +25,7 @@ checks:
   - {id: architecture.decision_records, phase: architecture_security_data, type: REQUIRED, verification: evidence}
   - {id: architecture.security_model, phase: architecture_security_data, type: REQUIRED, verification: evidence}
   - {id: architecture.threat_model, phase: architecture_security_data, type: CONDITIONAL, verification: evidence}
+  - {id: architecture.implementation_constraints, phase: architecture_security_data, type: REQUIRED, verification: evidence, rule: approved_architecture_must_define_verifiable_dependency_framework_persistence_presentation_module_and_port_adapter_constraints_when_applicable}
   - {id: data.architecture, phase: architecture_security_data, type: REQUIRED, verification: evidence}
   - {id: data.schema_migrations, phase: architecture_security_data, type: REQUIRED, verification: evidence}
   - {id: data.authoritative_database, phase: architecture_security_data, type: REQUIRED, verification: evidence}
@@ -47,6 +48,8 @@ checks:
   - {id: api.auth_authorization, phase: api_implementation, type: REQUIRED, verification: evidence}
   - {id: api.audit_logging, phase: api_implementation, type: REQUIRED, verification: evidence}
   - {id: api.backend_tests, phase: api_implementation, type: REQUIRED, verification: evidence}
+  - {id: architecture.implementation_conformance, phase: api_implementation, type: REQUIRED, verification: evidence, rule: implementation_revision_must_conform_to_approved_architecture_constraints_functional_correctness_is_not_sufficient}
+  - {id: architecture.conformance_guard, phase: api_implementation, type: REQUIRED, verification: automatic, rule: executable_architecture_boundary_guard_must_run_in_ci_and_pass_on_the_reviewed_revision}
 
   - {id: api.openapi, phase: openapi_validation, type: GENERATED, verification: file}
   - {id: api.openapi_validation, phase: openapi_validation, type: REQUIRED, verification: evidence}
