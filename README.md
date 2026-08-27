@@ -6,9 +6,9 @@ El Blueprint define **cómo** descubrir, reconstruir, documentar, diseñar, impl
 
 ## Release estable
 
-**Blueprint 0.5.0**
+**Blueprint 0.5.1**
 
-0.5.0 convierte el tramo cliente post-API en un flujo funcional, trazable y verificable. Los mockups dejan de ser un requisito universal y el cliente real pasa a ser la unidad de revisión y QA.
+0.5.1 es un patch de hardening sobre 0.5.0. Mantiene el flujo funcional post-API introducido en 0.5.0 y añade una obligación que el piloto CUSA-Digital reveló como faltante: la implementación debe demostrar que **conforma con la arquitectura previamente aprobada**.
 
 Cadena principal:
 
@@ -17,7 +17,9 @@ Discovery / Brownfield
   -> Requirements
   -> Interface Scope Baseline
   -> Architecture / Security / Data
-  -> API Contract / Implementation / OpenAPI / Postman / API QA
+  -> API Contract
+  -> API Implementation + Architecture Implementation Conformance
+  -> OpenAPI / Postman / API QA
   -> API Gate
   -> Executable Interface Inventory
   -> Design System
@@ -30,6 +32,27 @@ Discovery / Brownfield
 ```
 
 `Visual Identity` y `Mockups / Prototypes` son capacidades condicionales.
+
+## Qué cambia en 0.5.1
+
+Se incorpora el check REQUIRED:
+
+`api.architecture_implementation_conformance`
+
+Ahora `api_implemented` y `api_gate` exigen evidencia de que el código respeta el contrato arquitectónico aprobado, incluyendo, cuando aplique:
+
+- dirección de dependencias;
+- límites de módulos/capas/contextos;
+- ownership de Presentation, Application, Domain e Infrastructure;
+- puertos/adaptadores y bindings;
+- aislamiento de framework/persistencia según la arquitectura aceptada;
+- architecture fitness functions, reglas estáticas o tests ejecutables cuando sea viable.
+
+Invariante:
+
+`architecture design acceptance != architecture implementation conformance`
+
+Tests funcionales/API verdes no sustituyen esta evidencia.
 
 ## Principios clave
 
@@ -49,13 +72,14 @@ Discovery / Brownfield
 14. Web PASS no autoriza Android ni otro slice.
 15. Cambios API posteriores al baseline usan impact-based revalidation.
 16. Brownfield aplica **ALIGN, DO NOT REWRITE**.
-17. Una nueva versión del Blueprint no actualiza consumidores automáticamente.
-18. CI no sustituye decisiones humanas de review/merge/acceptance.
+17. Arquitectura aprobada debe verificarse también contra la implementación real.
+18. Una nueva versión del Blueprint no actualiza consumidores automáticamente.
+19. CI no sustituye decisiones humanas de review/merge/acceptance.
 
-## Núcleo 0.5.0
+## Núcleo 0.5.1
 
 - **28 fases** canónicas.
-- **134 checks**.
+- **135 checks**.
 - **18 gates**.
 - **14 skills materializadas** y **25 planificadas**.
 - Interface Scope Baseline + Executable Interface Inventory.
@@ -64,7 +88,7 @@ Discovery / Brownfield
 - API impact graph por `operationId` y contratos cross-cutting.
 - Cross-Artifact Semantic Integrity con fixtures positivos/negativos.
 - Client Architecture compuesta y sin dependencia obligatoria de mockups.
-- evidencia reforzada para runtime, archivos y decisiones humanas.
+- Architecture Implementation Conformance como obligación del API Implementation/API Gate.
 
 ## Modos
 
@@ -107,22 +131,27 @@ SoftwareDevelopmentBlueprint/
 
 - `BLUEPRINT.md`: estándar normativo.
 - `documentation/BLUEPRINT_CURRENT_STATE.md`: checkpoint humano derivado.
-- `documentation/BLUEPRINT_V0_5_RELEASE_NOTES.md`: alcance y compatibilidad de 0.5.0.
-- `documentation/BLUEPRINT_V0_5_RELEASE.json`: manifest machine-readable de la release.
+- `documentation/BLUEPRINT_V0_5_1_ARCHITECTURE_CONFORMANCE_HARDENING.md`: decisión y evidencia del hardening.
+- `documentation/BLUEPRINT_V0_5_1_RELEASE_NOTES.md`: alcance y compatibilidad de 0.5.1.
+- `documentation/BLUEPRINT_V0_5_1_RELEASE.json`: manifest machine-readable de la release.
 - `documentation/EXPERIENCE_ARTIFACT_MODEL.md`: contratos de experiencia, slices, blockers y evidencia.
 - `documentation/CLIENT_ARCHITECTURE_CONTRACT.md`: arquitectura cliente compuesta.
 - `documentation/SKILL_MODEL.md`: contrato de skills.
 
-Los documentos y manifests de 0.4 se conservan como historia de release y no se reescriben para aparentar adopción posterior.
+Los documentos y manifests de 0.4 y 0.5.0 se conservan como historia de release y no se reescriben para aparentar adopción posterior.
 
 ## Reference pilots y consumidores
 
 Los reference pilots son no normativos. Sus hallazgos pueden promover reglas al Blueprint solo mediante una frontera explícita.
 
-Un consumidor permanece en su versión declarada hasta un **Compliance Review** y una adopción explícita. La publicación de 0.5.0 no modifica CUSA-Digital, CareShift ni ningún otro repositorio consumidor.
+CUSA-Digital expuso el gap de Architecture Implementation Conformance mientras consumía 0.5.0. El Blueprint generaliza esa lección sin convertir la estructura específica de CUSA en estándar universal.
 
-## Versionado y release
+Un consumidor permanece en su versión declarada hasta un **Compliance Review** y una adopción explícita. La publicación de 0.5.1 no modifica CUSA-Digital ni ningún otro repositorio consumidor.
 
-Blueprint usa SemVer. Los schemas específicos de 0.5.0 usan IDs versionados y los templates/skills activos comparten la misma identidad estable.
+## Versionado y provenance
 
-La etiqueta de esta release es `v0.5.0`; por política se crea únicamente después de fusionar el PR de release, verificar el árbol aprobado en `main` y confirmar su validación post-merge.
+Blueprint usa SemVer. `VERSION` identifica la release raíz estable.
+
+En un patch, los componentes cuyo contrato no cambia pueden conservar su versión anterior. En 0.5.1 se actualizan checks/gates y los schemas/templates que declaran la versión del consumidor; los workflows, skills y schemas de experiencia sin cambio conservan provenance 0.5.0 y son reutilizados de forma explícitamente compatible.
+
+La etiqueta de esta release será `v0.5.1`; por política se crea únicamente después de fusionar el PR de release, verificar el árbol aprobado en `main` y confirmar su validación post-merge.
