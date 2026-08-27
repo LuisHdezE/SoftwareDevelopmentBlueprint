@@ -35,14 +35,12 @@ V5_DEV_VERSIONED_FILES = [
     "catalog/phases.yaml",
     "catalog/checks.yaml",
     "catalog/gates.yaml",
+    "catalog/skills.yaml",
     "workflows/greenfield.yaml",
     "workflows/brownfield.yaml",
 ]
 
-V5_STILL_STABLE_FILES = [
-    "catalog/skills.yaml",
-    "catalog/reference-pilots.yaml",
-]
+V5_STILL_STABLE_FILES = ["catalog/reference-pilots.yaml"]
 
 V4_POST_API_PIPELINE = [
     "interface_inventory",
@@ -201,7 +199,6 @@ def validate_stable_v4() -> None:
             fail(f"{path} must map client architecture to scoped gate in stable v0.4 mode")
 
     validate_historical_v4_release_manifest()
-
     for path in (
         "README.md",
         "documentation/BLUEPRINT_CURRENT_STATE.md",
@@ -229,17 +226,14 @@ def validate_v5_development_identity() -> None:
     for path in V5_STILL_STABLE_FILES:
         document = load_yaml(path)
         if document.get("version") != STABLE_V4:
-            fail(
-                f"{path} remains on {STABLE_V4} until its dedicated V5 boundary; "
-                f"got {document.get('version')}"
-            )
+            fail(f"{path} remains on {STABLE_V4} until release closure")
 
     project_example = load_yaml("templates/project.example.yaml")
     status_example = load_yaml("templates/status.example.yaml")
     if project_example.get("blueprint", {}).get("version") != STABLE_V4:
-        fail("project example must remain on stable v0.4 until V5 schema/template boundary")
+        fail("stable project example must remain on v0.4 until V5 release closure")
     if status_example.get("blueprint_version") != STABLE_V4:
-        fail("status example must remain on stable v0.4 until V5 schema/template boundary")
+        fail("stable status example must remain on v0.4 until V5 release closure")
 
     blueprint = (ROOT / "BLUEPRINT.md").read_text(encoding="utf-8")
     required_tokens = [
@@ -361,6 +355,26 @@ def validate_v5_catalog_semantics() -> None:
     )
 
 
+def validate_v5_skill_semantics() -> None:
+    skills = load_yaml("catalog/skills.yaml")
+    if skills.get("version") != DEV_V5:
+        fail("V5 skill catalog must declare 0.5.0-dev")
+    registry = skills.get("registry", {})
+    entry = registry.get("dev-functional-interface-slice")
+    if not entry or entry.get("status") != "materialized":
+        fail("dev-functional-interface-slice must be materialized in V5")
+    if entry.get("path") != "skills/dev-functional-interface-slice/SKILL.md":
+        fail("dev-functional-interface-slice registry path drifted")
+    mandatory = set(skills.get("mandatory_v0_5_materialized", []))
+    if "dev-functional-interface-slice" not in mandatory:
+        fail("dev-functional-interface-slice must be mandatory_v0_5_materialized")
+    categories = skills.get("categories", {})
+    for category in ("web", "android"):
+        if "dev-functional-interface-slice" not in set(categories.get(category, {}).get("skills", [])):
+            fail(f"{category} category must reference dev-functional-interface-slice")
+    print("PASS V5 skill semantics: functional slice execution skill materialized")
+
+
 def validate_v5_workflows() -> None:
     expected_gate_map = {
         "after_interface_scope_baseline": "interface_scope_ready",
@@ -373,13 +387,7 @@ def validate_v5_workflows() -> None:
         "per_slice_platform_after_integration_qa": "integration_qa_pass",
         "before_release": "release_gate",
     }
-    expected_lifecycle = [
-        "INVENTORIED",
-        "READY",
-        "IN_PROGRESS",
-        "FUNCTIONAL",
-        "ACCEPTED",
-    ]
+    expected_lifecycle = ["INVENTORIED", "READY", "IN_PROGRESS", "FUNCTIONAL", "ACCEPTED"]
 
     for path in ("workflows/greenfield.yaml", "workflows/brownfield.yaml"):
         workflow = load_yaml(path)
@@ -477,6 +485,7 @@ def main() -> int:
     elif phases_version == DEV_V5:
         validate_v5_development_identity()
         validate_v5_catalog_semantics()
+        validate_v5_skill_semantics()
         validate_v5_workflows()
         mode = "development-v0.5"
     else:
