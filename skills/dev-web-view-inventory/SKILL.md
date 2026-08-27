@@ -1,7 +1,7 @@
 ---
 id: dev-web-view-inventory
 title: Web Interface Inventory
-version: 0.5.0-dev
+version: 0.5.0
 status: materialized
 category: web
 applies_to:

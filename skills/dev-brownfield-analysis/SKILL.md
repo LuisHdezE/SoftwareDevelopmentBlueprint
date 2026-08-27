@@ -1,7 +1,7 @@
 ---
 id: dev-brownfield-analysis
 title: Brownfield Analysis and Alignment
-version: 0.5.0-dev
+version: 0.5.0
 status: materialized
 category: brownfield
 applies_to:

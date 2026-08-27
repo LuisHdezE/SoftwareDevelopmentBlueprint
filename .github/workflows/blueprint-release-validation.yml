@@ -1,10 +1,12 @@
-name: Blueprint State Validation
+name: Blueprint Release Validation
 
 on:
   push:
     branches:
       - main
       - 'blueprint/**'
+    tags:
+      - 'v*'
     paths:
       - VERSION
       - README.md
@@ -24,10 +26,12 @@ on:
       - documentation/BLUEPRINT_V0_5_ROADMAP.md
       - documentation/BLUEPRINT_V0_5_RELEASE.json
       - documentation/BLUEPRINT_V0_5_RELEASE_NOTES.md
+      - documentation/EXPERIENCE_ARTIFACT_MODEL.md
+      - documentation/CLIENT_ARCHITECTURE_CONTRACT.md
+      - documentation/SKILL_MODEL.md
       - .github/workflows/blueprint-release-validation.yml
   pull_request:
-    branches:
-      - main
+    branches: [main]
     paths:
       - VERSION
       - README.md
@@ -47,6 +51,9 @@ on:
       - documentation/BLUEPRINT_V0_5_ROADMAP.md
       - documentation/BLUEPRINT_V0_5_RELEASE.json
       - documentation/BLUEPRINT_V0_5_RELEASE_NOTES.md
+      - documentation/EXPERIENCE_ARTIFACT_MODEL.md
+      - documentation/CLIENT_ARCHITECTURE_CONTRACT.md
+      - documentation/SKILL_MODEL.md
       - .github/workflows/blueprint-release-validation.yml
 
 permissions:
@@ -58,14 +65,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
-
       - name: Setup Python
         uses: actions/setup-python@v7
         with:
           python-version: '3.14'
-
       - name: Install validator dependencies
         run: python -m pip install --disable-pip-version-check jsonschema==4.26.0 PyYAML==6.0.2
-
-      - name: Validate Blueprint stable/development state
+      - name: Validate Blueprint release state
         run: python scripts/validate-release.py

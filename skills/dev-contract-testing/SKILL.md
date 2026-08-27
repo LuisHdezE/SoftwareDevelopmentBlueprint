@@ -1,7 +1,7 @@
 ---
 id: dev-contract-testing
 title: Contract and Runtime API Testing
-version: 0.5.0-dev
+version: 0.5.0
 status: materialized
 category: backend
 applies_to:

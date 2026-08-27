@@ -1,6 +1,5 @@
-blueprint_version: 0.4.0
-updated_at: "2026-08-25T00:00:00Z"
-
+blueprint_version: 0.5.0
+updated_at: '2026-08-27T01:30:00Z'
 phases:
   api_gate:
     status: PASS
@@ -8,71 +7,91 @@ phases:
   interface_inventory:
     status: COMPLETE
     progress: 100
-  design_system:
+  functional_interface_slice:
     status: COMPLETE
     progress: 100
-  mockups:
-    status: IN_PROGRESS
-    progress: 40
-  visual_review_gate:
-    status: IN_PROGRESS
-    progress: 40
-  client_architecture:
-    status: BLOCKED
-    progress: 0
-
+  visual_functional_review:
+    status: COMPLETE
+    progress: 100
+  integration_qa:
+    status: COMPLETE
+    progress: 100
 checks:
-  ui.web_inventory:
+  functional.traceability:
     status: PASS
     verification: evidence
-    evidence:
-      - type: file
-        value: .blueprint/ui/interface-inventory.json
-  design.system:
+    evidence_ids: [EVD-FUNC-001]
+  review.human_complete:
+    status: PASS
+    verification: manual
+    evidence_ids: [EVD-REVIEW-001]
+  qa.integration:
     status: PASS
     verification: evidence
-    evidence:
-      - type: design_system
-        value: .blueprint/ui/design-system.json
-  mockups.assets_versioned:
-    status: PENDING
-    verification: evidence
-    evidence: []
-
+    evidence_ids: [EVD-QA-001]
 gates:
   api_gate:
     status: PASS
-    evaluated_at: "2026-08-25T00:00:00Z"
+    evaluated_at: '2026-08-27T00:30:00Z'
+  interface_scope_ready:
+    status: PASS
+    evaluated_at: '2026-08-27T00:35:00Z'
   interface_inventory_ready:
     status: PASS
-    evaluated_at: "2026-08-25T00:00:00Z"
+    evaluated_at: '2026-08-27T00:40:00Z'
   design_system_ready:
     status: PASS
-    evaluated_at: "2026-08-25T00:00:00Z"
-
-interface_slices:
+    evaluated_at: '2026-08-27T00:45:00Z'
+functional_slices:
   - id: operational-core
-    inventory_ids: [WEB-001, WEB-004]
-    platforms: [web]
-    status: IN_PROGRESS
-    mockup_batches: [BATCH-01]
-    approved_references: []
-
+    platform: web
+    artifact: templates/functional-interface-slice.example.json
 scoped_gates:
-  - gate: visual_review_pass
-    scope: interface_slice
-    scope_id: operational-core
-    status: PENDING
-    evaluated_at: null
   - gate: client_architecture_ready
     scope: interface_slice_platform
     scope_id: operational-core
     platform: web
-    status: BLOCKED
-    evaluated_at: null
-
+    status: PASS
+    evaluated_at: '2026-08-27T00:50:00Z'
+  - gate: functional_slice_ready
+    scope: interface_slice_platform
+    scope_id: operational-core
+    platform: web
+    status: PASS
+    evaluated_at: '2026-08-27T01:00:00Z'
+    evidence_ids: [EVD-FUNC-001]
+  - gate: visual_functional_review_pass
+    scope: interface_slice_platform
+    scope_id: operational-core
+    platform: web
+    status: PASS
+    evaluated_at: '2026-08-27T01:05:00Z'
+    evidence_ids: [EVD-REVIEW-001]
+  - gate: integration_qa_pass
+    scope: interface_slice_platform
+    scope_id: operational-core
+    platform: web
+    status: PASS
+    evaluated_at: '2026-08-27T01:10:00Z'
+    evidence_ids: [EVD-QA-001]
+blockers: []
+api_impacts:
+  - id: API-IMPACT-001
+    artifact: templates/api-impact.example.json
+    status: RESOLVED
 artifacts:
-  - id: EVD-MANIFEST-001
-    type: mockup_manifest
-    value: .blueprint/mockups/batch-01/manifest.json
-    description: Operational Core mockup manifest.
+  - id: EVD-FUNC-001
+    type: functional_slice
+    value: templates/functional-interface-slice.example.json
+  - id: EVD-REVIEW-001
+    type: manual_approval
+    value: human://visual-functional-review/operational-core-web
+  - id: EVD-QA-001
+    type: integration_qa
+    value: ci://integration-qa/operational-core-web/1
+  - id: EVD-ACCEPT-001
+    type: human_acceptance
+    value: human://acceptance/operational-core-web
+  - id: EVD-API-IMPACT-001
+    type: api_impact_report
+    value: templates/api-impact.example.json

@@ -1,7 +1,7 @@
 ---
 id: dev-design-system
 title: Visual Identity and Design System
-version: 0.5.0-dev
+version: 0.5.0
 status: materialized
 category: web
 applies_to:

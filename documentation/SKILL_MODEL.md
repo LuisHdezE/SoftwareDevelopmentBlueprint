@@ -1,57 +1,46 @@
-# Blueprint v0.4 — Executable Skill Model
+# Blueprint v0.5 - Executable Skill Model
 
 ## Objective
 
-Make reusable process knowledge loadable by an AI directly from the repository. A skill is an executable procedure bound to canonical Blueprint contracts, not a free-standing source of product truth.
+Make reusable process knowledge executable by an AI directly from the repository. A skill explains **how** to satisfy Blueprint contracts; it is never a free-standing source of product truth and cannot declare a gate passed on its own.
 
 ## Authority order
 
-When instructions disagree, use this precedence:
-
-1. Consumer project's declared Blueprint version and approved project contracts/evidence.
-2. Canonical Blueprint documents, catalogs, schemas, workflows, checks and gates for that version.
+1. Consumer project contracts/evidence for its declared Blueprint version.
+2. Canonical Blueprint documents/catalogs/schemas/workflows for that version.
 3. Materialized `dev-*` skills.
 4. Project-specific skills.
-5. Chat context or ad-hoc suggestions.
+5. Reference pilots and chat context.
 
-A skill may explain *how* to satisfy a gate. It cannot declare a gate passed on its own.
+## Skill states
 
-## Lifecycle
+`planned` reserves an identifier but provides no runnable procedure.
 
-### planned
-
-The skill identifier is catalogued for future work. An agent must not assume a runnable procedure exists.
-
-### materialized
-
-`catalog/skills.yaml` contains a repository path and the file passes automated skill validation. The agent may load it when its category/capability/phase applies.
+`materialized` means `catalog/skills.yaml` resolves the identifier to `skills/<skill-id>/SKILL.md`, its frontmatter matches the active Blueprint version and automated validation passes.
 
 ## Loading algorithm
 
-Given a consumer project:
+1. Read consumer `blueprint.version`, mode, stack and capabilities.
+2. Read status/slice context.
+3. Load only relevant core and conditional materialized skills.
+4. Inspect each skill's `canonical_references` from the repository.
+5. Follow Stop Conditions instead of inventing missing contracts.
+6. Project-specific skills may add domain knowledge but cannot weaken canonical gates/security rules.
 
-1. Read the project manifest (`blueprint.version`, mode, stack, capabilities).
-2. Read `.blueprint/status.yaml` or equivalent status artifact to identify current phase/slice.
-3. Load core materialized skills relevant to the task.
-4. Add conditional materialized skills for backend/web/android/saas/brownfield/devops capabilities.
-5. For each loaded skill, inspect its `canonical_references`.
-6. If the skill references an artifact that the consumer project does not yet have, follow the skill's stop conditions rather than inventing it.
-7. Project-specific skills may add domain context but cannot weaken Blueprint gates or security rules.
+## Required contract
 
-## Required skill contract
-
-Every materialized `SKILL.md` contains YAML frontmatter:
+Every materialized skill has frontmatter:
 
 - `id`
 - `title`
 - `version`
-- `status: materialized`
+- `status`
 - `category`
 - `applies_to`
 - `phases`
 - `canonical_references`
 
-And these procedural sections:
+Required sections:
 
 - Purpose
 - When to Use
@@ -63,27 +52,37 @@ And these procedural sections:
 - Canonical References
 - Completion Signal
 
-## Product-neutrality rule
+## Blueprint 0.5.0 set
 
-A `dev-*` skill must not contain product-specific domain names, routes, roles, business entities, tenant names, secrets, or hidden assumptions copied from a reference implementation.
+There are **14 materialized skills**:
 
-Reference pilots and older project skills may be used to discover generic patterns. They are evidence sources, not normative sources.
+1. `dev-git-workflow`
+2. `dev-brownfield-analysis`
+3. `dev-api-design`
+4. `dev-openapi`
+5. `dev-postman-qa`
+6. `dev-contract-testing`
+7. `dev-web-view-inventory`
+8. `dev-design-system`
+9. `dev-mockup-planning`
+10. `dev-accessibility`
+11. `dev-react-client-architecture`
+12. `dev-android-client-architecture`
+13. `dev-functional-interface-slice`
+14. `dev-event-logging-audit`
+
+The remaining 25 catalog identifiers stay `planned`.
+
+`dev-functional-interface-slice` operationalizes real client delivery from executable inventory + effective Client Architecture through Functional DoD, Visual & Functional Review, Integration QA and human acceptance. It also enforces `BLOCKED_BY_API` semantics.
+
+## Product neutrality
+
+Generic `dev-*` skills must not leak product names, private routes, domain entities, secrets or hidden assumptions from a pilot. Reference pilots and older project skills may provide patterns, not norms.
 
 ## Validation
 
-`scripts/validate-skills.py` verifies:
-
-- catalog structure;
-- all mandatory v0.4 skills are `materialized`;
-- each materialized path exists;
-- frontmatter identity/category/status/version agrees with the catalog;
-- required sections exist;
-- each canonical reference exists in the Blueprint repository;
-- category lists do not silently reference an unknown skill identifier;
-- materialized `dev-*` skills do not contain known reference-pilot/product markers.
+`scripts/validate-skills.py` verifies catalog identity, current mandatory set, file existence, frontmatter version/category/status, required sections, canonical references, category resolution and known product-specific leakage markers.
 
 CI: `.github/workflows/blueprint-skill-validation.yml`.
 
-## Future extension
-
-V4-3 intentionally materializes the priority set required to operate the Blueprint through Brownfield analysis, API gates, visual delivery, React client architecture, accessibility, and audit. Other catalog identifiers remain `planned` and can be materialized in future releases without pretending they already exist.
+A new Blueprint version may change skill identity only in its explicit release/adoption process; consumer project-specific skills remain versioned by the consumer.

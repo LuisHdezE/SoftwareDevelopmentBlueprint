@@ -2,63 +2,75 @@
 
 Repositorio maestro, versionado y machine-readable para gobernar el desarrollo de soluciones de software asistidas por IA.
 
-El Blueprint define **cómo** descubrir, reconstruir, documentar, diseñar, implementar, validar, entregar y mantener una solución. No pertenece a un producto concreto: cada proyecto declara qué versión consume y conserva su propio estado, evidencia y decisiones.
+El Blueprint define **cómo** descubrir, reconstruir, documentar, diseñar, implementar, validar, entregar y mantener una solución. Cada proyecto declara qué versión consume y conserva su propio estado, evidencia y decisiones.
 
 ## Release estable
 
-**Blueprint 0.4.0**
+**Blueprint 0.5.0**
 
-La release 0.4.0 completa el pipeline desde Discovery/Brownfield hasta diseño y arquitectura cliente con gates verificables, schemas, templates, skills reutilizables y evidencia versionada.
+0.5.0 convierte el tramo cliente post-API en un flujo funcional, trazable y verificable. Los mockups dejan de ser un requisito universal y el cliente real pasa a ser la unidad de revisión y QA.
 
 Cadena principal:
 
 ```text
 Discovery / Brownfield
-  → Requirements
-  → Architecture / Security / Data
-  → API Contract
-  → API Implementation
-  → OpenAPI
-  → Postman
-  → API QA
-  → API Gate
-  → Interface Inventory
-  → Visual Identity
-  → Design System
-  → Mockup Planning
-  → Mockups
-  → Visual Review
-  → Client Architecture
-  → Web / Android Implementation
-  → Integration QA
-  → Release Gate
-  → Operations
+  -> Requirements
+  -> Interface Scope Baseline
+  -> Architecture / Security / Data
+  -> API Contract / Implementation / OpenAPI / Postman / API QA
+  -> API Gate
+  -> Executable Interface Inventory
+  -> Design System
+  -> Client Architecture
+  -> Functional Interface Slice
+  -> Visual & Functional Review
+  -> Integration QA
+  -> Release Gate
+  -> Operations
 ```
 
-## Principios
+`Visual Identity` y `Mockups / Prototypes` son capacidades condicionales.
+
+## Principios clave
 
 1. **Single Source of Truth** en el repositorio.
-2. **Evidence before PASS**: gates y checks deben poder demostrarse.
-3. **API first**: OpenAPI es contrato formal y Postman es verificación operacional.
-4. **No UI antes de API Gate**.
-5. **GENERATED ≠ REVIEWED ≠ APPROVED** para referencias visuales.
-6. Los assets visuales aprobados se versionan y son contexto para futuras IAs.
-7. `visual_review_pass` se evalúa por `interface_slice`.
-8. `client_architecture_ready` se evalúa por `interface_slice + platform`.
-9. La API sigue siendo el límite de autorización.
-10. Brownfield aplica **ALIGN, DO NOT REWRITE**.
-11. Una nueva versión del Blueprint no actualiza consumidores automáticamente: primero se realiza Compliance Review.
-12. Una sola PR activa por boundary de implementación, salvo justificación explícita.
+2. **Evidence before PASS**.
+3. La API es la frontera autoritativa de seguridad y reglas de negocio.
+4. OpenAPI es el contrato formal machine-readable; `operationId` es clave canónica de enlace cliente.
+5. Existe un **Interface Scope Baseline** temprano, pero el cliente ejecutable no comienza antes de `api_gate = PASS`.
+6. `EXECUTABLE_INVENTORY` es el backlog cliente comprometido.
+7. **Functional Interface Slice** es la unidad de ejecución por `slice + platform`.
+8. Lifecycle: `INVENTORIED -> READY -> IN_PROGRESS -> FUNCTIONAL -> ACCEPTED`.
+9. `BLOCKED_BY_API` es un overlay, no un estado lifecycle.
+10. No se permite hardcodear datos autoritativos de negocio para simular funcionalidad.
+11. Client Architecture = Platform Baseline + Slice Binding.
+12. Los mockups son condicionales; `GENERATED != REVIEWED != APPROVED`.
+13. Visual & Functional Review revisa el cliente real.
+14. Web PASS no autoriza Android ni otro slice.
+15. Cambios API posteriores al baseline usan impact-based revalidation.
+16. Brownfield aplica **ALIGN, DO NOT REWRITE**.
+17. Una nueva versión del Blueprint no actualiza consumidores automáticamente.
+18. CI no sustituye decisiones humanas de review/merge/acceptance.
+
+## Núcleo 0.5.0
+
+- **28 fases** canónicas.
+- **134 checks**.
+- **18 gates**.
+- **14 skills materializadas** y **25 planificadas**.
+- Interface Scope Baseline + Executable Interface Inventory.
+- Functional Interface Slice machine-readable.
+- `BLOCKED_BY_API` con estado preservado y resolución evidenciada.
+- API impact graph por `operationId` y contratos cross-cutting.
+- Cross-Artifact Semantic Integrity con fixtures positivos/negativos.
+- Client Architecture compuesta y sin dependencia obligatoria de mockups.
+- evidencia reforzada para runtime, archivos y decisiones humanas.
 
 ## Modos
 
-### Greenfield
+**Greenfield** comienza por Discovery y requirements verificables.
 
-Para soluciones nuevas. Comienza por Discovery y definición verificable del producto.
-
-### Brownfield
-
-Para sistemas existentes. Comienza por inspección del repositorio, reconstrucción AS-IS, Gap Analysis y TO-BE. Se separa siempre `observed`, `inferred` y `proposed`.
+**Brownfield** comienza por inspección, AS-IS, Gap Analysis y TO-BE. Se distingue siempre `OBSERVED`, `INFERRED` y `PROPOSED`; la diferencia arquitectónica por sí sola no justifica una reescritura.
 
 ## Stack por defecto
 
@@ -72,7 +84,7 @@ Cuando no exista una decisión documentada que justifique otra opción:
 - QA operacional API: Postman.
 - Repositorio/CI: GitHub.
 
-En Brownfield son defaults, no autorización para reescribir funcionalidad existente.
+Son defaults. Brownfield no recibe autorización para reescribir funcionalidad existente por estilo.
 
 ## Estructura
 
@@ -81,14 +93,7 @@ SoftwareDevelopmentBlueprint/
 ├── BLUEPRINT.md
 ├── VERSION
 ├── catalog/
-│   ├── phases.yaml
-│   ├── checks.yaml
-│   ├── gates.yaml
-│   ├── skills.yaml
-│   └── reference-pilots.yaml
 ├── workflows/
-│   ├── greenfield.yaml
-│   └── brownfield.yaml
 ├── schemas/
 ├── templates/
 ├── skills/
@@ -98,34 +103,26 @@ SoftwareDevelopmentBlueprint/
 └── .github/workflows/
 ```
 
-## Núcleo 0.4.0
-
-- 25 fases canónicas.
-- 92 checks.
-- 14 gates.
-- 13 skills materializadas y 25 planificadas.
-- schemas para proyecto, estado, inventario de interfaces, Design System/tokens, mockups, evidencia, arquitectura cliente, pilotos y Compliance Review.
-- validación automática de schemas/evidencia, skills, client architecture y reference-pilot compliance.
-- pipeline visual/cliente scoped, que permite progresar por slices sin aprobar todo el producto de una vez.
-
-## Reference Pilot
-
-`LuisHdezE/CareShift_Manager` es el primer piloto Brownfield y permanece **no normativo**.
-
-El Compliance Review de v0.4 concluyó `ADOPT_INCREMENTALLY`: su evidencia v0.3 se conserva; no se reescribe el sistema para parecer un proyecto nuevo. El proyecto consumidor continúa declarando Blueprint 0.3.0 hasta una adopción explícita posterior.
-
 ## Documentación clave
 
 - `BLUEPRINT.md`: estándar normativo.
 - `documentation/BLUEPRINT_CURRENT_STATE.md`: checkpoint humano derivado.
-- `documentation/BLUEPRINT_V0_4_RELEASE_NOTES.md`: alcance y compatibilidad de 0.4.0.
-- `documentation/BLUEPRINT_V0_4_RELEASE.json`: manifest machine-readable de la release.
-- `documentation/EXPERIENCE_ARTIFACT_MODEL.md`: modelo de artefactos UI/visual.
-- `documentation/CLIENT_ARCHITECTURE_CONTRACT.md`: contrato pre-implementación React/Kotlin.
+- `documentation/BLUEPRINT_V0_5_RELEASE_NOTES.md`: alcance y compatibilidad de 0.5.0.
+- `documentation/BLUEPRINT_V0_5_RELEASE.json`: manifest machine-readable de la release.
+- `documentation/EXPERIENCE_ARTIFACT_MODEL.md`: contratos de experiencia, slices, blockers y evidencia.
+- `documentation/CLIENT_ARCHITECTURE_CONTRACT.md`: arquitectura cliente compuesta.
 - `documentation/SKILL_MODEL.md`: contrato de skills.
 
-## Versionado
+Los documentos y manifests de 0.4 se conservan como historia de release y no se reescriben para aparentar adopción posterior.
 
-El Blueprint usa SemVer. Los consumidores permanecen en su versión declarada hasta que un Compliance Review aprueba qué conservar, adoptar, migrar o diferir.
+## Reference pilots y consumidores
 
-La etiqueta prevista para esta release es `v0.4.0`, creada únicamente después de fusionar y verificar el PR de release sobre `main`.
+Los reference pilots son no normativos. Sus hallazgos pueden promover reglas al Blueprint solo mediante una frontera explícita.
+
+Un consumidor permanece en su versión declarada hasta un **Compliance Review** y una adopción explícita. La publicación de 0.5.0 no modifica CUSA-Digital, CareShift ni ningún otro repositorio consumidor.
+
+## Versionado y release
+
+Blueprint usa SemVer. Los schemas específicos de 0.5.0 usan IDs versionados y los templates/skills activos comparten la misma identidad estable.
+
+La etiqueta de esta release es `v0.5.0`; por política se crea únicamente después de fusionar el PR de release, verificar el árbol aprobado en `main` y confirmar su validación post-merge.

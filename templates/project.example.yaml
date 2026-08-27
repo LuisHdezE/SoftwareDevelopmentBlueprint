@@ -1,19 +1,16 @@
 project:
   name: Example Project
   repository: owner/repository
-  description: Example Blueprint-enabled project
-
+  description: Example Blueprint 0.5 stable project
 blueprint:
-  version: 0.4.0
+  version: 0.5.0
   mode: brownfield
-
 stack:
   backend: laravel
   database: mysql
   frontend: react
   styling: tailwind
   mobile: kotlin
-
 capabilities:
   web: true
   android: true
@@ -22,17 +19,19 @@ capabilities:
   offline_mobile: false
   redis: false
   docker: false
-
 artifact_locations:
   status: .blueprint/status.yaml
   evidence_root: .blueprint/evidence
+  interface_scope_baseline: .blueprint/ui/interface-scope-baseline.json
   interface_inventory: .blueprint/ui/interface-inventory.json
   visual_identity: .blueprint/ui/visual-identity.md
   design_system: .blueprint/ui/design-system.json
   design_tokens: .blueprint/ui/design-tokens.json
   mockups_root: .blueprint/mockups
   client_architecture_root: .blueprint/client-architecture
-
+  functional_slices_root: .blueprint/functional-slices
+  api_impacts_root: .blueprint/api-impacts
+  openapi: openapi.yaml
 skills:
   profiles:
     - core

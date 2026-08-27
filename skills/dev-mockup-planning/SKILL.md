@@ -1,7 +1,7 @@
 ---
 id: dev-mockup-planning
 title: Mockup Planning and Review
-version: 0.5.0-dev
+version: 0.5.0
 status: materialized
 category: web
 applies_to:

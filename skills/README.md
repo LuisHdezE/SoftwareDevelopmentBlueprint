@@ -1,27 +1,16 @@
 # Skills Library
 
-Las skills del Blueprint enseñan a los agentes **cómo trabajar**. No duplican la documentación completa del proyecto ni sustituyen los contratos canónicos.
+Las skills del Blueprint enseñan a los agentes **cómo trabajar**. No sustituyen contratos canónicos ni documentación específica del producto.
 
-## Contrato ejecutable v0.4
+## Contrato ejecutable v0.5
 
 Una skill materializada vive en:
 
-```text
-skills/<skill-id>/SKILL.md
-```
+`skills/<skill-id>/SKILL.md`
 
-Cada `SKILL.md` debe incluir frontmatter con:
+Su frontmatter contiene `id`, `title`, `version`, `status`, `category`, `applies_to`, `phases` y `canonical_references`.
 
-- `id`
-- `title`
-- `version`
-- `status`
-- `category`
-- `applies_to`
-- `phases`
-- `canonical_references`
-
-Y debe contener las secciones:
+Secciones obligatorias:
 
 1. Purpose
 2. When to Use
@@ -33,47 +22,21 @@ Y debe contener las secciones:
 8. Canonical References
 9. Completion Signal
 
-El catálogo `catalog/skills.yaml` es el índice machine-readable. Una skill con `status: materialized` debe resolver a un archivo real y pasar `scripts/validate-skills.py`.
+`catalog/skills.yaml` es el índice machine-readable y `scripts/validate-skills.py` valida el contrato.
 
 ## Cómo las consume una IA
 
-1. Leer el manifiesto del proyecto y la fase actual.
-2. Consultar `catalog/skills.yaml`.
-3. Cargar solo las skills materializadas relevantes para la tarea.
-4. Leer sus `canonical_references` desde el repositorio.
-5. Ejecutar el procedimiento y producir los outputs en el proyecto.
-6. Detenerse si se cumple una `Stop Condition`.
-7. Actualizar evidencia/checks/gates únicamente cuando los outputs permiten verificarlos.
+1. Leer la versión Blueprint adoptada por el consumidor y su estado actual.
+2. Consultar el catálogo de esa versión.
+3. Cargar solo las skills `materialized` relevantes.
+4. Leer `canonical_references` desde el repositorio.
+5. Ejecutar el procedimiento y producir outputs/evidencia.
+6. Detenerse ante una Stop Condition.
+7. Cambiar checks/gates solo cuando existe evidencia suficiente.
 
-Las skills **no autorizan saltarse gates**. Si una skill y un contrato canónico entran en conflicto, manda el contrato canónico del Blueprint declarado por el proyecto.
+Una skill no puede saltarse un gate, inventar product truth ni convertir CI en aprobación humana.
 
-## Tipos
-
-### Core
-
-Conocimiento reutilizable transversal: Git, revisión, debugging, refactorización, seguridad base, testing, auditoría y documentación.
-
-### Technology / Capability
-
-Se activan según el manifiesto: Laravel, React, Tailwind, Kotlin, SaaS, multi-tenancy, Docker, etc.
-
-### Project Skills
-
-Viven en el repositorio consumidor, normalmente bajo `.agents/skills/`, y encapsulan conocimiento específico del dominio, roles, reglas, módulos o decisiones del producto.
-
-## Reglas
-
-1. Una skill declara claramente cuándo debe utilizarse y cuándo debe detenerse.
-2. Debe ser pequeña y orientada a una tarea o contexto concreto.
-3. Debe enlazar a la fuente canónica cuando necesite detalle, no copiar documentos completos.
-4. Nunca mezclar una skill `dev-*` genérica con nombres, rutas o reglas de un producto concreto.
-5. Las skills específicas del proyecto pueden referenciar documentos locales del proyecto.
-6. El agente carga solo las skills relevantes para la fase/tarea actual.
-7. El Blueprint versiona skills genéricas; el proyecto versiona sus skills específicas.
-8. `materialized` significa que existe un archivo ejecutable validado. `planned` significa que el nombre está reservado en el catálogo, pero todavía no debe cargarse como una skill disponible.
-9. Las decisiones importantes y outputs deben quedar en el repositorio consumidor; una skill no convierte el historial del chat en evidencia.
-
-## Set materializado inicial de v0.4
+## Skills materializadas en 0.5.0
 
 - `dev-git-workflow`
 - `dev-brownfield-analysis`
@@ -86,14 +49,16 @@ Viven en el repositorio consumidor, normalmente bajo `.agents/skills/`, y encaps
 - `dev-mockup-planning`
 - `dev-accessibility`
 - `dev-react-client-architecture`
+- `dev-android-client-architecture`
+- `dev-functional-interface-slice`
 - `dev-event-logging-audit`
 
-El resto del catálogo permanece explícitamente `planned` hasta una revisión posterior.
+Total: **14 materializadas**. Las **25 restantes** siguen `planned` y no deben cargarse como procedimientos disponibles.
 
-## Fuente inicial
+## Reglas de neutralidad
 
-`LuisHdezE/VolquetasManager/.agents/skills` se usa como cantera histórica de patrones.
-
-- Se reutiliza únicamente conocimiento genérico después de eliminar referencias específicas.
-- Las skills de proyecto sirven de patrón, no de norma.
-- Ninguna referencia de producto debe filtrarse a una skill `dev-*` reutilizable.
+- Las skills genéricas no contienen nombres/reglas privadas de productos.
+- Skills de proyecto viven en el consumidor y pueden añadir contexto de dominio.
+- Reference pilots son cantera de patrones, no fuente normativa.
+- `dev-functional-interface-slice` implementa el slice real usando inventario ejecutable, Client Architecture y API autoritativa; no autoriza datos de negocio hardcodeados ni capacidades inventadas.
+- `dev-mockup-planning` es condicional y no crea una dependencia universal de imágenes.

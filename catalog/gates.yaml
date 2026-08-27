@@ -1,4 +1,4 @@
-version: 0.5.0-dev
+version: 0.5.0
 gates:
   - id: brownfield_baseline
     name: Brownfield Baseline Gate
@@ -284,12 +284,12 @@ gates:
     require_if_applicable: [client.brownfield_coexistence]
     result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
     rule: >-
-      Evaluate independently for the exact interface slice + platform. Design System,
-      tokens and authoritative API bindings are mandatory. Static approved visual
-      references are conditional inputs, not a universal prerequisite. V5-3 will align
-      the schema and may compose a reusable platform baseline with a slice-specific
-      binding; the effective contract must still satisfy this scoped gate. API
-      authorization remains authoritative and Brownfield coexistence remains explicit.
+      Evaluate independently for the exact interface slice + platform. The effective
+      contract is composed from a reusable Platform Client Architecture Baseline plus a
+      slice-specific binding/override. Design System, tokens and authoritative API bindings
+      are mandatory; static approved visual references are conditional inputs, not a
+      universal prerequisite. API authorization remains authoritative and Brownfield
+      coexistence remains explicit.
 
   - id: functional_slice_ready
     name: Functional Interface Slice Ready

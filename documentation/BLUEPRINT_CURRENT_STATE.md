@@ -1,157 +1,154 @@
-# Software Development Blueprint — Current State
+# Software Development Blueprint - Current State
 
 > CURRENT CHECKPOINT / DERIVED SUMMARY  
-> Verificación de release: 2026-08-25 America/Montevideo.  
-> Release representada: **0.4.0**.
+> Fecha de cierre representada: **2026-08-26 America/Montevideo**.  
+> Release representada: **0.5.0**.
 
-Este documento es un resumen humano. No sustituye a `BLUEPRINT.md`, `VERSION`, `catalog/`, `workflows/`, `schemas/`, `skills/`, `templates/` ni a la evidencia de los repositorios consumidores.
+Este documento es un resumen humano. No sustituye a `BLUEPRINT.md`, `VERSION`, `catalog/`, `workflows/`, `schemas/`, `templates/`, `skills/` ni a la evidencia de los repositorios consumidores.
 
-## 1. Autoridad de fuentes
+## 1. Autoridad
 
-Cuando exista contradicción, usar este orden:
+Cuando exista contradicción:
 
-1. Definiciones canónicas versionadas de `LuisHdezE/SoftwareDevelopmentBlueprint`.
-2. Estado/evidencia machine-readable del repositorio consumidor (`.blueprint/`).
-3. Este Current State.
-4. Hallazgos de pilotos aún no promovidos.
-5. Historial conversacional/archivos históricos.
+1. contratos/evidencia del consumidor para su versión declarada;
+2. Blueprint canónico de esa versión;
+3. este Current State;
+4. reference pilots;
+5. chat/historial.
 
-El chat nunca prevalece sobre evidencia más reciente versionada en GitHub.
+GitHub versionado prevalece sobre handoffs conversacionales.
 
 ## 2. Blueprint estable
 
-Repositorio maestro:
+Repositorio: `LuisHdezE/SoftwareDevelopmentBlueprint`
 
-`LuisHdezE/SoftwareDevelopmentBlueprint`
+Versión estable: **0.5.0**
 
-Versión estable:
+Conteos del núcleo:
 
-`0.4.0`
-
-La release 0.4.0 consolida un proceso reutilizable y verificable para Greenfield y Brownfield, desde entrada/discovery hasta release/operations, con contratos machine-readable para API, experiencia visual y arquitectura cliente.
-
-## 3. Tamaño del núcleo 0.4.0
-
-- **25 fases** canónicas.
-- **92 checks**.
-- **14 gates**.
-- **13 skills materializadas**.
+- **28 fases**;
+- **134 checks**;
+- **18 gates**;
+- **14 skills materializadas**;
 - **25 skills planificadas**.
-- Greenfield y Brownfield comparten el mismo pipeline post-API.
-- Los consumidores no se actualizan automáticamente.
+
+## 3. Cambio central de 0.5.0
+
+0.5 separa dos momentos que 0.4 trataba demasiado tarde:
+
+```text
+Requirements Ready
+  -> Interface Scope Baseline
+  -> Architecture/API design
+  ...
+  -> API Gate
+  -> Executable Interface Inventory
+```
+
+El baseline temprano describe interfaces observadas/intencionadas y puede registrar necesidades API sin inventar bindings. El inventario ejecutable posterior al API Gate reconcilia el alcance con permisos, dependencias y `operationId` autoritativos.
 
 ## 4. Pipeline canónico
 
 ```text
-Greenfield Discovery
-        o
-Brownfield Inspection → AS-IS → Gap Analysis
-        ↓
-Target Definition
-        ↓
-Requirements & Domain
-        ↓
-Architecture / Security / Data
-        ↓
-API Scope & Contract
-        ↓
-API Implementation
-        ↓
-OpenAPI Validation
-        ↓
-Postman Contract
-        ↓
-API QA
-        ↓
-API Gate
-        ↓
-Interface Inventory
-        ↓
-Visual Identity
-        ↓
-Design System
-        ↓
-Mockup Planning
-        ↓
-Mockup Generation
-        ↓
-Visual Review Gate
-        ↓
-Client Architecture
-        ↓
-React Web / Kotlin Android
-        ↓
-Integration QA
-        ↓
-Release Gate
-        ↓
-Operations
+Discovery / Brownfield Inspection + AS-IS + Gap Analysis
+  -> Target Definition
+  -> Requirements Ready
+  -> Interface Scope Baseline Ready
+  -> Architecture / Security / Data Ready
+  -> API Contract Ready
+  -> API Implementation
+  -> OpenAPI Valid
+  -> Postman Ready
+  -> API QA Pass
+  -> API Gate
+  -> Interface Inventory Ready
+  -> Design System Ready
+  -> Client Architecture Ready [slice + platform]
+  -> Functional Slice Ready [slice + platform]
+  -> Visual & Functional Review Pass [slice + platform]
+  -> Integration QA Pass [slice + platform]
+  -> Release Gate
+  -> Operations
 ```
 
-## 5. Gates 0.4.0
+Visual Identity y Mockups/Prototypes son condicionales.
 
-Gates de proyecto/API:
+## 5. Functional Interface Slice
 
-- `brownfield_baseline`
-- `requirements_ready`
-- `architecture_ready`
-- `api_contract_ready`
-- `api_implemented`
-- `openapi_valid`
-- `postman_ready`
-- `api_qa_pass`
-- `api_gate`
-- `interface_inventory_ready`
-- `design_system_ready`
-- `release_gate`
+Unidad canónica de ejecución cliente: `interface_slice + platform`.
 
-Gates scoped:
+Lifecycle:
 
-- `visual_review_pass` → `interface_slice`
-- `client_architecture_ready` → `interface_slice + platform`
+`INVENTORIED -> READY -> IN_PROGRESS -> FUNCTIONAL -> ACCEPTED`
 
-Un PASS scoped no autoriza otro slice o plataforma.
+Visual & Functional Review e Integration QA son gates independientes, no estados lifecycle.
 
-## 6. Pipeline visual y continuidad de IA
+`FUNCTIONAL` requiere DoD con API real, auth/RBAC, forms/errors, observabilidad/correlation, responsive, accesibilidad, tests, traceability, ausencia de hardcoded authoritative business data y ausencia de capacidades inventadas.
 
-La release 0.4.0 formaliza:
+`ACCEPTED` añade Review PASS, Integration QA PASS, aceptación humana explícita y cero blockers abiertos.
 
-- inventario `WEB-###` / `APP-###`;
-- identidad y Design System separados;
-- tokens machine-readable;
-- batches de mockups de máximo 10 vistas;
-- assets visuales versionados;
-- estados separados de generación, revisión contractual, accesibilidad y aprobación;
-- referencias visuales aprobadas como entradas de futuras IAs;
-- manifests/evidencia en el repositorio, no únicamente en chats.
+## 6. BLOCKED_BY_API
 
-Regla central:
+`BLOCKED_BY_API` es un overlay sobre el lifecycle. Se usa solo ante una carencia o incompatibilidad autoritativa de API: data, operation, permission, state, transition o contract capability.
 
-`GENERATED ≠ REVIEWED ≠ APPROVED`
+Conserva el último lifecycle válido. La solución se realiza en una frontera API/backend separada y el slice solo reanuda con evidencia de resolución/revalidación.
 
-## 7. Client Architecture
+Errores normales de frontend o incertidumbre visual no se etiquetan como `BLOCKED_BY_API`.
 
-Antes de implementar React o Kotlin para un slice aprobado debe existir un contrato validable que cubra:
+## 7. Evolución API
 
-- auth/session lifecycle;
-- API client y OpenAPI/operation IDs;
-- presentación de permisos manteniendo la API como enforcement;
-- routing/navigation;
-- server state/local UI state;
-- cache/invalidation;
-- forms y errores 409/422/429;
-- loading/empty/error/401/403/404/offline;
-- idempotencia de mutaciones de riesgo;
-- request correlation y redacción de secretos/PII;
-- accesibilidad;
-- testing;
-- offline cuando aplique;
-- decisiones React o Kotlin/Android;
-- coexistencia/cutover/rollback Brownfield.
+El primer `api_gate` continúa siendo project-scoped.
 
-## 8. Skills
+Cambios posteriores usan `schemas/api-impact.schema.json`:
 
-Materializadas en 0.4.0:
+- `operationId` local -> revalidación de consumidores afectados;
+- auth/authorization/security/error/versioning u otros cambios cross-cutting -> posible escalado a plataforma/proyecto;
+- evidencia aceptada no relacionada se preserva por defecto.
+
+## 8. Client Architecture
+
+Modelo efectivo:
+
+```text
+Platform Client Architecture Baseline
+  + Slice Architecture Binding/Override
+  = Effective Client Architecture Contract
+```
+
+La baseline concentra decisiones reutilizables de plataforma. El binding declara inventario, rutas, permisos, API revision/operationIds, estados, idempotencia y overrides específicos del slice.
+
+`visual_references.mode = none` es válido. Mockups no son una dependencia universal.
+
+## 9. Experiencia visual
+
+Design System es requerido para client delivery. Visual Identity es condicional.
+
+Mockups/prototypes son condicionales y, cuando se usan:
+
+`GENERATED != REVIEWED != APPROVED`
+
+El review final se realiza sobre el cliente funcional real, no solo sobre imágenes.
+
+## 10. Cross-Artifact Semantic Integrity
+
+Los validadores comprueban la cadena real:
+
+`requirement -> interface -> permission -> operationId -> slice -> client architecture -> evidence/test -> review/QA -> acceptance`.
+
+Se rechazan IDs ficticios, operationIds inexistentes, namespaces de plataforma incompatibles, permisos inventados, evidencias inexistentes, acceptance sin gates y blockers ocultos.
+
+Validadores principales:
+
+- `scripts/validate-artifact-graph.py`
+- `scripts/validate-experience-artifacts.py`
+- `scripts/validate-client-architecture.py`
+- `scripts/validate-skills.py`
+- `scripts/validate-reference-pilot-compliance.py`
+- `scripts/validate-release.py`
+
+## 11. Skills 0.5.0
+
+Materializadas:
 
 1. `dev-git-workflow`
 2. `dev-brownfield-analysis`
@@ -165,101 +162,48 @@ Materializadas en 0.4.0:
 10. `dev-accessibility`
 11. `dev-react-client-architecture`
 12. `dev-android-client-architecture`
-13. `dev-event-logging-audit`
+13. `dev-functional-interface-slice`
+14. `dev-event-logging-audit`
 
-Las 25 restantes permanecen `planned`; su presencia en el catálogo no debe interpretarse como implementación disponible.
+Las 25 restantes siguen `planned`; catalogarlas no equivale a materializarlas.
 
-## 9. Evidencia y validadores del Blueprint
+## 12. Brownfield y reference pilots
 
-Validadores versionados:
+Brownfield mantiene **ALIGN, DO NOT REWRITE** y la separación `OBSERVED / INFERRED / PROPOSED`.
 
-- `scripts/validate-experience-artifacts.py`
-- `scripts/validate-skills.py`
-- `scripts/validate-client-architecture.py`
-- `scripts/validate-reference-pilot-compliance.py`
-- `scripts/validate-release.py`
+CareShift sigue siendo un reference pilot no normativo. Su Compliance Review histórico evaluó un snapshot 0.4 prerelease y su versión de consumidor no se modifica por la publicación de 0.5.
 
-El release validator ejecuta las familias anteriores y comprueba identidad/versionado de 0.4.0, conteos canónicos, templates, workflows y manifest de release.
+Los manifests/reviews de 0.4 permanecen historia verificable.
 
-## 10. Reference Pilot: CareShift Manager
+## 13. Consumidores y adopción
 
-Repositorio:
+No existe automatic consumer upgrade.
 
-`LuisHdezE/CareShift_Manager`
+Una release estable del Master no cambia `.blueprint/status.yaml`, código, schemas o comportamiento de un consumidor. La adopción se realiza mediante:
 
-Modo:
+1. verificación live del Master y del consumidor;
+2. Compliance Review entre versión declarada y versión objetivo;
+3. clasificación KEEP / ADOPT / MIGRATE / DEFER / N/A;
+4. aprobación explícita;
+5. PR de adopción separada;
+6. revalidación según el impacto real.
 
-`brownfield`
+CUSA-Digital permaneció congelado durante la construcción de Blueprint 0.5.0. Su siguiente paso, después del cierre efectivo de la release y en un contexto nuevo/reverificado, es Compliance Review **0.4.0 -> 0.5.0**. Solo después de una adopción explícita se continúa con Interface Inventory Ready y Functional Interface Slices.
 
-Versión Blueprint declarada por el consumidor:
+## 14. Release closure y tag
 
-`0.3.0`
+`VERSION`, catalogs, workflows, schemas, templates y skills activos convergen en 0.5.0. Los schema `$id` específicos están versionados.
 
-Estado relevante verificado antes del cierre 0.4.0:
+El manifest machine-readable es `documentation/BLUEPRINT_V0_5_RELEASE.json` y las notas están en `documentation/BLUEPRINT_V0_5_RELEASE_NOTES.md`.
 
-- Brownfield Baseline: PASS.
-- Requirements: PASS.
-- Architecture/Security/Data: PASS.
-- API Contract: PASS.
-- API Implementation: COMPLETE.
-- OpenAPI Validation: PASS.
-- Postman Contract: PASS.
-- API QA runtime: PASS.
-- API Gate: PASS.
-- Interface Inventory: COMPLETE, 30 vistas web; Android N/A.
-- Visual Identity: COMPLETE.
-- Design System: COMPLETE.
-- Rama `blueprint/mockups-batch-01`: 13 commits ahead / 0 behind de CareShift `main` al Compliance Review.
-- Batch Operational Core: 10 vistas planificadas, 4 assets SVG generados y 6 pendientes.
-- Los 4 SVG generados siguen `GENERATED`, no se consideran aprobados por existencia.
-- React/client architecture: DEFERRED hasta `visual_review_pass` del slice correspondiente.
-- Cliente Livewire/Blade actual: preservado.
+La etiqueta `v0.5.0` se crea únicamente después de fusionar el PR de release, verificar el árbol aprobado en `main` y confirmar CI post-merge. Este checkpoint no debe usarse para afirmar que el tag existe antes de esa verificación.
 
-## 11. Compliance Review del piloto
+## 15. Fuera de 0.5.0
 
-Resultado formal V4-5:
+No forma parte de la release:
 
-- `KEEP`: 8
-- `ADOPT`: 9
-- `MIGRATE`: 1
-- `DEFER`: 4
-- `N/A`: 2
-
-Recomendación:
-
-`ADOPT_INCREMENTALLY`
-
-La única migración identificada fue la representación del manifest de mockups. No se autorizó regenerar imágenes, reescribir la UI existente ni cambiar automáticamente la versión declarada del consumidor.
-
-El review histórico se realizó contra el snapshot prerelease `0.4.0-dev`. La release 0.4.0 no introduce cambios normativos posteriores al review; el cierre solo estabiliza versionado, documentación y validación. CareShift requiere todavía una PR separada de adopción antes de declarar 0.4.0.
-
-## 12. Compatibilidad 0.4.0
-
-0.4.0 es una release minor backward-aware:
-
-- evidencia v0.3 de consumidores no se invalida automáticamente;
-- path migrations son opcionales cuando `artifact_locations` puede declarar rutas existentes;
-- Brownfield sigue `ALIGN, DO NOT REWRITE`;
-- un cliente existente puede coexistir mientras un cliente nuevo se construye;
-- la aprobación visual y arquitectura cliente se realizan por slice;
-- pilotos son no normativos.
-
-## 13. Trabajo deliberadamente fuera del release
-
-No forma parte del cierre 0.4.0:
-
-- completar las seis imágenes pendientes de CareShift;
-- implementar React en CareShift;
-- migrar CareShift automáticamente a Blueprint 0.4.0;
-- materializar las 25 skills todavía planificadas;
-- construir el Blueprint Control Center;
+- mutar automáticamente consumidores;
+- iniciar la UI de CUSA desde el Master release PR;
+- materializar las 25 skills todavía planned;
+- construir Blueprint Control Center;
 - declarar Blueprint 1.0.
-
-## 14. Próxima acción después del release
-
-Una vez fusionado y etiquetado `v0.4.0`, el Blueprint puede usarse como baseline estable para:
-
-1. nuevas soluciones Greenfield;
-2. nuevos análisis Brownfield;
-3. Compliance Review/adopción de consumidores existentes;
-4. continuar CareShift desde su trabajo visual pendiente sin alterar la evidencia ya validada.

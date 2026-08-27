@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://eliasworks.dev/blueprint/0.5.0-dev/interface-inventory.schema.json",
+  "$id": "https://eliasworks.dev/blueprint/0.5.0/interface-inventory.schema.json",
   "title": "Blueprint Interface Inventory",
   "type": "object",
   "required": ["schema_version", "project", "mode", "maturity", "items"],
   "properties": {
-    "schema_version": {"const": "0.5.0-dev"},
+    "schema_version": {"const": "0.5.0"},
     "project": {"type": "string", "minLength": 1},
     "mode": {"enum": ["greenfield", "brownfield"]},
     "maturity": {"enum": ["SCOPE_BASELINE", "EXECUTABLE_INVENTORY"]},
@@ -28,49 +28,10 @@
           "requirements": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
           "roles": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
           "permissions": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
-          "data": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "required": ["name", "source"],
-              "properties": {
-                "name": {"type": "string", "minLength": 1},
-                "source": {"enum": ["api", "local", "derived", "static", "unknown"]},
-                "operation_ids": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
-                "api_ids": {"type": "array", "items": {"type": "string", "pattern": "^API-[A-Z0-9]+-[0-9]{3}$"}, "uniqueItems": true},
-                "authoritative": {"type": "boolean"},
-                "note": {"type": "string"}
-              },
-              "additionalProperties": false
-            }
-          },
-          "actions": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "required": ["name", "kind", "source_classification"],
-              "properties": {
-                "name": {"type": "string", "minLength": 1},
-                "kind": {"enum": ["navigate", "read", "create", "update", "delete", "transition", "download", "print", "local", "proposed"]},
-                "operation_ids": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
-                "api_ids": {"type": "array", "items": {"type": "string", "pattern": "^API-[A-Z0-9]+-[0-9]{3}$"}, "uniqueItems": true},
-                "permission": {"type": ["string", "null"]},
-                "source_classification": {"enum": ["OBSERVED", "INFERRED", "PROPOSED"]},
-                "note": {"type": "string"}
-              },
-              "additionalProperties": false
-            }
-          },
+          "data": {"type": "array", "items": {"type": "object", "required": ["name", "source"], "properties": {"name": {"type": "string", "minLength": 1}, "source": {"enum": ["api", "local", "derived", "static", "unknown"]}, "operation_ids": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true}, "api_ids": {"type": "array", "items": {"type": "string", "pattern": "^API-[A-Z0-9]+-[0-9]{3}$"}, "uniqueItems": true}, "authoritative": {"type": "boolean"}, "note": {"type": "string"}}, "additionalProperties": false}},
+          "actions": {"type": "array", "items": {"type": "object", "required": ["name", "kind", "source_classification"], "properties": {"name": {"type": "string", "minLength": 1}, "kind": {"enum": ["navigate", "read", "create", "update", "delete", "transition", "download", "print", "local", "proposed"]}, "operation_ids": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true}, "api_ids": {"type": "array", "items": {"type": "string", "pattern": "^API-[A-Z0-9]+-[0-9]{3}$"}, "uniqueItems": true}, "permission": {"type": ["string", "null"]}, "source_classification": {"enum": ["OBSERVED", "INFERRED", "PROPOSED"]}, "note": {"type": "string"}}, "additionalProperties": false}},
           "states": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["default", "loading", "empty", "filtered_empty", "success", "error", "offline", "401", "403", "404", "409", "422", "429"]}},
-          "navigation": {
-            "type": "object",
-            "properties": {
-              "route": {"type": ["string", "null"]},
-              "entry_points": {"type": "array", "items": {"type": "string"}},
-              "destinations": {"type": "array", "items": {"type": "string", "pattern": "^(WEB|APP)-[0-9]{3}$"}}
-            },
-            "additionalProperties": false
-          },
+          "navigation": {"type": "object", "properties": {"route": {"type": ["string", "null"]}, "entry_points": {"type": "array", "items": {"type": "string"}}, "destinations": {"type": "array", "items": {"type": "string", "pattern": "^(WEB|APP)-[0-9]{3}$"}}}, "additionalProperties": false},
           "dependencies": {"type": "array", "items": {"type": "string", "pattern": "^(WEB|APP)-[0-9]{3}$"}, "uniqueItems": true},
           "slice_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$"},
           "priority": {"type": "integer", "minimum": 0},
@@ -83,21 +44,7 @@
         "additionalProperties": false
       }
     },
-    "baseline_reconciliation": {
-      "type": "array",
-      "uniqueItems": true,
-      "items": {
-        "type": "object",
-        "required": ["baseline_id", "disposition"],
-        "properties": {
-          "baseline_id": {"type": "string", "pattern": "^(WEB|APP)-[0-9]{3}$"},
-          "disposition": {"enum": ["COMMITTED", "DEFERRED", "DROPPED"]},
-          "reason": {"type": "string", "minLength": 1}
-        },
-        "allOf": [{"if": {"properties": {"disposition": {"enum": ["DEFERRED", "DROPPED"]}}, "required": ["disposition"]}, "then": {"required": ["reason"]}}],
-        "additionalProperties": false
-      }
-    }
+    "baseline_reconciliation": {"type": "array", "uniqueItems": true, "items": {"type": "object", "required": ["baseline_id", "disposition"], "properties": {"baseline_id": {"type": "string", "pattern": "^(WEB|APP)-[0-9]{3}$"}, "disposition": {"enum": ["COMMITTED", "DEFERRED", "DROPPED"]}, "reason": {"type": "string", "minLength": 1}}, "allOf": [{"if": {"properties": {"disposition": {"enum": ["DEFERRED", "DROPPED"]}}, "required": ["disposition"]}, "then": {"required": ["reason"]}}], "additionalProperties": false}}
   },
   "allOf": [{"if": {"properties": {"maturity": {"const": "EXECUTABLE_INVENTORY"}}, "required": ["maturity"]}, "then": {"required": ["reconciled_from", "baseline_reconciliation"]}}],
   "additionalProperties": false
