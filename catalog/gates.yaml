@@ -16,7 +16,7 @@ gates:
   - id: requirements_ready
     name: Requirements Ready Gate
     phase: requirements_domain
-    blocks: [architecture_security_data, api_contract_design, api_implementation]
+    blocks: [interface_scope_baseline, architecture_security_data, api_contract_design, api_implementation]
     require_all:
       - requirements.actors_authorization
       - requirements.functional
@@ -26,6 +26,23 @@ gates:
       - requirements.acceptance_criteria
       - requirements.traceability
     result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
+
+  - id: interface_scope_ready
+    name: Interface Scope Baseline Ready
+    phase: interface_scope_baseline
+    evaluation_scope: project
+    blocks: [architecture_security_data, api_contract_design]
+    require_all:
+      - ui.interface_scope_baseline
+      - ui.interface_scope_traceability
+    require_if_applicable:
+      - ui.brownfield_observed_interface_scope
+    result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
+    rule: >-
+      Establish the descriptive interface scope before API design without pretending the
+      authoritative API bindings already exist. Brownfield must preserve observed client
+      behavior; Greenfield derives intent from approved requirements. This gate does not
+      authorize client implementation or substitute Interface Inventory Ready.
 
   - id: architecture_ready
     name: Architecture Ready Gate
@@ -58,10 +75,14 @@ gates:
       - api.audit_event_mapping
       - api.idempotency_matrix
       - api.contract_traceability
+    require_if_applicable:
+      - api.change_impact_analysis
     result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
     rule: >-
       No endpoint implementation begins until scope, payload intent, authorization,
-      audit mapping, idempotency and traceability are explicit.
+      audit mapping, idempotency and traceability are explicit. After an API baseline has
+      client consumers, every contract change with possible downstream impact must also
+      identify affected operationIds/slices or justify broader impact scope.
 
   - id: api_implemented
     name: API Implemented Gate
@@ -103,7 +124,14 @@ gates:
       - api.contract_validation
       - api.security_qa
       - api.audit_qa
+    require_if_applicable:
+      - api.affected_consumer_revalidation
     result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
+    rule: >-
+      Initial API QA proves the project baseline. For later API changes, downstream
+      revalidation is impact-based: operationId-scoped changes revalidate affected slices;
+      auth, authorization, security, error-contract or other cross-cutting changes may
+      escalate to platform or project scope.
 
   - id: api_gate
     name: API Gate
@@ -139,8 +167,11 @@ gates:
       - api.audit_qa
     result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
     rule: >-
-      No client delivery work begins until this gate is PASS. The API remains the
-      authoritative security and business boundary for every downstream interface slice.
+      Project-scoped initial API baseline. No executable client delivery begins until this
+      gate is PASS. Later API changes do not automatically invalidate unrelated accepted
+      evidence; impact analysis and dependency bindings determine the required revalidation
+      scope. Cross-cutting security/auth/contract changes may invalidate broader scopes.
+      The API remains the authoritative security and business boundary.
 
   - id: interface_inventory_ready
     name: Interface Inventory Ready Gate
@@ -172,10 +203,10 @@ gates:
       - ui.brownfield_observed_proposed_separation
     result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
     rule: >-
-      The complete committed interface scope must exist as a stable executable backlog
-      before client architecture or functional implementation starts. Local/static
-      behavior may explicitly declare no API operation; missing authoritative behavior
-      must not be invented merely to complete the inventory.
+      Reconcile the approved Interface Scope Baseline against the authoritative API and
+      produce the complete committed executable backlog. API-backed data/actions use
+      canonical operationIds; legitimate local/static behavior may explicitly declare no
+      API operation. Missing authoritative behavior must not be invented to complete it.
 
   - id: design_system_ready
     name: Design System Ready Gate
@@ -256,8 +287,9 @@ gates:
       Evaluate independently for the exact interface slice + platform. Design System,
       tokens and authoritative API bindings are mandatory. Static approved visual
       references are conditional inputs, not a universal prerequisite. V5-3 will align
-      the client architecture schema/template to this dependency rule. API authorization
-      remains authoritative and Brownfield clients coexist until cutover is approved.
+      the schema and may compose a reusable platform baseline with a slice-specific
+      binding; the effective contract must still satisfy this scoped gate. API
+      authorization remains authoritative and Brownfield coexistence remains explicit.
 
   - id: functional_slice_ready
     name: Functional Interface Slice Ready
@@ -282,8 +314,8 @@ gates:
     rule: >-
       PASS authorizes lifecycle state FUNCTIONAL for the exact slice + platform.
       Authoritative business data and mutations must use the real approved API/data
-      source. An unresolved server-contract gap produces BLOCKED_BY_API instead of
-      hardcoded business truth or invented client behavior.
+      source. An unresolved server-contract gap creates a BLOCKED_BY_API overlay while
+      preserving the slice lifecycle state; hardcoded business truth is never a fallback.
 
   - id: visual_functional_review_pass
     name: Visual & Functional Review Pass
