@@ -64,6 +64,7 @@ V5_POST_API_PIPELINE = [
 ]
 
 V5_REQUIRED_GATES = {
+    "interface_scope_ready": "project",
     "api_gate": "project",
     "interface_inventory_ready": "project",
     "design_system_ready": "project",
@@ -243,9 +244,11 @@ def validate_v5_development_identity() -> None:
     blueprint = (ROOT / "BLUEPRINT.md").read_text(encoding="utf-8")
     required_tokens = [
         "0.5.0-dev",
+        "Interface Scope Baseline",
         "Functional Interface Slice",
         "BLOCKED_BY_API",
         "Visual & Functional Review",
+        "impact",
         "hardcodeados",
         "README.md",
     ]
@@ -268,6 +271,7 @@ def validate_v5_catalog_semantics() -> None:
     gate_by_id = {item["id"]: item for item in gates_doc.get("gates", [])}
 
     required_phases = {
+        "interface_scope_baseline",
         "interface_inventory",
         "design_system",
         "client_architecture",
@@ -284,6 +288,16 @@ def validate_v5_catalog_semantics() -> None:
     if missing_phases:
         fail(f"V5 catalog missing phases: {missing_phases}")
 
+    scope_phase = phase_by_id["interface_scope_baseline"]
+    if scope_phase.get("requires_gates") != ["requirements_ready"]:
+        fail("interface_scope_baseline must follow requirements_ready")
+    if scope_phase.get("exit_gate") != "interface_scope_ready":
+        fail("interface_scope_baseline must exit through interface_scope_ready")
+
+    inventory_requires = set(phase_by_id["interface_inventory"].get("requires_gates", []))
+    if inventory_requires != {"api_gate", "interface_scope_ready"}:
+        fail("interface_inventory must reconcile both API Gate and Interface Scope Baseline")
+
     if phase_by_id["visual_identity"].get("applicability") != "CONDITIONAL":
         fail("visual_identity must be CONDITIONAL in V5")
     if phase_by_id["functional_interface_slice"].get("execution_scope") != "interface_slice_platform":
@@ -295,6 +309,23 @@ def validate_v5_catalog_semantics() -> None:
             fail(f"V5 catalog missing gate: {gate_id}")
         if gate.get("evaluation_scope", "project") != scope:
             fail(f"{gate_id} must use scope {scope}")
+
+    scope_required = set(gate_by_id["interface_scope_ready"].get("require_all", []))
+    if scope_required != {"ui.interface_scope_baseline", "ui.interface_scope_traceability"}:
+        fail("interface_scope_ready required check set drifted")
+    if "ui.brownfield_observed_interface_scope" not in set(
+        gate_by_id["interface_scope_ready"].get("require_if_applicable", [])
+    ):
+        fail("interface_scope_ready must preserve Brownfield observed interface scope")
+
+    if "api.change_impact_analysis" not in set(
+        gate_by_id["api_contract_ready"].get("require_if_applicable", [])
+    ):
+        fail("api_contract_ready must require impact analysis for post-baseline changes")
+    if "api.affected_consumer_revalidation" not in set(
+        gate_by_id["api_qa_pass"].get("require_if_applicable", [])
+    ):
+        fail("api_qa_pass must support affected consumer revalidation")
 
     client_gate = gate_by_id["client_architecture_ready"]
     client_blocks = set(client_gate.get("blocks", []))
@@ -332,6 +363,7 @@ def validate_v5_catalog_semantics() -> None:
 
 def validate_v5_workflows() -> None:
     expected_gate_map = {
+        "after_interface_scope_baseline": "interface_scope_ready",
         "before_client_delivery": "api_gate",
         "after_interface_inventory": "interface_inventory_ready",
         "after_design_system": "design_system_ready",
@@ -346,8 +378,6 @@ def validate_v5_workflows() -> None:
         "READY",
         "IN_PROGRESS",
         "FUNCTIONAL",
-        "VISUAL_FUNCTIONAL_REVIEW",
-        "INTEGRATION_QA",
         "ACCEPTED",
     ]
 
@@ -355,6 +385,12 @@ def validate_v5_workflows() -> None:
         workflow = load_yaml(path)
         sequence = workflow.get("sequence", [])
         assert_contiguous(sequence, V5_POST_API_PIPELINE, path)
+
+        requirements_index = sequence.index("requirements_domain")
+        scope_index = sequence.index("interface_scope_baseline")
+        architecture_index = sequence.index("architecture_security_data")
+        if not requirements_index < scope_index < architecture_index:
+            fail(f"{path} must place Interface Scope Baseline between requirements and architecture")
 
         forbidden_main = {"visual_identity", "mockup_planning", "mockups", "mockup_review"}
         leaked = sorted(forbidden_main & set(sequence))
@@ -366,13 +402,39 @@ def validate_v5_workflows() -> None:
             if gates.get(key) != value:
                 fail(f"{path} gate mapping {key} must be {value}, got {gates.get(key)}")
 
+        api_evolution = workflow.get("api_contract_evolution", {})
+        if api_evolution.get("initial_baseline_gate") != "api_gate":
+            fail(f"{path} must retain project API Gate as initial baseline")
+        if api_evolution.get("post_baseline_change_policy") != "impact_based_revalidation":
+            fail(f"{path} must use impact-based post-baseline API revalidation")
+        if api_evolution.get("operation_level_key") != "operationId":
+            fail(f"{path} API impact graph must use canonical operationId")
+
         pipeline = workflow.get("functional_interface_slice_pipeline", {})
         if pipeline.get("scope_key") != "interface_slice_platform":
             fail(f"{path} functional pipeline scope must be interface_slice_platform")
         if pipeline.get("lifecycle") != expected_lifecycle:
             fail(f"{path} lifecycle drifted: {pipeline.get('lifecycle')}")
-        if pipeline.get("blocker_state") != "BLOCKED_BY_API":
-            fail(f"{path} must expose BLOCKED_BY_API blocker state")
+
+        quality_gates = pipeline.get("quality_gates", {})
+        expected_quality_gates = {
+            "functional": "functional_slice_ready",
+            "visual_functional_review": "visual_functional_review_pass",
+            "integration_qa": "integration_qa_pass",
+        }
+        if quality_gates != expected_quality_gates:
+            fail(f"{path} quality gate mapping drifted: {quality_gates}")
+
+        blocker = pipeline.get("blocker_condition", {})
+        if blocker.get("id") != "BLOCKED_BY_API":
+            fail(f"{path} must expose BLOCKED_BY_API blocker condition")
+        if blocker.get("overlays_lifecycle") is not True:
+            fail(f"{path} BLOCKED_BY_API must overlay rather than replace lifecycle")
+        if blocker.get("preserves_last_lifecycle_state") is not True:
+            fail(f"{path} BLOCKED_BY_API must preserve last lifecycle state")
+        if blocker.get("resume_requires_resolution_evidence") is not True:
+            fail(f"{path} BLOCKED_BY_API resume must require resolution evidence")
+
         implementations = pipeline.get("client_implementation", {})
         if implementations != {"web": "web_implementation", "android": "android_implementation"}:
             fail(f"{path} client implementation profiles drifted: {implementations}")
@@ -389,7 +451,7 @@ def validate_v5_workflows() -> None:
         if mockups.get("default_blocks_functional_delivery") is not False:
             fail(f"{path} mockups must not universally block functional delivery")
 
-    print("PASS V5 Greenfield/Brownfield functional delivery workflows")
+    print("PASS V5 Greenfield/Brownfield audit-hardened functional delivery workflows")
 
 
 def run_validator(path: str) -> None:

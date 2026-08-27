@@ -20,6 +20,7 @@ on:
       - documentation/BLUEPRINT_V0_4_RELEASE.json
       - documentation/BLUEPRINT_V0_4_RELEASE_NOTES.md
       - documentation/BLUEPRINT_V0_5_POST_API_AUDIT.md
+      - documentation/BLUEPRINT_V0_5_EXTERNAL_AUDIT_RESPONSE.md
       - documentation/BLUEPRINT_V0_5_ROADMAP.md
       - documentation/BLUEPRINT_V0_5_RELEASE.json
       - documentation/BLUEPRINT_V0_5_RELEASE_NOTES.md
@@ -42,6 +43,7 @@ on:
       - documentation/BLUEPRINT_V0_4_RELEASE.json
       - documentation/BLUEPRINT_V0_4_RELEASE_NOTES.md
       - documentation/BLUEPRINT_V0_5_POST_API_AUDIT.md
+      - documentation/BLUEPRINT_V0_5_EXTERNAL_AUDIT_RESPONSE.md
       - documentation/BLUEPRINT_V0_5_ROADMAP.md
       - documentation/BLUEPRINT_V0_5_RELEASE.json
       - documentation/BLUEPRINT_V0_5_RELEASE_NOTES.md
