@@ -1,4 +1,4 @@
-version: 0.4.0
+version: 0.5.0-dev
 
 skill_model:
   principles:
@@ -65,6 +65,7 @@ categories:
     skills:
       - dev-react
       - dev-react-client-architecture
+      - dev-functional-interface-slice
       - dev-tailwind
       - dev-accessibility
       - dev-web-view-inventory
@@ -77,6 +78,7 @@ categories:
     skills:
       - dev-android-kotlin
       - dev-android-client-architecture
+      - dev-functional-interface-slice
       - dev-jetpack-compose
       - dev-mobile-security
       - dev-android-view-inventory
@@ -119,6 +121,22 @@ mandatory_v0_4_materialized:
   - dev-accessibility
   - dev-react-client-architecture
   - dev-android-client-architecture
+  - dev-event-logging-audit
+
+mandatory_v0_5_materialized:
+  - dev-git-workflow
+  - dev-brownfield-analysis
+  - dev-api-design
+  - dev-openapi
+  - dev-postman-qa
+  - dev-contract-testing
+  - dev-web-view-inventory
+  - dev-design-system
+  - dev-mockup-planning
+  - dev-accessibility
+  - dev-react-client-architecture
+  - dev-android-client-architecture
+  - dev-functional-interface-slice
   - dev-event-logging-audit
 
 registry:
@@ -170,6 +188,10 @@ registry:
     status: materialized
     category: android
     path: skills/dev-android-client-architecture/SKILL.md
+  dev-functional-interface-slice:
+    status: materialized
+    category: core
+    path: skills/dev-functional-interface-slice/SKILL.md
   dev-event-logging-audit:
     status: materialized
     category: core
