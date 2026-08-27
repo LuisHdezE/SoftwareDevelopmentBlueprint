@@ -2,21 +2,22 @@
 
 ## Status
 
-Development hardening candidate for the stable `0.5.0` line.
+Accepted hardening for stable Blueprint `0.5.1`.
 
 - stable base: `0.5.0`
-- candidate line: `0.5.1-dev`
+- stable target: `0.5.1`
 - source finding: CUSA-Digital Architecture Conformance Remediation, PR #31
+- Blueprint hardening PR: #19
 - consumer auto-adoption: **disabled**
 - phases added: **0**
 - gates added: **0**
 - checks added: **1**
 
-This boundary does not rewrite the stable `v0.5.0` release. It prepares a patch hardening release that consumers may later adopt only through a separate Compliance Review.
+This boundary does not rewrite the historical stable `v0.5.0` release. It promotes one verified lesson into a patch release that consumers may adopt only through a separate Compliance Review.
 
 ## 1. Problem
 
-Blueprint 0.5.0 distinguishes architecture design from API implementation, but the stable API implementation gate proves endpoints, authorization, durable audit and backend tests without an explicit assertion that the implementation actually conforms to the previously approved architecture.
+Blueprint 0.5.0 distinguished architecture design from API implementation, but the API implementation gate proved endpoints, authorization, durable audit and backend tests without an explicit assertion that the implementation actually conformed to the previously approved architecture.
 
 A real pilot exposed the gap. A system can simultaneously have:
 
@@ -33,7 +34,7 @@ Both are required.
 
 ## 2. Canonical check
 
-Blueprint 0.5.1-dev adds:
+Blueprint 0.5.1 adds:
 
 `api.architecture_implementation_conformance`
 
@@ -121,6 +122,6 @@ Architecture fitness tests produce evidence; they do not create human approval.
 
 ## 9. Release and adoption
 
-This development boundary intentionally leaves stable `VERSION = 0.5.0` unchanged. A separate release closure will promote the coherent repository identity to `0.5.1` after this hardening boundary is reviewed and merged.
+The semantic hardening boundary was reviewed and merged before release closure. Stable `0.5.1` promotes the new check, the affected gates and the consumer declaration schemas/templates while preserving provenance for unchanged 0.5.0 components.
 
 No consumer auto-adoption occurs. CUSA-Digital or any other consumer remains on its explicitly declared Blueprint version until a Compliance Review authorizes a version change.
