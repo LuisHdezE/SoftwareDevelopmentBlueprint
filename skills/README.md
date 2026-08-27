@@ -53,7 +53,21 @@ Una skill no puede saltarse un gate, inventar product truth ni convertir CI en a
 - `dev-functional-interface-slice`
 - `dev-event-logging-audit`
 
-Total: **14 materializadas**. Las **25 restantes** siguen `planned` y no deben cargarse como procedimientos disponibles.
+Total estable: **14 materializadas**. Las **25 restantes** siguen `planned` y no deben cargarse como procedimientos disponibles.
+
+## Candidata 0.5.1-dev
+
+La línea activa de hardening **0.5.1-dev** conserva las 14 skills estables y añade:
+
+- `dev-architecture-conformance`
+
+Total candidato: **15 materializadas**.
+
+Esta nueva skill hace operativa la verificación de que la implementación real respeta la arquitectura aprobada. Requiere restricciones comprobables, evidencia vinculada a la revisión exacta y al menos un guardrail ejecutable requerido en CI. Un backend funcional con tests verdes puede seguir fallando conformidad arquitectónica.
+
+No impone Clean Architecture universalmente. Valida la arquitectura aprobada por el proyecto y solo aplica reglas Clean/Hexagonal cuando forman parte de ese contrato.
+
+Durante esta frontera de desarrollo las skills estables no se rebautizan artificialmente; la publicación estable 0.5.1 será una frontera separada.
 
 ## Reglas de neutralidad
 
@@ -62,3 +76,4 @@ Total: **14 materializadas**. Las **25 restantes** siguen `planned` y no deben c
 - Reference pilots son cantera de patrones, no fuente normativa.
 - `dev-functional-interface-slice` implementa el slice real usando inventario ejecutable, Client Architecture y API autoritativa; no autoriza datos de negocio hardcodeados ni capacidades inventadas.
 - `dev-mockup-planning` es condicional y no crea una dependencia universal de imágenes.
+- `dev-architecture-conformance` comprueba el contrato arquitectónico aprobado; no autoriza refactors Brownfield por estética ni sustituye pruebas funcionales.
