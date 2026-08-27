@@ -1,203 +1,129 @@
-# Client Architecture Contract — Blueprint 0.4.0-dev
+# Client Architecture Contract — Blueprint 0.5.0-dev
 
 ## Purpose
 
-The Client Architecture Contract is the repository-owned pre-implementation agreement for one approved `interface_slice` on one target platform.
+Client Architecture is the repository-owned pre-implementation contract for client delivery. In Blueprint 0.5 the effective contract is composed instead of duplicating platform-wide decisions in every slice:
 
-It exists so a later AI can implement React or Android without inventing authentication behavior, permissions, API semantics, state ownership, error behavior, offline rules, testing boundaries or Brownfield replacement strategy.
+`Platform Client Architecture Baseline + Slice Architecture Binding = Effective Client Architecture Contract`
 
-The canonical schema is `schemas/client-architecture.schema.json`.
+The baseline owns reusable platform decisions. The slice binding owns only what varies for one `interface_slice + platform`.
 
-## Evaluation scope
+Canonical schemas:
 
-`client_architecture_ready` is evaluated as `interface_slice_platform`.
+- `schemas/client-platform-architecture.schema.json`
+- `schemas/client-architecture.schema.json`
 
-A PASS for `ops-core + web` does not authorize implementation of:
+`client_architecture_ready` is still evaluated as `interface_slice_platform`. A PASS for one slice/platform authorizes neither another slice nor another platform.
 
-- another interface slice;
-- Android for the same slice;
-- inventory items not included in that contract.
+## Upstream authority
 
-Implementation inherits no approval from neighboring slices.
+Before a scoped Client Architecture PASS:
 
-## Required upstream gates
+1. the initial project `api_gate` is PASS;
+2. `interface_inventory_ready` is PASS;
+3. `design_system_ready` is PASS;
+4. the platform baseline is valid and applicable;
+5. the slice binding resolves to real inventory IDs, permissions and OpenAPI `operationId` values.
 
-A client contract must not be approved unless:
+Mockups/prototypes are not a universal prerequisite. When approved visual references exist they may be attached to the slice binding, but absence of static references cannot by itself block Client Architecture.
 
-1. `API_GATE = PASS` for the project;
-2. `interface_inventory_ready = PASS`;
-3. `design_system_ready = PASS`;
-4. `visual_review_pass = PASS` for the exact target interface slice.
+## Platform Client Architecture Baseline
 
-Approved visual references are inputs to the contract, not decoration.
+One baseline is reusable by slices on the same platform/project until a change invalidates it.
 
-## Required decisions
+It defines platform-wide decisions for:
 
-Every client architecture artifact defines:
+- Design System and token ownership;
+- OpenAPI/API client location and API authorization boundary;
+- Problem Details/error contract and correlation/idempotency headers;
+- authentication/session lifecycle and credential storage;
+- permission presentation while API authorization remains authoritative;
+- server/local state ownership and cache strategy;
+- forms/validation mapping;
+- observability, secret redaction and PII policy;
+- accessibility target and interaction minimums;
+- unit/UI/integration/E2E testing responsibilities;
+- offline strategy;
+- implementation guardrails;
+- React/Web or Kotlin/Android platform contract;
+- Brownfield coexistence/cutover/rollback when applicable.
 
-### Visual binding
+Baseline approval is not slice approval. It supplies reusable decisions to scoped bindings.
 
-- inventory IDs included in the slice;
-- approved mockup/reference paths;
-- Design System and token paths;
-- a hard rule that unapproved interfaces are not implemented.
+## Slice Architecture Binding
 
-### API contract binding
+The slice binding is intentionally small. It defines:
 
-- OpenAPI path;
-- exact operation IDs used by the slice;
-- API as the authorization boundary;
-- error contract;
-- request-correlation header;
-- idempotency header.
+- exact `interface_slice` and platform;
+- executable Interface Inventory IDs;
+- reference to the platform baseline;
+- optional approved visual references;
+- OpenAPI path/revision and exact `operationId` set;
+- permissions used by the slice;
+- routes/navigation;
+- required async/error/offline states;
+- idempotent operations and retry semantics;
+- slice-specific cache/offline/testing overrides;
+- guardrails that keep API and inventory authoritative.
 
-The client cannot invent endpoints, permissions, states, payload semantics or business transitions.
+The binding may not invent endpoints, permissions, states, payload semantics or business transitions.
 
-### Authentication lifecycle
+## Visual references
 
-The contract records:
+`visual_references.mode` has two valid forms:
 
-- auth mechanism;
-- access/refresh credential storage;
-- refresh behavior and rotation;
-- concurrent refresh policy;
-- unauthenticated and forbidden behavior;
-- logout behavior;
-- secret logging prohibition.
+- `none`: no static visual reference is required and `approved_reference_paths` is empty;
+- `approved_optional`: one or more approved, versioned references are attached.
 
-Client storage must match the platform threat model. Tokens or credentials must not be moved into weaker storage merely for implementation convenience.
+A generated image is not implicitly reviewed or approved. A reference path cannot be fabricated to satisfy a schema.
 
-### Permissions and routing
+The Design System and tokens remain required regardless of whether mockups exist.
 
-Presentation may hide or disable unavailable actions, but API authorization remains authoritative.
+## Referential integrity
 
-Routing/navigation must define public/protected destinations and permission-aware navigation behavior.
+Validation must resolve the effective contract against repository artifacts, not only JSON shape.
 
-### State and cache ownership
+For each binding the validator verifies at least:
 
-The contract separates server state from local UI state and records:
+- platform baseline file exists and validates;
+- baseline project/mode/platform are compatible with the binding;
+- Design System/token references exist;
+- inventory IDs exist in the executable inventory and belong to the slice/platform;
+- `operationId` values exist in OpenAPI and are bound by those inventory interfaces;
+- permissions declared by the binding exist on the selected inventory interfaces;
+- idempotency operations are a subset of the binding operations;
+- optional visual references exist when declared;
+- API and observability correlation contracts do not conflict;
+- Brownfield coexistence is present when required;
+- implementation guardrails cannot disable API authority or introduce authoritative hardcoded business data.
 
-- server-state owner;
-- local UI-state owner;
-- cache strategy;
-- mutation invalidation/refetch rules.
+Fictitious IDs and paths must fail validation.
 
-A client cache is never a new source of truth for authoritative business data unless an explicit offline model says so.
+## API evolution
 
-### Forms and API validation
+The binding records an API revision. When the API changes after the initial API Gate, `api-impact` analysis determines which bindings/slices need revalidation by affected `operationId` or by broader platform/project contract impact.
 
-Client validation improves feedback but cannot replace server validation.
+Unrelated evidence is preserved unless a cross-cutting change invalidates it.
 
-The contract defines mappings for:
+## Web baseline
 
-- API validation errors such as 422;
-- conflicts such as 409;
-- rate limiting such as 429;
-- global Problem Details or the project's approved equivalent.
+The Web baseline records React-specific decisions such as rendering mode, router, server-state library, form library, build tool and browser support.
 
-### Async, error and offline states
+A Web binding may contain only `WEB-*` inventory IDs.
 
-The contract explicitly classifies loading, empty, generic error, 401, 403, 404, 409, 422, 429 and offline as `REQUIRED` or `NOT_APPLICABLE`.
+## Android baseline
 
-`NOT_APPLICABLE` must reflect the actual contract, not an attempt to avoid designing an inconvenient state.
+The Android baseline records Kotlin-specific decisions such as UI toolkit, architecture pattern, networking, local persistence, background work and minimum SDK.
 
-### High-risk mutations and idempotency
-
-Every operation requiring idempotency must be listed by canonical operation ID.
-
-The client defines:
-
-- key generation per user intent;
-- replay handling;
-- same-key/different-payload conflict handling;
-- protection against duplicated optimistic/local effects.
-
-### Observability
-
-Request correlation is preserved from API response through support/error context. Client telemetry must redact secrets and follow the project's PII policy.
-
-The client does not create a second audit system. Durable business/security audit remains server-side unless a documented architecture says otherwise.
-
-### Accessibility
-
-Accessibility is part of architecture, not a finishing pass.
-
-The contract defines the target standard, keyboard/switch navigation, screen-reader/TalkBack behavior, focus management and minimum interactive target size.
-
-### Testing
-
-The contract defines unit, component/UI, integration and E2E responsibilities before implementation.
-
-A strategy cannot claim runtime confidence using only mocked unit tests when the critical behavior depends on auth refresh, transport, persistence, navigation or API error mapping.
-
-## Web profile
-
-For Blueprint's default web stack, the platform section records React plus:
-
-- rendering mode;
-- router;
-- server-state library;
-- form library;
-- build tool;
-- browser-support policy.
-
-The schema does not permit an Android platform block in a web contract.
-
-## Android profile
-
-For Blueprint's default Android stack, the platform section records Kotlin plus:
-
-- Jetpack Compose, Views or approved hybrid toolkit;
-- architecture pattern;
-- networking library;
-- local persistence;
-- background work strategy;
-- minimum SDK.
-
-The schema does not permit a web platform block in an Android contract.
-
-## Offline model
-
-Offline capability is explicit, even when unsupported.
-
-Allowed architecture modes are:
-
-- `unsupported`;
-- `degraded`;
-- `read_only`;
-- `queued_writes`;
-- `full_offline`.
-
-The storage and synchronization/conflict policy must be recorded. Offline queued writes must not silently bypass API authorization, idempotency or server-side business rules.
+An Android binding may contain only `APP-*` inventory IDs.
 
 ## Brownfield coexistence
 
-When `mode = brownfield`, the contract must include a coexistence block.
+For Brownfield, the platform baseline must preserve the working client until the replacement boundary is implemented, tested and explicitly approved.
 
-The existing working client remains available until the approved replacement boundary is implemented, tested and its cutover is explicitly approved.
-
-The contract must state:
-
-- current client path/surface;
-- migration boundary;
-- cutover trigger;
-- rollback strategy;
-- that removal occurs only after release approval.
+It records current client surface, migration boundary, cutover trigger and rollback strategy.
 
 Rule: **ALIGN, DO NOT REWRITE**.
-
-A new client slice is not permission to remove unrelated working behavior.
-
-## Implementation guardrails
-
-Every contract asserts:
-
-- no new API behavior invented in the client;
-- no authorization bypass;
-- approved inventory only;
-- high-risk mutations follow API idempotency requirements.
-
-These are normative assertions, not optional prose.
 
 ## Repository layout
 
@@ -206,27 +132,30 @@ Recommended consumer layout:
 ```text
 .blueprint/
   client-architecture/
-    <slice-id>.web.json
-    <slice-id>.android.json
+    platform/
+      web.json
+      android.json
+    slices/
+      <slice-id>.web.json
+      <slice-id>.android.json
 ```
 
-The project may use another path if `project.yaml` declares `artifact_locations.client_architecture_root`.
+A project may use another location when declared by its manifest.
 
 ## Gate evidence
 
 A scoped `client_architecture_ready` PASS should identify:
 
-- interface slice;
-- platform;
-- architecture artifact path;
-- applicable inventory IDs;
-- validation evidence/CI run;
-- review/approval evidence when required by project governance.
+- slice and platform;
+- platform baseline artifact;
+- slice binding artifact;
+- inventory IDs;
+- API revision/operationIds;
+- schema + semantic validation evidence;
+- human review evidence when project governance requires it.
 
-File existence alone is not sufficient if the file does not validate or its scoped gate has not passed.
+File existence alone is insufficient.
 
 ## Compatibility
 
-Blueprint v0.4 adds this contract without silently migrating older consumers. Existing v0.3 projects adopt it only through Compliance Review.
-
-Reference pilots can demonstrate compatibility or expose gaps, but remain non-normative.
+Blueprint 0.5 does not silently rewrite older consumers. Existing projects adopt the new composed contract through Compliance Review and explicit Blueprint version adoption. Reference pilots remain evidence, never hidden norm.
