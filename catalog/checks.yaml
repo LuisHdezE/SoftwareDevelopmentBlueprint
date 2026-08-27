@@ -1,4 +1,4 @@
-version: 0.5.0
+version: 0.5.1-dev
 checks:
   - {id: discovery.product_vision, phase: discovery, type: REQUIRED, verification: manual}
   - {id: discovery.scope_mvp, phase: discovery, type: REQUIRED, verification: manual}
@@ -47,6 +47,7 @@ checks:
   - {id: api.auth_authorization, phase: api_implementation, type: REQUIRED, verification: evidence}
   - {id: api.audit_logging, phase: api_implementation, type: REQUIRED, verification: evidence}
   - {id: api.backend_tests, phase: api_implementation, type: REQUIRED, verification: evidence}
+  - {id: api.architecture_implementation_conformance, phase: api_implementation, type: REQUIRED, verification: evidence, rule: prove_implementation_conforms_to_approved_architecture_dependency_direction_and_module_boundaries_with_executable_assertions_where_feasible}
 
   - {id: api.openapi, phase: openapi_validation, type: GENERATED, verification: file}
   - {id: api.openapi_validation, phase: openapi_validation, type: REQUIRED, verification: evidence}

@@ -1,4 +1,4 @@
-version: 0.5.0
+version: 0.5.1-dev
 gates:
   - id: brownfield_baseline
     name: Brownfield Baseline Gate
@@ -93,7 +93,15 @@ gates:
       - api.auth_authorization
       - api.audit_logging
       - api.backend_tests
+      - api.architecture_implementation_conformance
     result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
+    rule: >-
+      Functional correctness does not prove architectural correctness. PASS requires
+      evidence that the implementation conforms to the approved architecture contract,
+      including dependency direction, module/layer boundaries, Presentation/Application/
+      Domain/Infrastructure responsibilities and declared ports/adapters where applicable.
+      Prefer executable architecture assertions; when a constraint cannot be automated,
+      record explicit review evidence rather than silently treating it as satisfied.
 
   - id: openapi_valid
     name: OpenAPI Valid Gate
@@ -155,6 +163,7 @@ gates:
       - api.auth_authorization
       - api.audit_logging
       - api.backend_tests
+      - api.architecture_implementation_conformance
       - api.openapi
       - api.openapi_validation
       - api.postman_collection
@@ -168,10 +177,12 @@ gates:
     result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
     rule: >-
       Project-scoped initial API baseline. No executable client delivery begins until this
-      gate is PASS. Later API changes do not automatically invalidate unrelated accepted
-      evidence; impact analysis and dependency bindings determine the required revalidation
-      scope. Cross-cutting security/auth/contract changes may invalidate broader scopes.
-      The API remains the authoritative security and business boundary.
+      gate is PASS. The gate aggregates both behavioral/API evidence and architecture
+      implementation conformance; passing runtime tests cannot substitute for the latter.
+      Later API changes do not automatically invalidate unrelated accepted evidence;
+      impact analysis and dependency bindings determine the required revalidation scope.
+      Cross-cutting security/auth/contract changes may invalidate broader scopes. The API
+      remains the authoritative security and business boundary.
 
   - id: interface_inventory_ready
     name: Interface Inventory Ready Gate
