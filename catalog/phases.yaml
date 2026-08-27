@@ -24,6 +24,19 @@ phases:
     name: Requirements & Domain
     applies_to: [greenfield, brownfield]
     order: 50
+
+  - id: interface_scope_baseline
+    name: Interface Scope Baseline
+    applies_to: [greenfield, brownfield]
+    order: 55
+    requires_gates: [requirements_ready]
+    exit_gate: interface_scope_ready
+    rule: >-
+      Early descriptive/planning boundary. Brownfield records observed interfaces from
+      AS-IS and reconciled requirements; Greenfield derives intended interface scope from
+      approved requirements and journeys. Unresolved API needs are allowed here. This
+      baseline is not an executable client backlog and never authorizes UI implementation.
+
   - id: architecture_security_data
     name: Architecture, Security & Data
     applies_to: [greenfield, brownfield]
@@ -57,8 +70,12 @@ phases:
     name: Interface Inventory
     applies_to: [greenfield, brownfield]
     order: 130
-    requires_gates: [api_gate]
+    requires_gates: [api_gate, interface_scope_ready]
     exit_gate: interface_inventory_ready
+    rule: >-
+      Reconcile the early Interface Scope Baseline with the authoritative API contract
+      and produce the complete executable client backlog. API-backed data/actions bind to
+      canonical operationIds; legitimate local/static behavior is declared explicitly.
 
   - id: visual_identity
     name: Visual Identity
