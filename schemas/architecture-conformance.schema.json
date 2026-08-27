@@ -1,0 +1,195 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eliasworks.dev/blueprint/0.5.1-dev/architecture-conformance.schema.json",
+  "title": "Blueprint Architecture Implementation Conformance",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "project",
+    "implementation_revision",
+    "approved_architecture_refs",
+    "architecture_style",
+    "constraints",
+    "guards",
+    "violations",
+    "decision"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "0.5.1-dev"
+    },
+    "project": {
+      "type": "string",
+      "minLength": 1
+    },
+    "implementation_revision": {
+      "type": "string",
+      "pattern": "^[a-fA-F0-9]{7,40}$"
+    },
+    "approved_architecture_refs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "architecture_style": {
+      "enum": [
+        "CLEAN_ARCHITECTURE",
+        "HEXAGONAL",
+        "LAYERED",
+        "MODULAR_MONOLITH",
+        "OTHER"
+      ]
+    },
+    "notes": {
+      "type": "string"
+    },
+    "constraints": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "category",
+          "description",
+          "required",
+          "status",
+          "verification"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^ARC-[A-Z0-9][A-Z0-9._-]*$"
+          },
+          "category": {
+            "enum": [
+              "DEPENDENCY_DIRECTION",
+              "DOMAIN_PURITY",
+              "APPLICATION_BOUNDARY",
+              "FRAMEWORK_BOUNDARY",
+              "PERSISTENCE_BOUNDARY",
+              "PRESENTATION_BOUNDARY",
+              "MODULE_BOUNDARY",
+              "PORT_ADAPTER_BINDING",
+              "OTHER"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "status": {
+            "enum": ["PASS", "FAIL", "N/A"]
+          },
+          "verification": {
+            "type": "object",
+            "required": ["method", "evidence"],
+            "properties": {
+              "method": {
+                "enum": ["automatic", "manual", "evidence"]
+              },
+              "evidence": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "guards": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "type",
+          "artifact",
+          "required_in_ci",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^GUARD-[A-Z0-9][A-Z0-9._-]*$"
+          },
+          "type": {
+            "enum": [
+              "ARCHITECTURE_TEST",
+              "STATIC_ANALYSIS",
+              "DEPENDENCY_RULE",
+              "CUSTOM"
+            ]
+          },
+          "artifact": {
+            "type": "string",
+            "minLength": 1
+          },
+          "command": {
+            "type": "string",
+            "minLength": 1
+          },
+          "required_in_ci": {
+            "type": "boolean"
+          },
+          "status": {
+            "enum": ["PASS", "FAIL"]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "violations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "constraint_id", "location", "description", "severity"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^VIOL-[A-Z0-9][A-Z0-9._-]*$"
+          },
+          "constraint_id": {
+            "type": "string",
+            "pattern": "^ARC-[A-Z0-9][A-Z0-9._-]*$"
+          },
+          "location": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "severity": {
+            "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "decision": {
+      "enum": ["READY_FOR_REVIEW", "PASS", "FAIL", "BLOCKED"]
+    }
+  },
+  "additionalProperties": false
+}
