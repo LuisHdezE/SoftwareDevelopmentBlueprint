@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eliasworks.dev/blueprint/0.5.2-dev/ci-runtime.schema.json",
+  "title": "Blueprint CI Runtime Contract",
+  "type": "object",
+  "required": ["schema_version", "orchestrator", "strategy", "runner", "security", "evidence", "maintenance"],
+  "properties": {
+    "schema_version": {"const": "0.5.2-dev"},
+    "orchestrator": {"const": "github_actions"},
+    "strategy": {"enum": ["github_hosted", "self_hosted", "hybrid"]},
+    "runner": {
+      "type": "object",
+      "required": ["scope", "labels", "os", "arch", "persistent", "service_containers", "container_engine", "project_docker_capability_independent"],
+      "properties": {
+        "scope": {"enum": ["repository", "organization", "enterprise"]},
+        "labels": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "os": {"enum": ["linux", "windows", "macos"]},
+        "arch": {"enum": ["x64", "arm64"]},
+        "persistent": {"type": "boolean"},
+        "service_containers": {"type": "boolean"},
+        "container_engine": {"enum": ["docker", "none"]},
+        "project_docker_capability_independent": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "security": {
+      "type": "object",
+      "required": ["trusted_code_only", "fork_pull_requests", "persistent_secrets", "least_privilege_permissions"],
+      "properties": {
+        "trusted_code_only": {"type": "boolean"},
+        "fork_pull_requests": {"enum": ["deny", "github_hosted_only"]},
+        "persistent_secrets": {"const": false},
+        "least_privilege_permissions": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "evidence": {
+      "type": "object",
+      "required": ["exact_head_required", "check_run_required", "pre_execution_infrastructure_failures_distinct_from_test_failures"],
+      "properties": {
+        "exact_head_required": {"const": true},
+        "check_run_required": {"const": true},
+        "pre_execution_infrastructure_failures_distinct_from_test_failures": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "maintenance": {
+      "type": "object",
+      "required": ["workspace_cleanup", "runner_updates"],
+      "properties": {
+        "workspace_cleanup": {"const": true},
+        "runner_updates": {"enum": ["automatic", "operator_managed"]}
+      },
+      "additionalProperties": false
+    },
+    "notes": {"type": "string"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"strategy": {"enum": ["self_hosted", "hybrid"]}}, "required": ["strategy"]},
+      "then": {
+        "properties": {
+          "runner": {"properties": {"labels": {"allOf": [{"contains": {"const": "self-hosted"}}, {"contains": {"const": "blueprint"}}]}}},
+          "security": {"properties": {"trusted_code_only": {"const": true}}}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"runner": {"properties": {"service_containers": {"const": true}}}}},
+      "then": {"properties": {"runner": {"properties": {"container_engine": {"const": "docker"}, "os": {"const": "linux"}}}}}
+    }
+  ],
+  "additionalProperties": false
+}

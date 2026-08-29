@@ -1,0 +1,55 @@
+name: Blueprint CI Runtime Validation
+
+on:
+  push:
+    branches:
+      - main
+      - 'blueprint/**'
+    paths:
+      - 'schemas/ci-runtime.schema.json'
+      - 'templates/ci-runtime.example.yaml'
+      - 'ci/**'
+      - 'scripts/validate-ci-runtime.py'
+      - 'documentation/BLUEPRINT_V0_5_2_CI_EXECUTION_PORTABILITY.md'
+      - 'documentation/SELF_HOSTED_RUNNER_BOOTSTRAP.md'
+      - '.github/workflows/blueprint-ci-runtime-validation.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'schemas/ci-runtime.schema.json'
+      - 'templates/ci-runtime.example.yaml'
+      - 'ci/**'
+      - 'scripts/validate-ci-runtime.py'
+      - 'documentation/BLUEPRINT_V0_5_2_CI_EXECUTION_PORTABILITY.md'
+      - 'documentation/SELF_HOSTED_RUNNER_BOOTSTRAP.md'
+      - '.github/workflows/blueprint-ci-runtime-validation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: [self-hosted, linux, x64, blueprint]
+    steps:
+      - name: Verify runner selector contract
+        shell: bash
+        run: |
+          test "${RUNNER_OS}" = "Linux"
+          test "${RUNNER_ARCH}" = "X64"
+          command -v git
+          command -v curl
+          command -v tar
+
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+
+      - name: Install validator dependencies
+        run: python -m pip install --disable-pip-version-check jsonschema==4.26.0 PyYAML==6.0.2
+
+      - name: Validate CI runtime contract
+        run: python scripts/validate-ci-runtime.py
