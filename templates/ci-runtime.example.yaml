@@ -1,0 +1,32 @@
+schema_version: 0.5.2-dev
+orchestrator: github_actions
+strategy: self_hosted
+runner:
+  scope: repository
+  labels:
+    - self-hosted
+    - linux
+    - x64
+    - blueprint
+  os: linux
+  arch: x64
+  persistent: true
+  service_containers: true
+  container_engine: docker
+  project_docker_capability_independent: true
+security:
+  trusted_code_only: true
+  fork_pull_requests: deny
+  persistent_secrets: false
+  least_privilege_permissions: true
+evidence:
+  exact_head_required: true
+  check_run_required: true
+  pre_execution_infrastructure_failures_distinct_from_test_failures: true
+maintenance:
+  workspace_cleanup: true
+  runner_updates: automatic
+notes: >-
+  Self-hosted Linux x64 GitHub Actions runner. Docker is runner infrastructure
+  for Actions service containers and does not change the consumer project's
+  Docker capability.
