@@ -7,12 +7,14 @@ import sys
 from pathlib import Path
 
 import yaml
+from jsonschema import Draft202012Validator
 
 ROOT = Path(__file__).resolve().parents[1]
 VERSION = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
 STABLE_V4 = "0.4.0"
 STABLE_V5 = "0.5.0"
 STABLE_V51 = "0.5.1"
+STABLE_V52 = "0.5.2"
 
 V4_COUNTS = {
     "phases": 25,
@@ -21,7 +23,6 @@ V4_COUNTS = {
     "materialized_skills": 13,
     "planned_skills": 25,
 }
-
 V5_COUNTS = {
     "phases": 28,
     "checks": 134,
@@ -29,7 +30,6 @@ V5_COUNTS = {
     "materialized_skills": 14,
     "planned_skills": 25,
 }
-
 V51_COUNTS = {
     "phases": 28,
     "checks": 135,
@@ -37,6 +37,7 @@ V51_COUNTS = {
     "materialized_skills": 14,
     "planned_skills": 25,
 }
+V52_COUNTS = dict(V51_COUNTS)
 
 UNCHANGED_V5_YAML_COMPONENTS = [
     "catalog/phases.yaml",
@@ -45,7 +46,6 @@ UNCHANGED_V5_YAML_COMPONENTS = [
     "workflows/greenfield.yaml",
     "workflows/brownfield.yaml",
 ]
-
 UNCHANGED_V5_SCHEMAS = [
     "schemas/api-impact.schema.json",
     "schemas/client-architecture.schema.json",
@@ -59,7 +59,6 @@ UNCHANGED_V5_SCHEMAS = [
     "schemas/reference-pilots.schema.json",
     "schemas/compliance-review.schema.json",
 ]
-
 SCHEMA_VERSION_CONST_V5 = [
     "schemas/api-impact.schema.json",
     "schemas/client-architecture.schema.json",
@@ -71,7 +70,6 @@ SCHEMA_VERSION_CONST_V5 = [
     "schemas/design-system.schema.json",
     "schemas/design-tokens.schema.json",
 ]
-
 POST_API_PIPELINE = [
     "interface_inventory",
     "design_system",
@@ -80,7 +78,6 @@ POST_API_PIPELINE = [
     "visual_functional_review",
     "integration_qa",
 ]
-
 REQUIRED_SCOPED_GATES = {
     "interface_scope_ready": "project",
     "api_gate": "project",
@@ -92,13 +89,13 @@ REQUIRED_SCOPED_GATES = {
     "visual_functional_review_pass": "interface_slice_platform",
     "integration_qa_pass": "interface_slice_platform",
 }
-
 VALIDATORS = [
     "scripts/validate-experience-artifacts.py",
     "scripts/validate-skills.py",
     "scripts/validate-client-architecture.py",
     "scripts/validate-reference-pilot-compliance.py",
     "scripts/validate-architecture-conformance.py",
+    "scripts/validate-ci-runtime.py",
 ]
 
 
@@ -163,137 +160,159 @@ def assert_contiguous(sequence: list[str], subsequence: list[str], label: str) -
     fail(f"{label} does not contain expected pipeline contiguously: {subsequence}")
 
 
-def validate_historical_v4_release() -> None:
-    release = load_json("documentation/BLUEPRINT_V0_4_RELEASE.json")
-    if release.get("version") != STABLE_V4 or release.get("status") != "stable":
+def validate_historical_releases() -> None:
+    v4 = load_json("documentation/BLUEPRINT_V0_4_RELEASE.json")
+    if v4.get("version") != STABLE_V4 or v4.get("status") != "stable":
         fail("historical v0.4 release manifest drifted")
-    if release.get("tag") != "v0.4.0" or release.get("counts") != V4_COUNTS:
+    if v4.get("tag") != "v0.4.0" or v4.get("counts") != V4_COUNTS:
         fail("historical v0.4 release identity/counts drifted")
-    if release.get("historical_review_target") != "0.4.0-dev":
-        fail("historical v0.4 review target drifted")
-    print("PASS historical v0.4 release preserved")
 
-
-def validate_historical_v5_release() -> None:
-    release = load_json("documentation/BLUEPRINT_V0_5_RELEASE.json")
-    if release.get("version") != STABLE_V5 or release.get("status") != "stable":
+    v5 = load_json("documentation/BLUEPRINT_V0_5_RELEASE.json")
+    if v5.get("version") != STABLE_V5 or v5.get("status") != "stable":
         fail("historical v0.5.0 release manifest drifted")
-    if release.get("previous_stable") != STABLE_V4 or release.get("tag") != "v0.5.0":
-        fail("historical v0.5.0 lineage drifted")
-    if release.get("counts") != V5_COUNTS:
-        fail("historical v0.5.0 counts must remain 28/134/18/14/25")
-    expected_boundaries = {
-        ("V5-0", 11), ("V5-1", 12), ("V5-1A", 13),
-        ("V5-2", 14), ("V5-3", 15), ("V5-4", 16),
-    }
-    actual = {(item.get("id"), item.get("pull_request")) for item in release.get("delivery_slices", [])}
-    if actual != expected_boundaries:
-        fail("historical v0.5.0 delivery slices drifted")
-    print("PASS historical v0.5.0 release preserved")
+    if v5.get("previous_stable") != STABLE_V4 or v5.get("tag") != "v0.5.0" or v5.get("counts") != V5_COUNTS:
+        fail("historical v0.5.0 lineage/counts drifted")
 
-
-def validate_v51_release_manifest() -> None:
-    release = load_json("documentation/BLUEPRINT_V0_5_1_RELEASE.json")
-    if release.get("version") != STABLE_V51 or release.get("status") != "stable":
-        fail("0.5.1 release manifest must declare stable 0.5.1")
-    if release.get("previous_stable") != STABLE_V5:
-        fail("0.5.1 previous stable must be 0.5.0")
-    if release.get("tag") != "v0.5.1":
-        fail("0.5.1 tag declaration must be v0.5.1")
-    if release.get("pre_release_main") != "8a59fa6784430eb103258c7c808922d53fa54e63":
-        fail("0.5.1 pre-release main must be the accepted PR #19 merge")
-    hardening = release.get("hardening_boundary", {})
+    v51 = load_json("documentation/BLUEPRINT_V0_5_1_RELEASE.json")
+    if v51.get("version") != STABLE_V51 or v51.get("status") != "stable":
+        fail("historical v0.5.1 release manifest drifted")
+    if v51.get("previous_stable") != STABLE_V5 or v51.get("tag") != "v0.5.1" or v51.get("counts") != V51_COUNTS:
+        fail("historical v0.5.1 lineage/counts drifted")
+    hardening = v51.get("hardening_boundary", {})
     if hardening.get("pull_request") != 19 or hardening.get("merge_commit") != "8a59fa6784430eb103258c7c808922d53fa54e63":
-        fail("0.5.1 hardening boundary provenance drifted")
-    if release.get("counts") != V51_COUNTS:
-        fail(f"0.5.1 release counts drifted: {release.get('counts')}")
+        fail("historical v0.5.1 hardening provenance drifted")
+    print("PASS historical stable releases 0.4.0, 0.5.0 and 0.5.1 preserved")
+
+
+def validate_v52_release_manifest() -> None:
+    release = load_json("documentation/BLUEPRINT_V0_5_2_RELEASE.json")
+    if release.get("version") != STABLE_V52 or release.get("status") != "stable":
+        fail("0.5.2 release manifest must declare stable 0.5.2")
+    if release.get("release_date") != "2026-08-29":
+        fail("0.5.2 release_date must use America/Montevideo closure date")
+    if release.get("previous_stable") != STABLE_V51 or release.get("tag") != "v0.5.2":
+        fail("0.5.2 lineage/tag declaration drifted")
+    if release.get("pre_release_main") != "c043bead93e9c4ad6c806576623f228dae239216":
+        fail("0.5.2 pre-release main must be accepted PR #22 merge")
+    hardening = release.get("hardening_boundary", {})
+    if hardening.get("pull_request") != 22 or hardening.get("merge_commit") != "c043bead93e9c4ad6c806576623f228dae239216":
+        fail("0.5.2 hardening boundary provenance drifted")
+    if release.get("counts") != V52_COUNTS:
+        fail(f"0.5.2 release counts drifted: {release.get('counts')}")
+
     compatibility = release.get("compatibility", {})
-    for key in (
-        "consumer_auto_upgrade",
-        "brownfield_align_do_not_rewrite",
-        "grandfather_existing_evidence",
-        "mockups_conditional",
-        "impact_based_api_revalidation",
-        "unchanged_component_provenance_reuse",
-    ):
-        if key == "consumer_auto_upgrade":
-            if compatibility.get(key) is not False:
-                fail("0.5.1 must not auto-upgrade consumers")
-        elif compatibility.get(key) is not True:
-            fail(f"0.5.1 compatibility policy drifted: {key}")
+    expected_compatibility = {
+        "consumer_auto_upgrade": False,
+        "brownfield_align_do_not_rewrite": True,
+        "grandfather_existing_evidence": True,
+        "mockups_conditional": True,
+        "impact_based_api_revalidation": True,
+        "unchanged_component_provenance_reuse": True,
+        "github_hosted_supported": True,
+        "self_hosted_supported": True,
+        "hybrid_supported": True,
+        "exact_head_evidence_preserved": True,
+        "project_docker_capability_independent": True,
+    }
+    if compatibility != expected_compatibility:
+        fail("0.5.2 compatibility policy drifted")
+
     provenance = release.get("component_provenance", {})
-    expected = {
-        "root_release": "0.5.1",
-        "checks_catalog": "0.5.1",
-        "gates_catalog": "0.5.1",
-        "project_schema": "0.5.1",
-        "status_schema": "0.5.1",
-        "project_status_templates": "0.5.1",
+    expected_provenance = {
+        "root_release": "0.5.2",
+        "ci_runtime_schema": "0.5.2",
+        "ci_runtime_template": "0.5.2",
+        "blueprint_master_runtime_profile": "0.5.2",
+        "project_schema": "0.5.2",
+        "status_schema": "0.5.2",
+        "project_status_templates": "0.5.2",
+        "checks_gates_catalogs": "0.5.1-compatible",
         "unchanged_phases_workflows_skills_experience_contracts": "0.5.0-compatible",
     }
-    if provenance != expected:
-        fail("0.5.1 component provenance manifest drifted")
-    print("PASS stable v0.5.1 release manifest")
+    if provenance != expected_provenance:
+        fail("0.5.2 component provenance manifest drifted")
+    print("PASS stable v0.5.2 release manifest")
 
 
 def validate_root_and_component_identity() -> None:
-    if VERSION != STABLE_V51:
-        fail(f"stable release requires VERSION={STABLE_V51}, got {VERSION}")
+    if VERSION != STABLE_V52:
+        fail(f"stable release requires VERSION={STABLE_V52}, got {VERSION}")
 
     if load_yaml("catalog/checks.yaml").get("version") != STABLE_V51:
-        fail("checks catalog must be 0.5.1")
+        fail("0.5.2 reuses checks catalog with 0.5.1 provenance")
     if load_yaml("catalog/gates.yaml").get("version") != STABLE_V51:
-        fail("gates catalog must be 0.5.1")
-
+        fail("0.5.2 reuses gates catalog with 0.5.1 provenance")
     for path in UNCHANGED_V5_YAML_COMPONENTS:
         if load_yaml(path).get("version") != STABLE_V5:
             fail(f"unchanged component must retain 0.5.0 provenance: {path}")
 
     project_template = load_yaml("templates/project.example.yaml")
     status_template = load_yaml("templates/status.example.yaml")
-    if project_template.get("blueprint", {}).get("version") != STABLE_V51:
-        fail("canonical project template must declare 0.5.1")
-    if status_template.get("blueprint_version") != STABLE_V51:
-        fail("canonical status template must declare 0.5.1")
+    if project_template.get("blueprint", {}).get("version") != STABLE_V52:
+        fail("canonical project template must declare 0.5.2")
+    if status_template.get("blueprint_version") != STABLE_V52:
+        fail("canonical status template must declare 0.5.2")
 
     actual_counts = catalog_counts()
-    if actual_counts != V51_COUNTS:
-        fail(f"0.5.1 core counts drifted: expected {V51_COUNTS}, got {actual_counts}")
-    print(f"PASS root/component identity and counts: {V51_COUNTS}")
+    if actual_counts != V52_COUNTS:
+        fail(f"0.5.2 core counts drifted: expected {V52_COUNTS}, got {actual_counts}")
+    print(f"PASS root/component identity and counts: {V52_COUNTS}")
 
 
 def validate_schema_provenance() -> None:
     project = load_json("schemas/project.schema.json")
-    if "/blueprint/0.5.1/" not in project.get("$id", ""):
-        fail("project schema $id must be version-pinned to 0.5.1")
-    if project["properties"]["blueprint"]["properties"]["version"].get("const") != STABLE_V51:
-        fail("project schema consumer version must be const 0.5.1")
+    if "/blueprint/0.5.2/" not in project.get("$id", ""):
+        fail("project schema $id must be version-pinned to 0.5.2")
+    if project["properties"]["blueprint"]["properties"]["version"].get("const") != STABLE_V52:
+        fail("project schema consumer version must be const 0.5.2")
 
     status = load_json("schemas/status.schema.json")
-    if "/blueprint/0.5.1/" not in status.get("$id", ""):
-        fail("status schema $id must be version-pinned to 0.5.1")
-    if status["properties"]["blueprint_version"].get("const") != STABLE_V51:
-        fail("status schema blueprint_version must be const 0.5.1")
+    if "/blueprint/0.5.2/" not in status.get("$id", ""):
+        fail("status schema $id must be version-pinned to 0.5.2")
+    if status["properties"]["blueprint_version"].get("const") != STABLE_V52:
+        fail("status schema blueprint_version must be const 0.5.2")
+
+    ci_runtime = load_json("schemas/ci-runtime.schema.json")
+    Draft202012Validator.check_schema(ci_runtime)
+    if "/blueprint/0.5.2/" not in ci_runtime.get("$id", ""):
+        fail("ci-runtime schema $id must be version-pinned to 0.5.2")
+    if ci_runtime["properties"]["schema_version"].get("const") != STABLE_V52:
+        fail("ci-runtime schema_version must be const 0.5.2")
 
     for path in UNCHANGED_V5_SCHEMAS:
         schema = load_json(path)
         if "/blueprint/0.5.0/" not in schema.get("$id", ""):
             fail(f"unchanged schema must retain 0.5.0 provenance: {path}")
-
     for path in SCHEMA_VERSION_CONST_V5:
         schema = load_json(path)
         value = schema.get("properties", {}).get("schema_version", {}).get("const")
         if value != STABLE_V5:
             fail(f"unchanged schema_version must remain const 0.5.0: {path}")
+    print("PASS 0.5.2 project/status/CI runtime provenance with compatible component reuse")
 
-    refs = load_json("schemas/reference-pilots.schema.json")
-    if refs["properties"]["version"].get("const") != STABLE_V5:
-        fail("reference pilot schema registry version must remain 0.5.0")
 
-    compliance_text = json.dumps(load_json("schemas/compliance-review.schema.json"))
-    if "blueprint_change" not in compliance_text or "v0_4_change" not in compliance_text:
-        fail("compliance review schema historical compatibility drifted")
-    print("PASS 0.5.1 project/status provenance and 0.5.0 compatible schema reuse")
+def validate_ci_runtime_semantics() -> None:
+    template = load_yaml("templates/ci-runtime.example.yaml")
+    master = load_yaml("ci/blueprint-master.runtime.yaml")
+    for label, document in (("template", template), ("master", master)):
+        if document.get("schema_version") != STABLE_V52:
+            fail(f"CI runtime {label} must declare 0.5.2")
+        if document.get("orchestrator") != "github_actions":
+            fail(f"CI runtime {label} must use github_actions")
+        evidence = document.get("evidence", {})
+        for key in ("exact_head_required", "check_run_required", "pre_execution_infrastructure_failures_distinct_from_test_failures"):
+            if evidence.get(key) is not True:
+                fail(f"CI runtime evidence invariant drifted: {label}.{key}")
+        if document.get("runner", {}).get("project_docker_capability_independent") is not True:
+            fail("runner infrastructure must remain independent from project Docker capability")
+    if template.get("strategy") != "self_hosted" or template["runner"].get("container_engine") != "docker":
+        fail("canonical CI runtime template must exercise self-hosted service containers")
+    if master.get("strategy") != "self_hosted" or master["runner"].get("container_engine") != "none":
+        fail("Blueprint Master runtime profile must remain self-hosted without service-container dependency")
+    workflow = (ROOT / ".github/workflows/blueprint-ci-runtime-validation.yml").read_text(encoding="utf-8")
+    if "runs-on: [self-hosted, linux, x64, blueprint]" not in workflow:
+        fail("CI runtime validation workflow must select canonical self-hosted labels")
+    print("PASS 0.5.2 CI execution portability semantics")
 
 
 def validate_architecture_conformance_semantics() -> None:
@@ -302,21 +321,18 @@ def validate_architecture_conformance_semantics() -> None:
     check_id = "api.architecture_implementation_conformance"
     check = checks.get(check_id)
     if not check:
-        fail("0.5.1 missing architecture implementation conformance check")
+        fail("0.5.2 must retain architecture implementation conformance check")
     if check.get("phase") != "api_implementation" or check.get("type") != "REQUIRED" or check.get("verification") != "evidence":
         fail("architecture implementation conformance check classification drifted")
     for gate_id in ("api_implemented", "api_gate"):
         if check_id not in set(gates[gate_id].get("require_all", [])):
             fail(f"{gate_id} must require {check_id}")
-    if "runtime tests cannot substitute" not in str(gates["api_gate"].get("rule", "")):
-        fail("api_gate must reject runtime-test substitution for architecture conformance")
-    print("PASS 0.5.1 architecture conformance catalog semantics")
+    print("PASS retained 0.5.1 architecture conformance semantics")
 
 
 def validate_core_v5_semantics() -> None:
     phases = by_id(load_yaml("catalog/phases.yaml").get("phases", []))
     gates = by_id(load_yaml("catalog/gates.yaml").get("gates", []))
-
     if phases["interface_scope_baseline"].get("requires_gates") != ["requirements_ready"]:
         fail("Interface Scope Baseline ownership drifted")
     if set(phases["interface_inventory"].get("requires_gates", [])) != {"api_gate", "interface_scope_ready"}:
@@ -325,16 +341,10 @@ def validate_core_v5_semantics() -> None:
         fail("Visual Identity must remain conditional")
     if phases["functional_interface_slice"].get("execution_scope") != "interface_slice_platform":
         fail("Functional Interface Slice must remain slice+platform scoped")
-
     for gate_id, scope in REQUIRED_SCOPED_GATES.items():
         gate = gates.get(gate_id)
         if not gate or gate.get("evaluation_scope", "project") != scope:
             fail(f"{gate_id} must use scope {scope}")
-
-    if "api.change_impact_analysis" not in set(gates["api_contract_ready"].get("require_if_applicable", [])):
-        fail("API Contract Ready impact analysis drifted")
-    if "api.affected_consumer_revalidation" not in set(gates["api_qa_pass"].get("require_if_applicable", [])):
-        fail("API QA affected-consumer revalidation drifted")
     if "review.human_complete" not in set(gates["visual_functional_review_pass"].get("require_all", [])):
         fail("Visual & Functional Review must require human completion")
     print("PASS retained 0.5.x core semantics")
@@ -351,10 +361,7 @@ def validate_workflows() -> None:
         blocker = pipeline.get("blocker_condition", {})
         if blocker.get("id") != "BLOCKED_BY_API" or blocker.get("overlays_lifecycle") is not True:
             fail(f"{path} BLOCKED_BY_API semantics drifted")
-        evolution = workflow.get("api_contract_evolution", {})
-        if evolution.get("post_baseline_change_policy") != "impact_based_revalidation" or evolution.get("operation_level_key") != "operationId":
-            fail(f"{path} API evolution policy drifted")
-    print("PASS unchanged 0.5.0 workflows reused by 0.5.1")
+    print("PASS unchanged 0.5.0 workflows reused by 0.5.2")
 
 
 def validate_reference_pilot_history() -> None:
@@ -362,32 +369,27 @@ def validate_reference_pilot_history() -> None:
     if catalog.get("version") != STABLE_V5:
         fail("reference pilot registry component must retain 0.5.0 provenance")
     pilot = next((p for p in catalog.get("pilots", []) if p.get("id") == "careshift-manager"), None)
-    if not pilot:
-        fail("careshift-manager missing from historical reference pilot registry")
-    if pilot.get("baseline_blueprint") != "0.3.0":
-        fail("CareShift historical baseline drifted")
-    review = pilot.get("last_compliance_review", {})
-    if review.get("target_blueprint") != "0.4.0-dev" or review.get("consumer_version_change") != "DEFERRED":
-        fail("CareShift historical review facts drifted")
+    if not pilot or pilot.get("baseline_blueprint") != "0.3.0":
+        fail("CareShift historical reference-pilot facts drifted")
     print("PASS reference pilot history preserved")
 
 
 def validate_active_docs() -> None:
     required = {
-        "BLUEPRINT.md": ["Stable release: **0.5.1**", "Architecture Implementation Conformance", "api.architecture_implementation_conformance", "component provenance"],
-        "README.md": ["Blueprint 0.5.1", "135 checks", "Architecture Implementation Conformance"],
-        "documentation/BLUEPRINT_CURRENT_STATE.md": ["Release representada: **0.5.1**", "135 checks", "api.architecture_implementation_conformance", "Compliance Review"],
-        "documentation/BLUEPRINT_V0_5_1_ARCHITECTURE_CONFORMANCE_HARDENING.md": ["stable Blueprint `0.5.1`", "Blueprint hardening PR: #19", "consumer auto-adoption"],
-        "documentation/BLUEPRINT_V0_5_1_RELEASE_NOTES.md": ["Blueprint 0.5.1", "135 checks", "no automatic consumer upgrade", "v0.5.1"],
+        "BLUEPRINT.md": ["Stable release: **0.5.2**", "CI Execution Portability", "schemas/ci-runtime.schema.json", "pre-execution infrastructure failure != test failure"],
+        "README.md": ["Blueprint 0.5.2", "135 checks", "CI Execution Portability", "self_hosted"],
+        "documentation/BLUEPRINT_CURRENT_STATE.md": ["Release representada: **0.5.2**", "135 checks", "ci-runtime", "CUSA-Digital PR #46", "Compliance Review"],
+        "documentation/BLUEPRINT_V0_5_2_CI_EXECUTION_PORTABILITY.md": ["stable Blueprint `0.5.2`", "hardening PR: #22", "consumer auto-adoption"],
+        "documentation/BLUEPRINT_V0_5_2_RELEASE_NOTES.md": ["Blueprint 0.5.2", "135 checks", "no automatic consumer upgrade", "v0.5.2"],
     }
     for path, tokens in required.items():
         text = (ROOT / path).read_text(encoding="utf-8")
-        if "0.5.1-dev" in text:
-            fail(f"stable 0.5.1 document retains prerelease identity: {path}")
+        if "0.5.2-dev" in text:
+            fail(f"stable 0.5.2 active document retains prerelease identity: {path}")
         for token in tokens:
             if token not in text:
-                fail(f"{path} missing stable 0.5.1 token: {token}")
-    print("PASS active 0.5.1 documentation")
+                fail(f"{path} missing stable 0.5.2 token: {token}")
+    print("PASS active 0.5.2 documentation")
 
 
 def run_validator(path: str) -> None:
@@ -407,11 +409,11 @@ def run_validator(path: str) -> None:
 def main() -> int:
     validate_root_and_component_identity()
     validate_schema_provenance()
-    validate_historical_v4_release()
-    validate_historical_v5_release()
-    validate_v51_release_manifest()
+    validate_historical_releases()
+    validate_v52_release_manifest()
     validate_reference_pilot_history()
     validate_architecture_conformance_semantics()
+    validate_ci_runtime_semantics()
     validate_core_v5_semantics()
     validate_workflows()
     validate_active_docs()

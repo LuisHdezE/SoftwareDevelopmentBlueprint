@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://eliasworks.dev/blueprint/0.5.2-dev/ci-runtime.schema.json",
+  "$id": "https://eliasworks.dev/blueprint/0.5.2/ci-runtime.schema.json",
   "title": "Blueprint CI Runtime Contract",
   "type": "object",
   "required": ["schema_version", "orchestrator", "strategy", "runner", "security", "evidence", "maintenance"],
   "properties": {
-    "schema_version": {"const": "0.5.2-dev"},
+    "schema_version": {"const": "0.5.2"},
     "orchestrator": {"const": "github_actions"},
     "strategy": {"enum": ["github_hosted", "self_hosted", "hybrid"]},
     "runner": {

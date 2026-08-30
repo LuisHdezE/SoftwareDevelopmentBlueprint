@@ -1,5 +1,5 @@
-blueprint_version: 0.5.1
-updated_at: '2026-08-27T14:15:00Z'
+blueprint_version: 0.5.2
+updated_at: '2026-08-29T21:00:00-03:00'
 phases:
   api_gate:
     status: PASS
@@ -36,17 +36,17 @@ checks:
 gates:
   api_gate:
     status: PASS
-    evaluated_at: '2026-08-27T13:55:00Z'
+    evaluated_at: '2026-08-29T20:55:00-03:00'
     evidence_ids: [EVD-ARCH-CONFORMANCE-001]
   interface_scope_ready:
     status: PASS
-    evaluated_at: '2026-08-27T14:00:00Z'
+    evaluated_at: '2026-08-29T20:56:00-03:00'
   interface_inventory_ready:
     status: PASS
-    evaluated_at: '2026-08-27T14:05:00Z'
+    evaluated_at: '2026-08-29T20:57:00-03:00'
   design_system_ready:
     status: PASS
-    evaluated_at: '2026-08-27T14:10:00Z'
+    evaluated_at: '2026-08-29T20:58:00-03:00'
 functional_slices:
   - id: operational-core
     platform: web
@@ -57,27 +57,27 @@ scoped_gates:
     scope_id: operational-core
     platform: web
     status: PASS
-    evaluated_at: '2026-08-27T14:11:00Z'
+    evaluated_at: '2026-08-29T20:58:00-03:00'
   - gate: functional_slice_ready
     scope: interface_slice_platform
     scope_id: operational-core
     platform: web
     status: PASS
-    evaluated_at: '2026-08-27T14:12:00Z'
+    evaluated_at: '2026-08-29T20:59:00-03:00'
     evidence_ids: [EVD-FUNC-001]
   - gate: visual_functional_review_pass
     scope: interface_slice_platform
     scope_id: operational-core
     platform: web
     status: PASS
-    evaluated_at: '2026-08-27T14:13:00Z'
+    evaluated_at: '2026-08-29T20:59:00-03:00'
     evidence_ids: [EVD-REVIEW-001]
   - gate: integration_qa_pass
     scope: interface_slice_platform
     scope_id: operational-core
     platform: web
     status: PASS
-    evaluated_at: '2026-08-27T14:14:00Z'
+    evaluated_at: '2026-08-29T21:00:00-03:00'
     evidence_ids: [EVD-QA-001]
 blockers: []
 api_impacts:

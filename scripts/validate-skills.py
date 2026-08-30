@@ -14,6 +14,7 @@ STABLE_V4 = "0.4.0"
 DEV_V5 = "0.5.0-dev"
 STABLE_V5 = "0.5.0"
 STABLE_V51 = "0.5.1"
+STABLE_V52 = "0.5.2"
 
 REQUIRED_FRONTMATTER = {
     "id",
@@ -102,9 +103,9 @@ def validate_catalog_identity(catalog_version: str) -> None:
         return
     if STABLE_VERSION == STABLE_V4 and catalog_version == DEV_V5:
         return
-    # Blueprint 0.5.1 is a focused governance patch. No materialized skill
-    # procedure changed, so the stable 0.5.0 skill component is reused explicitly.
-    if STABLE_VERSION == STABLE_V51 and catalog_version == STABLE_V5:
+    # Blueprint 0.5.1 and 0.5.2 do not modify materialized skill procedures.
+    # The stable 0.5.0 skill component is therefore reused explicitly.
+    if STABLE_VERSION in {STABLE_V51, STABLE_V52} and catalog_version == STABLE_V5:
         return
     fail(
         "catalog/skills.yaml version must match root VERSION or an explicitly "

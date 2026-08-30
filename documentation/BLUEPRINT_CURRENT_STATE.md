@@ -1,8 +1,8 @@
 # Software Development Blueprint - Current State
 
 > CURRENT CHECKPOINT / DERIVED SUMMARY  
-> Fecha de cierre representada: **2026-08-27 America/Montevideo**.  
-> Release representada: **0.5.1**.
+> Fecha de cierre representada: **2026-08-29 America/Montevideo**.  
+> Release representada: **0.5.2**.
 
 Este documento es un resumen humano. No sustituye a `BLUEPRINT.md`, `VERSION`, `catalog/`, `workflows/`, `schemas/`, `templates/`, `skills/` ni a la evidencia de los repositorios consumidores.
 
@@ -22,7 +22,7 @@ GitHub versionado prevalece sobre handoffs conversacionales.
 
 Repositorio: `LuisHdezE/SoftwareDevelopmentBlueprint`
 
-Versión estable: **0.5.1**
+Versión estable representada: **0.5.2**
 
 Conteos del núcleo:
 
@@ -32,13 +32,82 @@ Conteos del núcleo:
 - **14 skills materializadas**;
 - **25 skills planificadas**.
 
-El único incremento de catálogo respecto de 0.5.0 es un check REQUIRED de Architecture Implementation Conformance.
+0.5.2 no altera estos conteos respecto de 0.5.1.
 
-## 3. Cambio central de 0.5.1
+## 3. Cambio central de 0.5.2: CI Execution Portability
 
-El piloto CUSA-Digital demostró una brecha real: una arquitectura puede estar correctamente diseñada y aprobada y, al mismo tiempo, la implementación puede desviarse de ella aunque endpoints, OpenAPI, Postman y QA funcional estén verdes.
+Un piloto privado demostró que la semántica de evidencia CI no puede depender de la disponibilidad comercial de GitHub-hosted runners.
 
-0.5.1 añade:
+Invariantes:
+
+`CI evidence semantics != runner ownership`
+
+`pre-execution infrastructure failure != test failure`
+
+0.5.2 estabiliza el contrato machine-readable:
+
+`schemas/ci-runtime.schema.json`
+
+con estrategias:
+
+- `github_hosted`;
+- `self_hosted`;
+- `hybrid`.
+
+El artifact CI runtime es CONDITIONAL. Un consumidor debe materializar `.blueprint/ci-runtime.yaml` cuando gestione o sobrescriba explícitamente la estrategia de ejecución, especialmente para `self_hosted` o `hybrid`.
+
+## 4. Evidencia y exact-head
+
+La portabilidad del runner no relaja gobernanza.
+
+Continúa siendo obligatorio, cuando aplique:
+
+- workflow/check sobre el SHA exacto candidato;
+- workflow versionado por el repositorio;
+- scope esperado de validación;
+- logs/artifacts exigidos por el gate;
+- decisión humana separada de CI.
+
+Un job que termina antes de asignar runner o antes de ejecutar pasos es evidencia de infraestructura. No se clasifica como fallo de producto/test y tampoco como PASS.
+
+## 5. Frontera self-hosted
+
+Para Linux/x64 el selector canónico es:
+
+`[self-hosted, linux, x64, blueprint]`
+
+Un runner persistente self-hosted debe:
+
+- ejecutar código confiable;
+- excluir forks del lane persistente o enviarlos a hosted en estrategia híbrida;
+- no persistir secretos del repositorio;
+- usar permisos least-privilege;
+- limpiar workspace;
+- mantener política de actualización del runner.
+
+El Blueprint Master usa un runner repository-scoped como primer adopter probado.
+
+## 6. Docker del runner versus Docker del proyecto
+
+`capabilities.docker` continúa describiendo la solución/proyecto.
+
+No describe la infraestructura interna del runner.
+
+Por tanto es válido:
+
+```text
+project capabilities.docker = false
+runner service_containers = true
+runner container_engine = docker
+```
+
+Docker usado solo para GitHub Actions `services:` no convierte Docker en requisito de la aplicación.
+
+El perfil del Blueprint Master no necesita service containers y declara `container_engine: none`.
+
+## 7. Architecture Implementation Conformance
+
+0.5.2 conserva sin cambio el hardening estable de 0.5.1:
 
 `api.architecture_implementation_conformance`
 
@@ -46,11 +115,11 @@ Invariante:
 
 `architecture design acceptance != architecture implementation conformance`
 
-El check pertenece a `api_implementation` y es requerido tanto por `api_implemented` como por `api_gate`.
+El check pertenece a `api_implementation` y continúa siendo REQUIRED tanto por `api_implemented` como por `api_gate`.
 
-La evidencia debe verificar el contrato arquitectónico realmente aprobado. Cuando sea viable, se prefieren assertions ejecutables: dependency rules, architecture fitness functions, module-boundary tests, layer isolation tests o bindings de ports/adapters. El Blueprint no prescribe una arquitectura o framework universal.
+Tests funcionales/API verdes no sustituyen esta evidencia.
 
-## 4. Pipeline canónico
+## 8. Pipeline canónico
 
 ```text
 Discovery / Brownfield Inspection + AS-IS + Gap Analysis
@@ -76,22 +145,7 @@ Discovery / Brownfield Inspection + AS-IS + Gap Analysis
 
 Visual Identity y Mockups/Prototypes son condicionales.
 
-## 5. Interface Scope e Interface Inventory
-
-El modelo 0.5.x separa:
-
-```text
-Requirements Ready
-  -> Interface Scope Baseline
-  -> Architecture/API design
-  ...
-  -> API Gate
-  -> Executable Interface Inventory
-```
-
-El baseline temprano describe interfaces observadas/intencionadas sin inventar bindings. El inventario ejecutable posterior al API Gate reconcilia el alcance con permisos, dependencias y `operationId` autoritativos.
-
-## 6. Functional Interface Slice
+## 9. Functional Interface Slice
 
 Unidad canónica de ejecución cliente: `interface_slice + platform`.
 
@@ -101,31 +155,17 @@ Lifecycle:
 
 Visual & Functional Review e Integration QA son gates independientes, no estados lifecycle.
 
-`FUNCTIONAL` requiere DoD con API real, auth/RBAC, forms/errors, observabilidad/correlation, responsive, accesibilidad, tests, traceability, ausencia de hardcoded authoritative business data y ausencia de capacidades inventadas.
+`ACCEPTED` requiere Functional DoD PASS, VFR PASS con revisión humana completa, Integration QA PASS, aceptación humana explícita y ausencia de blockers abiertos.
 
-`ACCEPTED` añade Review PASS, Integration QA PASS, aceptación humana explícita y cero blockers abiertos.
+## 10. BLOCKED_BY_API y evolución API
 
-## 7. BLOCKED_BY_API
+`BLOCKED_BY_API` continúa siendo overlay sobre el lifecycle y solo aplica ante una carencia/incompatibilidad autoritativa de API.
 
-`BLOCKED_BY_API` es un overlay sobre el lifecycle. Se usa solo ante una carencia o incompatibilidad autoritativa de API: data, operation, permission, state, transition o contract capability.
+El primer `api_gate` sigue siendo project-scoped.
 
-Conserva el último lifecycle válido. La solución se realiza en una frontera API/backend separada y el slice solo reanuda con evidencia de resolución/revalidación.
+Cambios posteriores usan `schemas/api-impact.schema.json` y revalidación basada en impacto. Evidencia aceptada no relacionada se preserva por defecto.
 
-Errores normales de frontend o incertidumbre visual no se etiquetan como `BLOCKED_BY_API`.
-
-## 8. Evolución API
-
-El primer `api_gate` continúa siendo project-scoped.
-
-Cambios posteriores usan `schemas/api-impact.schema.json`:
-
-- `operationId` local -> revalidación de consumidores afectados;
-- auth/authorization/security/error/versioning u otros cambios cross-cutting -> posible escalado a plataforma/proyecto;
-- evidencia aceptada no relacionada se preserva por defecto.
-
-Una remediación puramente arquitectónica no fabrica un API impact si el contrato externo no cambió.
-
-## 9. Client Architecture
+## 11. Client Architecture y experiencia visual
 
 Modelo efectivo:
 
@@ -135,92 +175,107 @@ Platform Client Architecture Baseline
   = Effective Client Architecture Contract
 ```
 
-La baseline concentra decisiones reutilizables de plataforma. El binding declara inventario, rutas, permisos, API revision/operationIds, estados, idempotencia y overrides específicos del slice.
-
-`visual_references.mode = none` es válido. Mockups no son una dependencia universal.
-
-## 10. Experiencia visual
-
 Design System es requerido para client delivery. Visual Identity es condicional.
 
 Mockups/prototypes son condicionales y, cuando se usan:
 
 `GENERATED != REVIEWED != APPROVED`
 
-El review final se realiza sobre el cliente funcional real, no solo sobre imágenes.
+El review final se realiza sobre el cliente funcional real.
 
-## 11. Cross-Artifact Semantic Integrity
+## 12. Cross-Artifact Semantic Integrity
 
 Los validadores comprueban la cadena real:
 
 `requirement -> interface -> permission -> operationId -> slice -> client architecture -> evidence/test -> review/QA -> acceptance`.
 
-Se rechazan IDs ficticios, operationIds inexistentes, namespaces de plataforma incompatibles, permisos inventados, evidencias inexistentes, acceptance sin gates y blockers ocultos.
+Se rechazan IDs ficticios, operationIds inexistentes, namespaces incompatibles, permisos inventados, evidencias inexistentes, acceptance sin gates y blockers ocultos.
 
-Validadores principales:
+Validadores principales incluyen:
 
-- `scripts/validate-artifact-graph.py`
-- `scripts/validate-experience-artifacts.py`
-- `scripts/validate-client-architecture.py`
-- `scripts/validate-skills.py`
-- `scripts/validate-reference-pilot-compliance.py`
-- `scripts/validate-architecture-conformance.py`
-- `scripts/validate-release.py`
-
-## 12. Skills
-
-Se mantienen **14 skills materializadas** y **25 planned**.
-
-0.5.1 no modifica el procedimiento de ninguna skill materializada, por lo que el componente `catalog/skills.yaml` y sus frontmatters conservan provenance 0.5.0 y se reutilizan de forma compatible.
-
-Catalogar no equivale a materializar.
+- `scripts/validate-artifact-graph.py`;
+- `scripts/validate-experience-artifacts.py`;
+- `scripts/validate-client-architecture.py`;
+- `scripts/validate-skills.py`;
+- `scripts/validate-reference-pilot-compliance.py`;
+- `scripts/validate-architecture-conformance.py`;
+- `scripts/validate-ci-runtime.py`;
+- `scripts/validate-release.py`.
 
 ## 13. Versionado de componentes
 
-`VERSION = 0.5.1` identifica la release raíz.
+`VERSION = 0.5.2` identifica la release raíz.
 
-Componentes modificados en este patch:
+Componentes promovidos a 0.5.2:
 
-- `catalog/checks.yaml`: 0.5.1;
-- `catalog/gates.yaml`: 0.5.1;
-- `schemas/project.schema.json`: consumer declaration 0.5.1;
-- `schemas/status.schema.json`: consumer declaration 0.5.1;
-- templates canónicos project/status: 0.5.1.
+- `schemas/ci-runtime.schema.json`;
+- `templates/ci-runtime.example.yaml`;
+- `ci/blueprint-master.runtime.yaml`;
+- `schemas/project.schema.json`;
+- `schemas/status.schema.json`;
+- templates canónicos project/status;
+- documentación y validación activa de release.
 
-Los componentes cuyo contrato no cambió pueden conservar provenance 0.5.0, incluidos phases, workflows, skills y schemas de experiencia. Los validadores hacen explícita esta matriz de compatibilidad.
+Componentes reutilizados:
+
+- checks/gates: provenance 0.5.1;
+- phases/workflows/skills/experience schemas: provenance compatible 0.5.0.
+
+Los validadores hacen explícita esta matriz. No se re-etiquetan contratos sin cambio semántico.
 
 ## 14. Consumidores y adopción
 
 No existe automatic consumer upgrade.
 
-Una release estable del Master no cambia `.blueprint/status.yaml`, código, schemas o comportamiento de un consumidor. La adopción se realiza mediante:
+Una release estable del Master no cambia `.blueprint/status.yaml`, código, workflows ni comportamiento de un consumidor. La adopción requiere:
 
-1. verificación live del Master y del consumidor;
-2. Compliance Review entre versión declarada y versión objetivo;
+1. verificación live del Master y consumidor;
+2. Compliance Review entre versión declarada y objetivo;
 3. clasificación KEEP / ADOPT / MIGRATE / DEFER / N/A;
 4. aprobación explícita;
 5. PR de adopción separada;
-6. revalidación según el impacto real.
+6. revalidación según impacto real.
 
-CUSA-Digital consume actualmente Blueprint 0.5.0. Su `main` fue verificado en `95309161db3522f61b636b705b183b62e6395ede` tras PR #31, donde la implementación fue remediada para conformar con la arquitectura G3 sin cambiar las 45 operaciones API aceptadas.
+## 15. CUSA-Digital al cierre de 0.5.2
 
-Ese hallazgo originó el hardening 0.5.1, pero **CUSA no adopta 0.5.1 automáticamente**. Design System permanece fuera de autorización hasta un Compliance Review 0.5.0 -> 0.5.1 y una adopción explícita posterior al cierre estable de esta release.
+CUSA-Digital consume Blueprint 0.5.1 y permanece separado de esta release.
 
-## 15. Release closure y tag
+Estado live verificado al preparar el cierre:
 
-El manifest machine-readable es `documentation/BLUEPRINT_V0_5_1_RELEASE.json` y las notas están en `documentation/BLUEPRINT_V0_5_1_RELEASE_NOTES.md`.
+- `main = e9d80ec90b0076d637e742516df0da6a51354a47`;
+- CUSA-Digital PR #46 permanece OPEN y mergeable;
+- head de PR #46: `9cfdc930c5e6c323858b2c1cf8371aa0332cb63d`;
+- boundary: `public-marketplace + web / WEB-003 + WEB-004`;
+- Functional Slice Ready = PASS;
+- Visual & Functional Review = PASS;
+- Integration QA = PASS y human-approved;
+- lifecycle = FUNCTIONAL;
+- final human acceptance = PENDING;
+- Release Gate no se inicia por esta decisión.
 
-La etiqueta `v0.5.1` se crea únicamente después de fusionar el PR de release, verificar el árbol aprobado en `main` y confirmar CI post-merge.
+El último intento exact-head con GitHub-hosted runners privados terminaba antes de ejecutar pasos, sin runner asignado. Ese hallazgo originó el hardening 0.5.2.
 
-Los manifests/tags de 0.4.0 y 0.5.0 permanecen historia verificable y no se reescriben.
+La publicación de 0.5.2 **no modifica PR #46 ni adopta automáticamente el runner en CUSA**. Después de la release estable, CUSA requiere Compliance Review `0.5.1 -> 0.5.2` y una frontera de adopción separada antes de revalidar/mergear PR #46.
 
-## 16. Fuera de 0.5.1
+## 16. Release closure y tag
+
+El manifest machine-readable es `documentation/BLUEPRINT_V0_5_2_RELEASE.json` y las notas están en `documentation/BLUEPRINT_V0_5_2_RELEASE_NOTES.md`.
+
+El hardening semántico fue aceptado mediante PR #22 y mergeado en `c043bead93e9c4ad6c806576623f228dae239216` después de seis workflows exact-head SUCCESS sobre un runner self-hosted real.
+
+La etiqueta `v0.5.2` se crea únicamente después de fusionar el PR de release, verificar el árbol aprobado en `main` y confirmar CI post-merge sobre ese SHA exacto.
+
+Los manifests/tags anteriores permanecen historia verificable y no se reescriben.
+
+## 17. Fuera de 0.5.2
 
 No forma parte de la release:
 
 - mutar automáticamente consumidores;
-- iniciar Design System o UI de CUSA desde el Master release PR;
-- imponer Clean Architecture, Laravel o un layout de carpetas universal;
+- fusionar o cerrar CUSA-Digital PR #46;
+- convertir Docker en requisito universal;
+- debilitar exact-head CI;
+- exponer repositorios privados para obtener hosted runners gratuitos;
 - materializar las 25 skills todavía planned;
 - construir Blueprint Control Center;
 - declarar Blueprint 1.0.

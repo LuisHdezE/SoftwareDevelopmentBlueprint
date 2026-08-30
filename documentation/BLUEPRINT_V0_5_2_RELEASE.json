@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0.0",
+  "version": "0.5.2",
+  "status": "stable",
+  "release_date": "2026-08-29",
+  "previous_stable": "0.5.1",
+  "pre_release_main": "c043bead93e9c4ad6c806576623f228dae239216",
+  "tag": "v0.5.2",
+  "hardening_boundary": {
+    "pull_request": 22,
+    "merge_commit": "c043bead93e9c4ad6c806576623f228dae239216",
+    "source_finding": "CUSA-Digital PR #46 exposed private-repository GitHub-hosted runner unavailability before job execution while exact-head CI remained a required governance gate"
+  },
+  "counts": {
+    "phases": 28,
+    "checks": 135,
+    "gates": 18,
+    "materialized_skills": 14,
+    "planned_skills": 25
+  },
+  "compatibility": {
+    "consumer_auto_upgrade": false,
+    "brownfield_align_do_not_rewrite": true,
+    "grandfather_existing_evidence": true,
+    "mockups_conditional": true,
+    "impact_based_api_revalidation": true,
+    "unchanged_component_provenance_reuse": true,
+    "github_hosted_supported": true,
+    "self_hosted_supported": true,
+    "hybrid_supported": true,
+    "exact_head_evidence_preserved": true,
+    "project_docker_capability_independent": true
+  },
+  "release_highlights": [
+    "ci_execution_portability_contract",
+    "github_hosted_self_hosted_hybrid_strategies",
+    "exact_head_evidence_independent_of_runner_ownership",
+    "pre_execution_infrastructure_failure_distinct_from_test_failure",
+    "trusted_code_only_self_hosted_boundary",
+    "runner_docker_independent_from_project_docker_capability",
+    "blueprint_master_self_hosted_reference_execution"
+  ],
+  "component_provenance": {
+    "root_release": "0.5.2",
+    "ci_runtime_schema": "0.5.2",
+    "ci_runtime_template": "0.5.2",
+    "blueprint_master_runtime_profile": "0.5.2",
+    "project_schema": "0.5.2",
+    "status_schema": "0.5.2",
+    "project_status_templates": "0.5.2",
+    "checks_gates_catalogs": "0.5.1-compatible",
+    "unchanged_phases_workflows_skills_experience_contracts": "0.5.0-compatible"
+  },
+  "consumer_policy": {
+    "automatic_adoption": false,
+    "compliance_review_required": true,
+    "explicit_consumer_change_required": true,
+    "ci_runtime_artifact_conditional": true
+  },
+  "release_rule": "Create v0.5.2 only after the release PR merges, the approved tree is verified on main, and post-merge validation passes on that exact stable commit."
+}

@@ -1,6 +1,6 @@
 # Software Development Blueprint
 
-> Stable release: **0.5.1**  
+> Stable release: **0.5.2**  
 > Canonical repository: `LuisHdezE/SoftwareDevelopmentBlueprint`
 
 ## 1. Purpose and authority
@@ -50,7 +50,7 @@ The governing rule is **ALIGN, DO NOT REWRITE**.
 
 Brownfield findings distinguish `OBSERVED`, `INFERRED` and `PROPOSED`. Existing behavior is inspected before replacement is proposed. Working functionality is preserved unless a change is justified, reviewed and safely cut over.
 
-## 4. Canonical 0.5.1 flow
+## 4. Canonical 0.5.2 flow
 
 ### 4.1 Planning and server baseline
 
@@ -118,9 +118,11 @@ Initial `api_gate` is project-scoped and must PASS before executable client deli
 
 ### 7.1 Architecture Implementation Conformance
 
-Blueprint 0.5.1 adds the REQUIRED check:
+Blueprint 0.5.1 introduced the REQUIRED check:
 
 `api.architecture_implementation_conformance`
+
+0.5.2 retains it unchanged.
 
 The check proves that the implemented backend conforms to the architecture contract that was previously approved. Architecture design acceptance and architecture implementation conformance are distinct facts:
 
@@ -132,7 +134,7 @@ When the approved architecture defines dependency direction, module boundaries, 
 
 Blueprint does not universally prescribe Clean Architecture, DDD, Laravel or any fixed folder layout. The assertions must reflect the architecture the project actually approved.
 
-`api_implemented` and `api_gate` both require this check in 0.5.1.
+`api_implemented` and `api_gate` both require this check.
 
 A later conformance failure does not automatically erase unrelated historical functional/API evidence. Remediation is handled in a dedicated boundary, with API impact classified separately according to whether the authoritative external contract changed.
 
@@ -307,7 +309,7 @@ Evidence files are not automatically truthful because they exist. File-backed ev
 
 Materialized `dev-*` skills teach an agent how to satisfy canonical contracts. They do not become product truth and cannot declare gates PASS on their own.
 
-Blueprint 0.5.1 reuses the 14 materialized skill contracts from component version 0.5.0 because no skill procedure changed in this patch. This reuse is explicit compatibility, not implicit consumer adoption. Project-specific knowledge remains in the consumer repository.
+Blueprint 0.5.2 reuses the 14 materialized skill contracts from component version 0.5.0 because no skill procedure changed in either 0.5.1 or 0.5.2. This reuse is explicit compatibility, not implicit consumer adoption. Project-specific knowledge remains in the consumer repository.
 
 ## 17. Git and human governance
 
@@ -317,18 +319,62 @@ Dependent boundaries follow:
 
 One active implementation PR per dependent boundary is the default. CI success is evidence, not merge authorization. Human review/acceptance remains explicit wherever required.
 
+### 17.1 CI Execution Portability
+
+Blueprint 0.5.2 separates CI evidence semantics from runner ownership.
+
+Machine-readable contract:
+
+`schemas/ci-runtime.schema.json`
+
+Supported strategies:
+
+- `github_hosted`;
+- `self_hosted`;
+- `hybrid`.
+
+The CI runtime artifact is CONDITIONAL. A consumer SHOULD materialize `.blueprint/ci-runtime.yaml` when it explicitly manages or overrides CI execution strategy.
+
+The evidence invariant is:
+
+`CI evidence semantics != runner ownership`
+
+A hosted or self-hosted PASS is valid only when it preserves the required exact candidate SHA, repository-owned workflow, check execution, scope, logs/artifacts and human decision separation.
+
+A second invariant is:
+
+`pre-execution infrastructure failure != test failure`
+
+A job that terminates before runner assignment or before any workflow step executes is infrastructure evidence. It is neither product/test FAIL nor PASS.
+
+For persistent self-hosted execution:
+
+- trusted repository code only;
+- fork PRs denied on the self-hosted lane or routed to a provider-hosted lane;
+- persistent repository secrets forbidden;
+- least-privilege workflow permissions required;
+- workspace cleanup required;
+- runner update policy required.
+
+The canonical Linux/x64 self-hosted selector is:
+
+`[self-hosted, linux, x64, blueprint]`
+
+Runner/container infrastructure is independent from the product's `capabilities.docker`. Docker used solely for GitHub Actions service containers does not make Docker an application requirement.
+
 ## 18. Versioning and component provenance
 
 Blueprint uses SemVer. Root `VERSION` identifies the stable Blueprint release consumed by projects.
 
-Patch releases may reuse unchanged versioned components from the previous stable release. Component provenance is preserved rather than mechanically relabeled when its contract did not change.
+Patch releases may reuse unchanged versioned components from previous stable releases. Component provenance is preserved rather than mechanically relabeled when its contract did not change.
 
-For 0.5.1:
+For 0.5.2:
 
-- root release identity: `0.5.1`;
-- checks/gates catalogs: `0.5.1`;
-- project/status consumer schemas and canonical examples: `0.5.1`;
-- unchanged phase, workflow, skill and experience-artifact contracts may retain `0.5.0` component identity.
+- root release identity: `0.5.2`;
+- CI runtime schema/template and Blueprint Master runtime profile: `0.5.2`;
+- project/status consumer schemas and canonical examples: `0.5.2`;
+- checks/gates catalogs retain compatible `0.5.1` component identity;
+- unchanged phase, workflow, skill and experience-artifact contracts retain compatible `0.5.0` component identity.
 
 Validators resolve repository-local pinned contracts and verify the allowed compatibility matrix. A component version never causes consumer auto-upgrade.
 
@@ -338,12 +384,12 @@ Historical release manifests and Compliance Reviews remain historical truth. A l
 
 Reference pilots are non-normative. They prove or challenge Blueprint rules but cannot inject hidden product-specific requirements.
 
-CUSA-Digital, while consuming Blueprint 0.5.0, exposed the Architecture Implementation Conformance gap through a dedicated remediation boundary. That finding was generalized into 0.5.1 without copying CUSA-specific implementation structure into the Blueprint.
+CUSA-Digital first exposed the Architecture Implementation Conformance gap and later, while consuming Blueprint 0.5.1, exposed the CI execution-portability gap during PR #46. These findings were generalized without copying CUSA-specific product structure or machine configuration into the Blueprint.
 
 Consumers remain on the version they explicitly declare. A stable Blueprint release is followed, when desired, by a separate Compliance Review that classifies changes as KEEP / ADOPT / MIGRATE / DEFER / N/A before the consumer version is changed.
 
-Publishing 0.5.1 does not mutate CUSA-Digital or any other consumer.
+Publishing 0.5.2 does not mutate CUSA-Digital or any other consumer.
 
 ## 20. Strategic boundary
 
-Blueprint Control Center remains a documented future capability, not part of Blueprint Core 0.5.1. The preferred sequence is Blueprint Core -> reference/consumer pilots -> hardening -> Control Center when operating evidence justifies it.
+Blueprint Control Center remains a documented future capability, not part of Blueprint Core 0.5.2. The preferred sequence is Blueprint Core -> reference/consumer pilots -> hardening -> Control Center when operating evidence justifies it.

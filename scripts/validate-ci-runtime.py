@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_PATH = ROOT / "schemas" / "ci-runtime.schema.json"
 TEMPLATE_PATH = ROOT / "templates" / "ci-runtime.example.yaml"
 MASTER_PROFILE_PATH = ROOT / "ci" / "blueprint-master.runtime.yaml"
-DEV_VERSION = "0.5.2-dev"
+STABLE_VERSION = "0.5.2"
 
 
 def fail(message: str) -> None:
@@ -43,10 +43,10 @@ def expect_invalid(validator: Draft202012Validator, candidate: dict, label: str)
 
 
 def validate_common_semantics(document: dict, label: str) -> None:
-    if document.get("schema_version") != DEV_VERSION:
-        fail(f"{label} must declare {DEV_VERSION}")
+    if document.get("schema_version") != STABLE_VERSION:
+        fail(f"{label} must declare {STABLE_VERSION}")
     if document.get("orchestrator") != "github_actions":
-        fail(f"{label} must use GitHub Actions orchestration in 0.5.2-dev")
+        fail(f"{label} must use GitHub Actions orchestration in {STABLE_VERSION}")
     if document.get("strategy") not in {"self_hosted", "hybrid", "github_hosted"}:
         fail(f"{label} has unknown CI strategy")
 
@@ -80,20 +80,20 @@ def validate_common_semantics(document: dict, label: str) -> None:
         fail(f"{label}: persistent CI runtime requires workspace cleanup")
 
 
-def validate_development_profiles(template: dict, master: dict) -> None:
+def validate_profiles(template: dict, master: dict) -> None:
     if template.get("strategy") != "self_hosted":
-        fail("canonical development example must exercise self_hosted strategy")
+        fail("canonical stable example must exercise self_hosted strategy")
     labels = set(template["runner"].get("labels", []))
     for required in ("self-hosted", "linux", "x64", "blueprint"):
         if required not in labels:
-            fail(f"canonical development example missing runner label: {required}")
+            fail(f"canonical stable example missing runner label: {required}")
     if template["runner"].get("service_containers") is not True:
-        fail("canonical development example must exercise service-container support")
+        fail("canonical stable example must exercise service-container support")
     if template["runner"].get("container_engine") != "docker":
         fail("service-container example must use Docker Engine")
 
     if master.get("strategy") != "self_hosted":
-        fail("Blueprint Master development profile must use self_hosted strategy")
+        fail("Blueprint Master stable profile must use self_hosted strategy")
     if master["runner"].get("service_containers") is not False:
         fail("Blueprint Master validator profile does not require service containers")
     if master["runner"].get("container_engine") != "none":
@@ -127,6 +127,10 @@ def validate_negative_guards(validator: Draft202012Validator, template: dict) ->
 
 
 def main() -> int:
+    root_version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+    if root_version != STABLE_VERSION:
+        fail(f"CI runtime stable validator requires root VERSION={STABLE_VERSION}, got {root_version}")
+
     schema = load_schema()
     template = load_yaml(TEMPLATE_PATH)
     master = load_yaml(MASTER_PROFILE_PATH)
@@ -136,12 +140,16 @@ def main() -> int:
     validator.validate(master)
     validate_common_semantics(template, "canonical template")
     validate_common_semantics(master, "Blueprint Master profile")
-    validate_development_profiles(template, master)
+    validate_profiles(template, master)
     validate_negative_guards(validator, template)
 
-    print("PASS Blueprint 0.5.2-dev CI runtime contract")
+    print(f"PASS Blueprint {STABLE_VERSION} CI runtime contract")
     return 0
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    try:
+        raise SystemExit(main())
+    except AssertionError as exc:
+        print(f"FAIL: {exc}")
+        raise SystemExit(1)

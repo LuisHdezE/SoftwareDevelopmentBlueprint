@@ -1,4 +1,4 @@
-schema_version: 0.5.2-dev
+schema_version: 0.5.2
 orchestrator: github_actions
 strategy: self_hosted
 runner:

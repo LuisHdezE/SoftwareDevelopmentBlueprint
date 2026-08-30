@@ -6,9 +6,15 @@ El Blueprint define **cómo** descubrir, reconstruir, documentar, diseñar, impl
 
 ## Release estable
 
-**Blueprint 0.5.1**
+**Blueprint 0.5.2**
 
-0.5.1 es un patch de hardening sobre 0.5.0. Mantiene el flujo funcional post-API introducido en 0.5.0 y añade una obligación que el piloto CUSA-Digital reveló como faltante: la implementación debe demostrar que **conforma con la arquitectura previamente aprobada**.
+0.5.2 es un patch de portabilidad de ejecución CI sobre 0.5.1. Mantiene intacto el modelo funcional post-API y Architecture Implementation Conformance, y separa la obligación de evidencia exact-head del proveedor que ejecuta los jobs.
+
+Invariantes nuevos estabilizados:
+
+`CI evidence semantics != runner ownership`
+
+`pre-execution infrastructure failure != test failure`
 
 Cadena principal:
 
@@ -33,26 +39,25 @@ Discovery / Brownfield
 
 `Visual Identity` y `Mockups / Prototypes` son capacidades condicionales.
 
-## Qué cambia en 0.5.1
+## Qué cambia en 0.5.2
 
-Se incorpora el check REQUIRED:
+Se incorpora el contrato machine-readable de **CI Execution Portability**:
 
-`api.architecture_implementation_conformance`
+`schemas/ci-runtime.schema.json`
 
-Ahora `api_implemented` y `api_gate` exigen evidencia de que el código respeta el contrato arquitectónico aprobado, incluyendo, cuando aplique:
+Estrategias soportadas:
 
-- dirección de dependencias;
-- límites de módulos/capas/contextos;
-- ownership de Presentation, Application, Domain e Infrastructure;
-- puertos/adaptadores y bindings;
-- aislamiento de framework/persistencia según la arquitectura aceptada;
-- architecture fitness functions, reglas estáticas o tests ejecutables cuando sea viable.
+- `github_hosted`;
+- `self_hosted`;
+- `hybrid`.
 
-Invariante:
+El runtime de CI es un contrato de ejecución, no una relajación de gates. Exact-head CI, check runs, logs, artifacts y decisiones humanas conservan sus mismas obligaciones.
 
-`architecture design acceptance != architecture implementation conformance`
+Un job que termina antes de recibir runner o antes de ejecutar pasos es evidencia de infraestructura. No se interpreta como fallo de producto, pero tampoco como PASS.
 
-Tests funcionales/API verdes no sustituyen esta evidencia.
+Para self-hosted, el contrato exige una frontera de confianza explícita: código confiable, PRs de forks fuera del lane persistente, secretos no persistidos, permisos mínimos, limpieza de workspace y política de actualización del runner.
+
+Docker del runner también se separa de la capacidad Docker del producto. `capabilities.docker: false` puede coexistir válidamente con Docker usado solo por GitHub Actions `services:`.
 
 ## Principios clave
 
@@ -75,8 +80,10 @@ Tests funcionales/API verdes no sustituyen esta evidencia.
 17. Arquitectura aprobada debe verificarse también contra la implementación real.
 18. Una nueva versión del Blueprint no actualiza consumidores automáticamente.
 19. CI no sustituye decisiones humanas de review/merge/acceptance.
+20. La semántica de evidencia CI es independiente de quién posee el runner.
+21. Un fallo pre-ejecución de infraestructura no se falsifica como fallo de producto.
 
-## Núcleo 0.5.1
+## Núcleo 0.5.2
 
 - **28 fases** canónicas.
 - **135 checks**.
@@ -89,6 +96,7 @@ Tests funcionales/API verdes no sustituyen esta evidencia.
 - Cross-Artifact Semantic Integrity con fixtures positivos/negativos.
 - Client Architecture compuesta y sin dependencia obligatoria de mockups.
 - Architecture Implementation Conformance como obligación del API Implementation/API Gate.
+- CI Execution Portability con `github_hosted`, `self_hosted` y `hybrid`.
 
 ## Modos
 
@@ -123,6 +131,7 @@ SoftwareDevelopmentBlueprint/
 ├── skills/
 ├── scripts/
 ├── tests/
+├── ci/
 ├── documentation/
 └── .github/workflows/
 ```
@@ -131,27 +140,29 @@ SoftwareDevelopmentBlueprint/
 
 - `BLUEPRINT.md`: estándar normativo.
 - `documentation/BLUEPRINT_CURRENT_STATE.md`: checkpoint humano derivado.
-- `documentation/BLUEPRINT_V0_5_1_ARCHITECTURE_CONFORMANCE_HARDENING.md`: decisión y evidencia del hardening.
-- `documentation/BLUEPRINT_V0_5_1_RELEASE_NOTES.md`: alcance y compatibilidad de 0.5.1.
-- `documentation/BLUEPRINT_V0_5_1_RELEASE.json`: manifest machine-readable de la release.
+- `documentation/BLUEPRINT_V0_5_2_CI_EXECUTION_PORTABILITY.md`: decisión y evidencia del hardening de runtime CI.
+- `documentation/BLUEPRINT_V0_5_2_RELEASE_NOTES.md`: alcance y compatibilidad de 0.5.2.
+- `documentation/BLUEPRINT_V0_5_2_RELEASE.json`: manifest machine-readable de la release.
+- `documentation/SELF_HOSTED_RUNNER_BOOTSTRAP.md`: baseline operativo para preparar un runner confiable.
+- `documentation/BLUEPRINT_V0_5_1_ARCHITECTURE_CONFORMANCE_HARDENING.md`: historia del hardening 0.5.1.
 - `documentation/EXPERIENCE_ARTIFACT_MODEL.md`: contratos de experiencia, slices, blockers y evidencia.
 - `documentation/CLIENT_ARCHITECTURE_CONTRACT.md`: arquitectura cliente compuesta.
 - `documentation/SKILL_MODEL.md`: contrato de skills.
 
-Los documentos y manifests de 0.4 y 0.5.0 se conservan como historia de release y no se reescriben para aparentar adopción posterior.
+Los documentos y manifests de 0.4, 0.5.0 y 0.5.1 se conservan como historia de release y no se reescriben para aparentar adopción posterior.
 
 ## Reference pilots y consumidores
 
 Los reference pilots son no normativos. Sus hallazgos pueden promover reglas al Blueprint solo mediante una frontera explícita.
 
-CUSA-Digital expuso el gap de Architecture Implementation Conformance mientras consumía 0.5.0. El Blueprint generaliza esa lección sin convertir la estructura específica de CUSA en estándar universal.
+CUSA-Digital expuso primero el gap de Architecture Implementation Conformance y, posteriormente durante PR #46, el gap de portabilidad de ejecución CI en repositorios privados. El Blueprint generaliza ambas lecciones sin convertir la estructura específica de CUSA ni su infraestructura local en estándar universal.
 
-Un consumidor permanece en su versión declarada hasta un **Compliance Review** y una adopción explícita. La publicación de 0.5.1 no modifica CUSA-Digital ni ningún otro repositorio consumidor.
+Un consumidor permanece en su versión declarada hasta un **Compliance Review** y una adopción explícita. La publicación de 0.5.2 no modifica CUSA-Digital ni ningún otro repositorio consumidor.
 
 ## Versionado y provenance
 
 Blueprint usa SemVer. `VERSION` identifica la release raíz estable.
 
-En un patch, los componentes cuyo contrato no cambia pueden conservar su versión anterior. En 0.5.1 se actualizan checks/gates y los schemas/templates que declaran la versión del consumidor; los workflows, skills y schemas de experiencia sin cambio conservan provenance 0.5.0 y son reutilizados de forma explícitamente compatible.
+En un patch, los componentes cuyo contrato no cambia pueden conservar su versión anterior. En 0.5.2 se actualizan la identidad raíz, el contrato CI runtime y los schemas/templates que declaran la versión del consumidor. Checks/gates conservan provenance 0.5.1; phases, workflows, skills y schemas de experiencia sin cambio conservan provenance 0.5.0 y son reutilizados de forma explícitamente compatible.
 
-La etiqueta de esta release será `v0.5.1`; por política se crea únicamente después de fusionar el PR de release, verificar el árbol aprobado en `main` y confirmar su validación post-merge.
+La etiqueta de esta release será `v0.5.2`; por política se crea únicamente después de fusionar el PR de release, verificar el árbol aprobado en `main` y confirmar su validación post-merge.

@@ -12,6 +12,7 @@ CHECK_ID = "api.architecture_implementation_conformance"
 DEV_VERSION = "0.5.1-dev"
 STABLE_V50 = "0.5.0"
 STABLE_V51 = "0.5.1"
+STABLE_V52 = "0.5.2"
 
 
 def fail(message: str) -> None:
@@ -89,8 +90,11 @@ def validate_identity() -> str:
     elif root_version == STABLE_V51:
         expected_component = STABLE_V51
         state = STABLE_V51
+    elif root_version == STABLE_V52:
+        expected_component = STABLE_V51
+        state = STABLE_V52
     else:
-        fail(f"unsupported root VERSION for 0.5.1 conformance validator: {root_version}")
+        fail(f"unsupported root VERSION for architecture conformance validator: {root_version}")
 
     if checks_version != expected_component or gates_version != expected_component:
         fail(
@@ -100,18 +104,18 @@ def validate_identity() -> str:
 
     phases = load_yaml("catalog/phases.yaml").get("phases", [])
     if len(phases) != 28:
-        fail("0.5.1 architecture hardening must not add/remove phases")
+        fail("architecture conformance hardening must not add/remove phases")
     if len(checks_doc.get("checks", [])) != 135:
-        fail("0.5.1 must contain exactly one additional check over stable 0.5.0")
+        fail("architecture conformance component must contain 135 checks")
     if len(gates_doc.get("gates", [])) != 18:
-        fail("0.5.1 architecture hardening must not add/remove gates")
+        fail("architecture conformance hardening must not add/remove gates")
 
     assert_contract(checks_doc, gates_doc)
 
-    if root_version == STABLE_V51:
+    if root_version in {STABLE_V51, STABLE_V52}:
         manifest_path = ROOT / "documentation/BLUEPRINT_V0_5_1_RELEASE.json"
         if not manifest_path.exists():
-            fail("stable 0.5.1 requires release manifest")
+            fail("stable architecture conformance component requires 0.5.1 release manifest")
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         if manifest.get("version") != STABLE_V51 or manifest.get("status") != "stable":
             fail("0.5.1 release manifest must declare stable 0.5.1")
