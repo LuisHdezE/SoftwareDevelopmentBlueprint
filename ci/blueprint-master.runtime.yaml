@@ -1,4 +1,4 @@
-schema_version: 0.5.2
+schema_version: 0.5.3-dev
 orchestrator: github_actions
 strategy: self_hosted
 runner:
@@ -27,5 +27,6 @@ maintenance:
   workspace_cleanup: true
   runner_updates: automatic
 notes: >-
-  Blueprint Master validator profile. Core validation needs no service containers;
-  Docker remains optional runner infrastructure for later full-stack consumers.
+  Blueprint Master validator profile for the 0.5.3-dev hardening boundary.
+  Core validation needs no service containers. The ephemeral-service policy is
+  exercised by the canonical consumer runtime example instead.
