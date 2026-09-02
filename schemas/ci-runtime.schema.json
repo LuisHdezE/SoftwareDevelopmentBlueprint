@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://eliasworks.dev/blueprint/0.5.2/ci-runtime.schema.json",
+  "$id": "https://eliasworks.dev/blueprint/0.5.3-dev/ci-runtime.schema.json",
   "title": "Blueprint CI Runtime Contract",
   "type": "object",
   "required": ["schema_version", "orchestrator", "strategy", "runner", "security", "evidence", "maintenance"],
   "properties": {
-    "schema_version": {"const": "0.5.2"},
+    "schema_version": {"const": "0.5.3-dev"},
     "orchestrator": {"const": "github_actions"},
     "strategy": {"enum": ["github_hosted", "self_hosted", "hybrid"]},
     "runner": {
@@ -20,6 +20,45 @@
         "service_containers": {"type": "boolean"},
         "container_engine": {"enum": ["docker", "none"]},
         "project_docker_capability_independent": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "services": {
+      "type": "object",
+      "required": ["isolation", "lifecycle", "host_port_policy", "runtime_port_discovery", "shared_image_cache", "shared_runtime_instances", "healthcheck_required", "catalog"],
+      "properties": {
+        "isolation": {"const": "per_job"},
+        "lifecycle": {"const": "ephemeral"},
+        "host_port_policy": {"const": "dynamic"},
+        "runtime_port_discovery": {"const": "github_actions_service_context"},
+        "shared_image_cache": {"const": true},
+        "shared_runtime_instances": {"const": false},
+        "healthcheck_required": {"const": true},
+        "catalog": {
+          "type": "object",
+          "minProperties": 1,
+          "properties": {
+            "mysql": {
+              "allOf": [
+                {"$ref": "#/$defs/serviceDefinition"},
+                {"properties": {"container_port": {"const": 3306}}}
+              ]
+            },
+            "postgresql": {
+              "allOf": [
+                {"$ref": "#/$defs/serviceDefinition"},
+                {"properties": {"container_port": {"const": 5432}}}
+              ]
+            },
+            "redis": {
+              "allOf": [
+                {"$ref": "#/$defs/serviceDefinition"},
+                {"properties": {"container_port": {"const": 6379}}}
+              ]
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "additionalProperties": false
     },
@@ -55,6 +94,22 @@
     },
     "notes": {"type": "string"}
   },
+  "$defs": {
+    "serviceDefinition": {
+      "type": "object",
+      "required": ["image", "container_port"],
+      "properties": {
+        "image": {
+          "type": "string",
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9._/-]+:[A-Za-z0-9._-]+$",
+          "not": {"pattern": ":latest$"}
+        },
+        "container_port": {"type": "integer", "minimum": 1, "maximum": 65535}
+      },
+      "additionalProperties": false
+    }
+  },
   "allOf": [
     {
       "if": {"properties": {"strategy": {"enum": ["self_hosted", "hybrid"]}}, "required": ["strategy"]},
@@ -66,8 +121,25 @@
       }
     },
     {
-      "if": {"properties": {"runner": {"properties": {"service_containers": {"const": true}}}}},
-      "then": {"properties": {"runner": {"properties": {"container_engine": {"const": "docker"}, "os": {"const": "linux"}}}}}
+      "if": {
+        "properties": {
+          "runner": {"properties": {"service_containers": {"const": true}}, "required": ["service_containers"]}
+        }
+      },
+      "then": {
+        "required": ["services"],
+        "properties": {
+          "runner": {"properties": {"container_engine": {"const": "docker"}, "os": {"const": "linux"}}}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "runner": {"properties": {"service_containers": {"const": false}}, "required": ["service_containers"]}
+        }
+      },
+      "then": {"not": {"required": ["services"]}}
     }
   ],
   "additionalProperties": false
