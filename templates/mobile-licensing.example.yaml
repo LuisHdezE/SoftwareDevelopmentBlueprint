@@ -1,0 +1,45 @@
+schema_version: 0.5.3-dev
+enabled: true
+strategy: offline_signed_device_bound_trial
+trial:
+  days: 7
+  configurable: true
+  expired_mode: read_only_with_backup_export
+activation:
+  entitlement: perpetual
+  device_bound: true
+  offline_verification: true
+  request_code_privacy_safe: true
+  issuer_separate_boundary: true
+security:
+  asymmetric_signatures: true
+  customer_private_signing_key_present: false
+  production_test_keys_separated: true
+  key_rotation_supported: true
+  key_recovery_defined: true
+  clock_rollback_policy_defined: true
+backup:
+  business_data_portable: true
+  license_entitlement_portable: false
+distribution:
+  direct_manual_activation_supported: true
+  store_policy_adapter_defined: true
+tests:
+  trial_duration: true
+  exact_expiry_boundary: true
+  entitlement_transitions: true
+  valid_signature_acceptance: true
+  tampered_payload_rejection: true
+  tampered_signature_rejection: true
+  wrong_device_rejection: true
+  wrong_product_rejection: true
+  unsupported_version_rejection: true
+  production_test_key_separation: true
+  restart_upgrade_persistence: true
+  backup_does_not_clone_entitlement: true
+  expired_read_only_data_safety: true
+  issuer_customer_interoperability: true
+  release_build_verification: true
+  clock_rollback_behavior: true
+  malformed_activation_rejection: true
+notes: Default profile; concrete signature algorithm and device-binding derivation are architecture decisions.
