@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eliasworks.dev/blueprint/0.5.3-dev/mobile-licensing.schema.json",
+  "title": "Blueprint Mobile Licensing Profile",
+  "type": "object",
+  "required": ["schema_version", "enabled", "strategy", "trial", "activation", "security", "backup", "distribution", "tests"],
+  "properties": {
+    "schema_version": {"const": "0.5.3-dev"},
+    "enabled": {"const": true},
+    "strategy": {"enum": ["offline_signed_device_bound_trial", "custom_documented"]},
+    "deviation_adr": {"type": "string", "minLength": 1},
+    "trial": {
+      "type": "object",
+      "required": ["days", "configurable", "expired_mode"],
+      "properties": {
+        "days": {"type": "integer", "minimum": 1},
+        "configurable": {"const": true},
+        "expired_mode": {"const": "read_only_with_backup_export"}
+      },
+      "additionalProperties": false
+    },
+    "activation": {
+      "type": "object",
+      "required": ["entitlement", "device_bound", "offline_verification", "request_code_privacy_safe", "issuer_separate_boundary"],
+      "properties": {
+        "entitlement": {"enum": ["perpetual", "time_limited", "subscription", "custom"]},
+        "device_bound": {"const": true},
+        "offline_verification": {"const": true},
+        "request_code_privacy_safe": {"const": true},
+        "issuer_separate_boundary": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "security": {
+      "type": "object",
+      "required": ["asymmetric_signatures", "customer_private_signing_key_present", "production_test_keys_separated", "key_rotation_supported", "key_recovery_defined", "clock_rollback_policy_defined"],
+      "properties": {
+        "asymmetric_signatures": {"const": true},
+        "customer_private_signing_key_present": {"const": false},
+        "production_test_keys_separated": {"const": true},
+        "key_rotation_supported": {"const": true},
+        "key_recovery_defined": {"const": true},
+        "clock_rollback_policy_defined": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "backup": {
+      "type": "object",
+      "required": ["business_data_portable", "license_entitlement_portable"],
+      "properties": {
+        "business_data_portable": {"const": true},
+        "license_entitlement_portable": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "distribution": {
+      "type": "object",
+      "required": ["direct_manual_activation_supported", "store_policy_adapter_defined"],
+      "properties": {
+        "direct_manual_activation_supported": {"type": "boolean"},
+        "store_policy_adapter_defined": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "tests": {
+      "type": "object",
+      "required": [
+        "trial_duration",
+        "exact_expiry_boundary",
+        "entitlement_transitions",
+        "valid_signature_acceptance",
+        "tampered_payload_rejection",
+        "tampered_signature_rejection",
+        "wrong_device_rejection",
+        "wrong_product_rejection",
+        "unsupported_version_rejection",
+        "production_test_key_separation",
+        "restart_upgrade_persistence",
+        "backup_does_not_clone_entitlement",
+        "expired_read_only_data_safety",
+        "issuer_customer_interoperability",
+        "release_build_verification",
+        "clock_rollback_behavior",
+        "malformed_activation_rejection"
+      ],
+      "properties": {
+        "trial_duration": {"const": true},
+        "exact_expiry_boundary": {"const": true},
+        "entitlement_transitions": {"const": true},
+        "valid_signature_acceptance": {"const": true},
+        "tampered_payload_rejection": {"const": true},
+        "tampered_signature_rejection": {"const": true},
+        "wrong_device_rejection": {"const": true},
+        "wrong_product_rejection": {"const": true},
+        "unsupported_version_rejection": {"const": true},
+        "production_test_key_separation": {"const": true},
+        "restart_upgrade_persistence": {"const": true},
+        "backup_does_not_clone_entitlement": {"const": true},
+        "expired_read_only_data_safety": {"const": true},
+        "issuer_customer_interoperability": {"const": true},
+        "release_build_verification": {"const": true},
+        "clock_rollback_behavior": {"const": true},
+        "malformed_activation_rejection": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "notes": {"type": "string"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"strategy": {"const": "custom_documented"}}, "required": ["strategy"]},
+      "then": {"required": ["deviation_adr"]}
+    }
+  ],
+  "additionalProperties": false
+}
