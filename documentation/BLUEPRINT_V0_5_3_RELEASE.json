@@ -1,0 +1,66 @@
+{
+  "schema_version": "1.0.0",
+  "version": "0.5.3",
+  "status": "stable",
+  "release_date": "2026-09-10",
+  "previous_stable": "0.5.2",
+  "pre_release_main": "5524f9b34f8328e3e6a9c88852fc8df70d9e437e",
+  "tag": "v0.5.3",
+  "hardening_boundary": {
+    "pull_request": 25,
+    "merge_commit": "5524f9b34f8328e3e6a9c88852fc8df70d9e437e",
+    "source_finding": "A real Android consumer exposed the need for a reusable optional commercial licensing capability with offline trial, device-bound signed activation, protected issuer separation and explicit release evidence."
+  },
+  "counts": {
+    "phases": 28,
+    "checks": 145,
+    "gates": 19,
+    "materialized_skills": 15,
+    "planned_skills": 25
+  },
+  "compatibility": {
+    "consumer_auto_upgrade": false,
+    "brownfield_align_do_not_rewrite": true,
+    "grandfather_existing_evidence": true,
+    "mockups_conditional": true,
+    "impact_based_api_revalidation": true,
+    "unchanged_component_provenance_reuse": true,
+    "ci_execution_portability_preserved": true,
+    "mobile_licensing_optional": true,
+    "android_mobile_licensing_decision_required": true,
+    "default_offline_signed_activation": true,
+    "api_less_local_authoritative_gap_not_included": true
+  },
+  "release_highlights": [
+    "optional_mobile_licensing_capability",
+    "explicit_android_licensing_applicability_decision",
+    "offline_signed_device_bound_trial_default",
+    "read_only_expiry_with_backup_export",
+    "private_signing_key_isolation",
+    "business_backup_entitlement_separation",
+    "separate_protected_issuer_boundary",
+    "key_recovery_and_rotation_requirement",
+    "17_mandatory_positive_negative_tamper_interoperability_release_tests",
+    "mobile_licensing_ready_conditional_gate",
+    "dev_mobile_licensing_materialized_skill"
+  ],
+  "component_provenance": {
+    "root_release": "0.5.3",
+    "project_schema": "0.5.3",
+    "status_schema": "0.5.3",
+    "project_status_templates": "0.5.3",
+    "mobile_licensing_schema_template": "0.5.3",
+    "checks_gates_skills_workflows": "0.5.3",
+    "mobile_licensing_skill": "0.5.3",
+    "ci_runtime_contract": "0.5.2-compatible",
+    "architecture_implementation_conformance": "0.5.1-compatible",
+    "unchanged_phases_reference_pilots_experience_contracts": "0.5.0-compatible"
+  },
+  "consumer_policy": {
+    "automatic_adoption": false,
+    "compliance_review_required": true,
+    "explicit_consumer_change_required": true,
+    "impact_appropriate_revalidation_required": true
+  },
+  "release_rule": "Create v0.5.3 only after the release PR merges, the approved tree is verified on main, and post-merge validation passes on that exact stable commit."
+}

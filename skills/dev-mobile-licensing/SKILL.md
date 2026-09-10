@@ -1,7 +1,7 @@
 ---
 id: dev-mobile-licensing
 title: Mobile Trial and Offline License Activation
-version: 0.5.3-dev
+version: 0.5.3
 status: materialized
 category: mobile_licensing
 applies_to:

@@ -1,9 +1,9 @@
 project:
   name: Example Project
   repository: owner/repository
-  description: Example Blueprint 0.5.3-dev project
+  description: Example Blueprint 0.5.3 stable project
 blueprint:
-  version: 0.5.3-dev
+  version: 0.5.3
   mode: brownfield
 stack:
   backend: laravel
@@ -32,7 +32,6 @@ artifact_locations:
   client_architecture_root: .blueprint/client-architecture
   functional_slices_root: .blueprint/functional-slices
   api_impacts_root: .blueprint/api-impacts
-  mobile_licensing: .blueprint/mobile-licensing.yaml
   openapi: openapi.yaml
 skills:
   profiles:

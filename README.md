@@ -6,15 +6,15 @@ El Blueprint define **cómo** descubrir, reconstruir, documentar, diseñar, impl
 
 ## Release estable
 
-**Blueprint 0.5.2**
+**Blueprint 0.5.3**
 
-0.5.2 es un patch de portabilidad de ejecución CI sobre 0.5.1. Mantiene intacto el modelo funcional post-API y Architecture Implementation Conformance, y separa la obligación de evidencia exact-head del proveedor que ejecuta los jobs.
+0.5.3 es un hardening enfocado en **Optional Mobile Licensing** sobre 0.5.2. Mantiene CI Execution Portability, Architecture Implementation Conformance y el pipeline funcional existente, y añade una capacidad reusable de trial/activación para Android sin convertirla en requisito universal.
 
-Invariantes nuevos estabilizados:
+Para Android, el proyecto debe responder explícitamente:
 
-`CI evidence semantics != runner ownership`
+`capabilities.mobile_licensing: true|false`
 
-`pre-execution infrastructure failure != test failure`
+Si es `false`, la rama de licenciamiento es N/A. Si es `true`, el contrato por defecto usa trial configurable, expiración segura en modo read-only, activación firmada y ligada al dispositivo, verificación offline, separación de backup/licencia, issuer protegido, recuperación/rotación de claves y un gate condicional `mobile_licensing_ready`.
 
 Cadena principal:
 
@@ -37,37 +37,31 @@ Discovery / Brownfield
   -> Operations
 ```
 
-`Visual Identity` y `Mockups / Prototypes` son capacidades condicionales.
+`Visual Identity`, `Mockups / Prototypes` y `Mobile Licensing` son capacidades condicionales según su propia aplicabilidad.
 
-## Qué cambia en 0.5.2
+## Qué cambia en 0.5.3
 
-Se incorpora el contrato machine-readable de **CI Execution Portability**:
+La release estabiliza:
 
-`schemas/ci-runtime.schema.json`
+- `schemas/mobile-licensing.schema.json`;
+- `templates/mobile-licensing.example.yaml`;
+- el capability `mobile_licensing` en project schema/template;
+- 10 checks de licensing distribuidos entre Requirements, Architecture, Integration QA y Release;
+- el gate project-scoped `mobile_licensing_ready`;
+- el skill `skills/dev-mobile-licensing/SKILL.md`;
+- validación dedicada de casos positivos, negativos y de manipulación.
 
-Estrategias soportadas:
-
-- `github_hosted`;
-- `self_hosted`;
-- `hybrid`.
-
-El runtime de CI es un contrato de ejecución, no una relajación de gates. Exact-head CI, check runs, logs, artifacts y decisiones humanas conservan sus mismas obligaciones.
-
-Un job que termina antes de recibir runner o antes de ejecutar pasos es evidencia de infraestructura. No se interpreta como fallo de producto, pero tampoco como PASS.
-
-Para self-hosted, el contrato exige una frontera de confianza explícita: código confiable, PRs de forks fuera del lane persistente, secretos no persistidos, permisos mínimos, limpieza de workspace y política de actualización del runner.
-
-Docker del runner también se separa de la capacidad Docker del producto. `capabilities.docker: false` puede coexistir válidamente con Docker usado solo por GitHub Actions `services:`.
+El contrato exige 17 pruebas cuando licensing está habilitado. También exige que la clave privada de producción no exista en la aplicación cliente, que la expiración no bloquee los datos del usuario y que un backup portable no clone una licencia device-bound.
 
 ## Principios clave
 
 1. **Single Source of Truth** en el repositorio.
 2. **Evidence before PASS**.
-3. La API es la frontera autoritativa de seguridad y reglas de negocio.
-4. OpenAPI es el contrato formal machine-readable; `operationId` es clave canónica de enlace cliente.
-5. Existe un **Interface Scope Baseline** temprano, pero el cliente ejecutable no comienza antes de `api_gate = PASS`.
+3. La API es la frontera autoritativa de seguridad y reglas de negocio para clientes API-backed.
+4. OpenAPI es el contrato formal machine-readable cuando existe API; `operationId` es clave canónica de enlace cliente.
+5. Existe un Interface Scope Baseline temprano, pero el cliente API-backed ejecutable no comienza antes de `api_gate = PASS`.
 6. `EXECUTABLE_INVENTORY` es el backlog cliente comprometido.
-7. **Functional Interface Slice** es la unidad de ejecución por `slice + platform`.
+7. Functional Interface Slice es la unidad de ejecución por `slice + platform`.
 8. Lifecycle: `INVENTORIED -> READY -> IN_PROGRESS -> FUNCTIONAL -> ACCEPTED`.
 9. `BLOCKED_BY_API` es un overlay, no un estado lifecycle.
 10. No se permite hardcodear datos autoritativos de negocio para simular funcionalidad.
@@ -82,27 +76,28 @@ Docker del runner también se separa de la capacidad Docker del producto. `capab
 19. CI no sustituye decisiones humanas de review/merge/acceptance.
 20. La semántica de evidencia CI es independiente de quién posee el runner.
 21. Un fallo pre-ejecución de infraestructura no se falsifica como fallo de producto.
+22. Android debe responder explícitamente si Mobile Licensing aplica.
+23. Licensing habilitado no puede enviar una production private signing key en el cliente.
+24. Expirar un trial no autoriza a secuestrar datos del usuario.
+25. Un backup portable no puede clonar una licencia ligada al dispositivo.
 
-## Núcleo 0.5.2
+## Núcleo 0.5.3
 
 - **28 fases** canónicas.
-- **135 checks**.
-- **18 gates**.
-- **14 skills materializadas** y **25 planificadas**.
+- **145 checks**.
+- **19 gates**.
+- **15 skills materializadas** y **25 planificadas**.
 - Interface Scope Baseline + Executable Interface Inventory.
 - Functional Interface Slice machine-readable.
-- `BLOCKED_BY_API` con estado preservado y resolución evidenciada.
-- API impact graph por `operationId` y contratos cross-cutting.
-- Cross-Artifact Semantic Integrity con fixtures positivos/negativos.
-- Client Architecture compuesta y sin dependencia obligatoria de mockups.
-- Architecture Implementation Conformance como obligación del API Implementation/API Gate.
+- Architecture Implementation Conformance.
 - CI Execution Portability con `github_hosted`, `self_hosted` y `hybrid`.
+- Mobile Licensing condicional con signed offline activation por defecto.
 
 ## Modos
 
 **Greenfield** comienza por Discovery y requirements verificables.
 
-**Brownfield** comienza por inspección, AS-IS, Gap Analysis y TO-BE. Se distingue siempre `OBSERVED`, `INFERRED` y `PROPOSED`; la diferencia arquitectónica por sí sola no justifica una reescritura.
+**Brownfield** comienza por inspección, AS-IS, Gap Analysis y TO-BE. Se distingue `OBSERVED`, `INFERRED` y `PROPOSED`; una diferencia arquitectónica por sí sola no justifica reescritura.
 
 ## Stack por defecto
 
@@ -112,8 +107,8 @@ Cuando no exista una decisión documentada que justifique otra opción:
 - Base de datos: MySQL.
 - Web: React + TypeScript + Vite + Tailwind CSS.
 - Android: Kotlin + Jetpack Compose.
-- Contrato API: OpenAPI.
-- QA operacional API: Postman.
+- Contrato API: OpenAPI cuando la solución incluye API.
+- QA operacional API: Postman cuando aplica.
 - Repositorio/CI: GitHub.
 
 Son defaults. Brownfield no recibe autorización para reescribir funcionalidad existente por estilo.
@@ -140,29 +135,23 @@ SoftwareDevelopmentBlueprint/
 
 - `BLUEPRINT.md`: estándar normativo.
 - `documentation/BLUEPRINT_CURRENT_STATE.md`: checkpoint humano derivado.
-- `documentation/BLUEPRINT_V0_5_2_CI_EXECUTION_PORTABILITY.md`: decisión y evidencia del hardening de runtime CI.
-- `documentation/BLUEPRINT_V0_5_2_RELEASE_NOTES.md`: alcance y compatibilidad de 0.5.2.
-- `documentation/BLUEPRINT_V0_5_2_RELEASE.json`: manifest machine-readable de la release.
-- `documentation/SELF_HOSTED_RUNNER_BOOTSTRAP.md`: baseline operativo para preparar un runner confiable.
-- `documentation/BLUEPRINT_V0_5_1_ARCHITECTURE_CONFORMANCE_HARDENING.md`: historia del hardening 0.5.1.
-- `documentation/EXPERIENCE_ARTIFACT_MODEL.md`: contratos de experiencia, slices, blockers y evidencia.
-- `documentation/CLIENT_ARCHITECTURE_CONTRACT.md`: arquitectura cliente compuesta.
-- `documentation/SKILL_MODEL.md`: contrato de skills.
+- `documentation/BLUEPRINT_V0_5_3_MOBILE_LICENSING.md`: contrato de Mobile Licensing.
+- `documentation/BLUEPRINT_V0_5_3_RELEASE_NOTES.md`: alcance y compatibilidad de 0.5.3.
+- `documentation/BLUEPRINT_V0_5_3_RELEASE.json`: manifest machine-readable de la release.
+- `documentation/BLUEPRINT_V0_5_2_CI_EXECUTION_PORTABILITY.md`: historia del hardening CI 0.5.2.
+- `documentation/BLUEPRINT_V0_5_1_ARCHITECTURE_CONFORMANCE_HARDENING.md`: historia del hardening arquitectónico 0.5.1.
+- `documentation/EXPERIENCE_ARTIFACT_MODEL.md`, `documentation/CLIENT_ARCHITECTURE_CONTRACT.md` y `documentation/SKILL_MODEL.md`: contratos complementarios.
 
-Los documentos y manifests de 0.4, 0.5.0 y 0.5.1 se conservan como historia de release y no se reescriben para aparentar adopción posterior.
+Los documentos/manifests anteriores se conservan como historia y no se reescriben para aparentar adopción posterior.
 
-## Reference pilots y consumidores
+## Consumidores y Compliance Review
 
-Los reference pilots son no normativos. Sus hallazgos pueden promover reglas al Blueprint solo mediante una frontera explícita.
+Un consumidor permanece en su versión declarada hasta un **Compliance Review** y una adopción explícita. La publicación de Blueprint 0.5.3 no modifica GestioApp, CUSA-Digital ni ningún otro repositorio consumidor.
 
-CUSA-Digital expuso primero el gap de Architecture Implementation Conformance y, posteriormente durante PR #46, el gap de portabilidad de ejecución CI en repositorios privados. El Blueprint generaliza ambas lecciones sin convertir la estructura específica de CUSA ni su infraestructura local en estándar universal.
-
-Un consumidor permanece en su versión declarada hasta un **Compliance Review** y una adopción explícita. La publicación de 0.5.2 no modifica CUSA-Digital ni ningún otro repositorio consumidor.
+La adopción debe clasificar cambios como KEEP / ADOPT / MIGRATE / DEFER / N/A, obtener aprobación humana y revalidar el impacto real.
 
 ## Versionado y provenance
 
-Blueprint usa SemVer. `VERSION` identifica la release raíz estable.
+`VERSION = 0.5.3` identifica la release raíz. Los nuevos contratos de licensing y los checks/gates/workflows asociados son 0.5.3. CI Runtime conserva provenance compatible 0.5.2; Architecture Implementation Conformance conserva 0.5.1; phases y contratos de experiencia sin cambio conservan 0.5.0.
 
-En un patch, los componentes cuyo contrato no cambia pueden conservar su versión anterior. En 0.5.2 se actualizan la identidad raíz, el contrato CI runtime y los schemas/templates que declaran la versión del consumidor. Checks/gates conservan provenance 0.5.1; phases, workflows, skills y schemas de experiencia sin cambio conservan provenance 0.5.0 y son reutilizados de forma explícitamente compatible.
-
-La etiqueta de esta release será `v0.5.2`; por política se crea únicamente después de fusionar el PR de release, verificar el árbol aprobado en `main` y confirmar su validación post-merge.
+La etiqueta de esta release será `v0.5.3`; se crea únicamente después de fusionar el PR de release, verificar el árbol aprobado en `main` y confirmar validación post-merge sobre ese SHA exacto.
