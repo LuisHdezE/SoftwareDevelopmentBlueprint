@@ -1,4 +1,4 @@
-schema_version: 0.5.3-dev
+schema_version: 0.5.3
 enabled: true
 strategy: offline_signed_device_bound_trial
 trial:

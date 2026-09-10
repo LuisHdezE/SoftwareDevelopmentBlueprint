@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - 'blueprint/**'
+      - 'release/**'
     tags:
       - 'v*'
     paths:
@@ -34,6 +35,8 @@ on:
       - documentation/BLUEPRINT_V0_5_2_RELEASE.json
       - documentation/BLUEPRINT_V0_5_2_RELEASE_NOTES.md
       - documentation/BLUEPRINT_V0_5_3_MOBILE_LICENSING.md
+      - documentation/BLUEPRINT_V0_5_3_RELEASE.json
+      - documentation/BLUEPRINT_V0_5_3_RELEASE_NOTES.md
       - documentation/SELF_HOSTED_RUNNER_BOOTSTRAP.md
       - documentation/EXPERIENCE_ARTIFACT_MODEL.md
       - documentation/CLIENT_ARCHITECTURE_CONTRACT.md
@@ -70,6 +73,8 @@ on:
       - documentation/BLUEPRINT_V0_5_2_RELEASE.json
       - documentation/BLUEPRINT_V0_5_2_RELEASE_NOTES.md
       - documentation/BLUEPRINT_V0_5_3_MOBILE_LICENSING.md
+      - documentation/BLUEPRINT_V0_5_3_RELEASE.json
+      - documentation/BLUEPRINT_V0_5_3_RELEASE_NOTES.md
       - documentation/SELF_HOSTED_RUNNER_BOOTSTRAP.md
       - documentation/EXPERIENCE_ARTIFACT_MODEL.md
       - documentation/CLIENT_ARCHITECTURE_CONTRACT.md

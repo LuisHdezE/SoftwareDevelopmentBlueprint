@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://eliasworks.dev/blueprint/0.5.3-dev/mobile-licensing.schema.json",
+  "$id": "https://eliasworks.dev/blueprint/0.5.3/mobile-licensing.schema.json",
   "title": "Blueprint Mobile Licensing Profile",
   "type": "object",
   "required": ["schema_version", "enabled", "strategy", "trial", "activation", "security", "backup", "distribution", "tests"],
   "properties": {
-    "schema_version": {"const": "0.5.3-dev"},
+    "schema_version": {"const": "0.5.3"},
     "enabled": {"const": true},
     "strategy": {"enum": ["offline_signed_device_bound_trial", "custom_documented"]},
     "deviation_adr": {"type": "string", "minLength": 1},

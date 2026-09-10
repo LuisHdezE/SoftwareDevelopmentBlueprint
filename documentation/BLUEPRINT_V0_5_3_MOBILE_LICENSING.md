@@ -1,8 +1,8 @@
-# Blueprint 0.5.3-dev — Optional Mobile Licensing
+# Blueprint 0.5.3 - Optional Mobile Licensing
 
 ## Purpose
 
-This hardening generalizes a reusable mobile licensing pattern discovered through a consumer pilot. It is product-agnostic and does not copy consumer-specific names, currencies, UI or business rules.
+This stable 0.5.3 capability generalizes a reusable mobile licensing pattern discovered through a consumer pilot. It is product-agnostic and does not copy consumer-specific names, currencies, UI or business rules.
 
 For every Android consumer, Blueprint discovery/requirements must explicitly answer:
 
@@ -34,7 +34,7 @@ Core invariants:
 10. Production and test/debug keys/namespaces are separated.
 11. Signing-key recovery and rotation are designed before production release.
 12. A separate issuer/admin boundary signs licenses. It may be another private mobile app or protected operator tool, but it is not hidden inside the customer application.
-13. Distribution-channel policy is respected. Store-distributed builds use the entitlement/payment mechanism required by the applicable store policy; direct distribution may use manual offline activation.
+13. Distribution-channel policy is respected. Store-distributed builds use the entitlement/payment mechanism required by applicable store policy; direct distribution may use manual offline activation.
 14. Fully offline trial enforcement is treated as best-effort anti-tamper, not an impossible-to-reset DRM guarantee.
 
 ## Default states
@@ -50,44 +50,15 @@ A project may add grace, subscription or time-limited states only through approv
 
 ## Required project decisions when enabled
 
-Requirements must define:
+Requirements must define trial duration and start condition, exact post-expiry functionality, activation/support journey, device replacement/reactivation policy, paid entitlement model, distribution channels and user-facing license status/activation interfaces.
 
-- trial duration and when the trial starts;
-- exact functionality available after expiration;
-- activation support journey;
-- device-binding support/reactivation policy;
-- perpetual vs another approved paid entitlement;
-- direct/store distribution channels;
-- user-facing license status and activation interfaces.
+Architecture/Security must define the canonical request code, signed payload/version, product/domain separation, device-binding derivation, signature algorithm and verification-key representation, key ID/version, recovery/rotation, local entitlement persistence, clock rollback policy, backup separation and issuer/customer interoperability fixtures.
 
-Architecture/Security must define:
-
-- canonical request-code format;
-- canonical signed license payload/version;
-- product/domain separation;
-- device-binding derivation;
-- signature algorithm and verification-key format;
-- signing key ID/version and rotation strategy;
-- private-key custody/recovery strategy;
-- secure local entitlement-state persistence;
-- best-effort clock rollback/tamper policy;
-- backup/license separation;
-- issuer/customer interoperability fixtures.
-
-The default cryptographic shape is asymmetric signing. A concrete algorithm is an Architecture decision based on supported platforms and current security guidance. A symmetric secret embedded in the customer app is not an acceptable license-generation authority.
+The default cryptographic shape is asymmetric signing. A concrete algorithm is an Architecture decision based on supported platforms and current security guidance. A symmetric secret embedded in the customer app is not an acceptable production license-generation authority.
 
 ## Issuer boundary
 
-When the default mechanism is used, the solution must have a separate protected issuer/admin boundary able to:
-
-- receive/paste/scan the request code;
-- validate request format/version;
-- create a canonical payload;
-- sign it with protected production signing material;
-- return activation as copy/share text and preferably QR-compatible data;
-- record a sanitized issuance history/audit;
-- separate test and production signing material;
-- preserve an approved key recovery and rotation path.
+When the default mechanism is used, the solution must have a **separate protected issuer**/admin boundary able to receive/paste/scan a request code, validate its format/version, create a canonical payload, sign it with protected production signing material, return activation as copy/share text and preferably QR-compatible data, record sanitized issuance history, separate test and production keys, and preserve an approved recovery/rotation path.
 
 The issuer may be modeled as a separate Blueprint consumer when it is a separately deployed application.
 
@@ -125,16 +96,10 @@ The project Release Gate requires `mobile_licensing_ready` only when this capabi
 
 ## Consumer override
 
-The default mechanism may be replaced only when:
-
-- the product/store/business model requires a different entitlement model;
-- the alternative is explicitly documented in Requirements and Architecture;
-- an ADR explains the deviation;
-- security/data-safety invariants remain at least equivalent;
-- the alternative has equivalent automated negative/abuse-path tests.
+The default mechanism may be replaced only when the product/store/business model requires a different entitlement model, the alternative is explicitly documented in Requirements and Architecture, an ADR explains the deviation, security/data-safety invariants remain at least equivalent, and the alternative has equivalent automated negative/abuse-path tests.
 
 `DEFAULT` therefore means strong starting policy, not architectural imprisonment.
 
 ## Release treatment
 
-This document belongs to the 0.5.3-dev hardening boundary. Stable Blueprint 0.5.2 remains historical truth until a later, explicitly approved release closure promotes the new component set.
+This document is part of stable Blueprint 0.5.3. The hardening semantics were accepted in PR #25 and promoted only through the separate 0.5.3 release boundary. Stable 0.5.2 and earlier release manifests remain immutable historical truth, and no consumer is automatically upgraded by this promotion.
