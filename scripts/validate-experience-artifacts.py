@@ -58,6 +58,9 @@ def validate_catalog_references() -> None:
             for check_id in gate.get(key, []):
                 if check_id not in check_ids:
                     raise AssertionError(f"Gate {gate['id']} references unknown check {check_id}")
+        for prerequisite_gate in gate.get("prerequisite_gates_if_applicable", []):
+            if prerequisite_gate not in gate_ids:
+                raise AssertionError(f"Gate {gate['id']} references unknown prerequisite gate {prerequisite_gate}")
     for workflow_path in ("workflows/greenfield.yaml", "workflows/brownfield.yaml"):
         workflow = load(workflow_path)
         for phase in workflow["sequence"]:
@@ -128,6 +131,7 @@ def main() -> int:
     schema_pairs = [
         ("schemas/project.schema.json", "templates/project.example.yaml"),
         ("schemas/status.schema.json", "templates/status.example.yaml"),
+        ("schemas/mobile-licensing.schema.json", "templates/mobile-licensing.example.yaml"),
         ("schemas/interface-inventory.schema.json", "templates/interface-scope-baseline.example.json"),
         ("schemas/interface-inventory.schema.json", "templates/interface-inventory.example.json"),
         ("schemas/functional-interface-slice.schema.json", "templates/functional-interface-slice.example.json"),

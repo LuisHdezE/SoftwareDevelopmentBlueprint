@@ -53,7 +53,17 @@ Una skill no puede saltarse un gate, inventar product truth ni convertir CI en a
 - `dev-functional-interface-slice`
 - `dev-event-logging-audit`
 
-Total: **14 materializadas**. Las **25 restantes** siguen `planned` y no deben cargarse como procedimientos disponibles.
+Total histórico estable: **14 materializadas**. Las **25 restantes** siguen `planned` y no deben cargarse como procedimientos disponibles.
+
+## Hardening 0.5.3-dev
+
+La frontera de desarrollo posterior a stable 0.5.2 añade una skill condicional materializada:
+
+- `dev-mobile-licensing` — se carga únicamente cuando `capabilities.mobile_licensing = true`.
+
+Para proyectos Android, la decisión `mobile_licensing: true|false` es explícita. La skill de licenciamiento **no** es universal: `false` evita cargarla; `true` activa el mecanismo DEFAULT y sus pruebas/gate condicionales.
+
+Mientras 0.5.3 no tenga cierre de release estable, las 14 skills previas conservan su provenance 0.5.0 y `dev-mobile-licensing` conserva provenance `0.5.3-dev`.
 
 ## Reglas de neutralidad
 
@@ -62,3 +72,4 @@ Total: **14 materializadas**. Las **25 restantes** siguen `planned` y no deben c
 - Reference pilots son cantera de patrones, no fuente normativa.
 - `dev-functional-interface-slice` implementa el slice real usando inventario ejecutable, Client Architecture y API autoritativa; no autoriza datos de negocio hardcodeados ni capacidades inventadas.
 - `dev-mockup-planning` es condicional y no crea una dependencia universal de imágenes.
+- `dev-mobile-licensing` define un patrón comercial/técnico reusable; no introduce nombres, monedas, precios ni reglas específicas de un consumidor.

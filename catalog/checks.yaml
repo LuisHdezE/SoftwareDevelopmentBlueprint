@@ -1,4 +1,4 @@
-version: 0.5.1
+version: 0.5.3-dev
 checks:
   - {id: discovery.product_vision, phase: discovery, type: REQUIRED, verification: manual}
   - {id: discovery.scope_mvp, phase: discovery, type: REQUIRED, verification: manual}
@@ -16,6 +16,7 @@ checks:
   - {id: requirements.use_cases, phase: requirements_domain, type: REQUIRED, verification: evidence}
   - {id: requirements.acceptance_criteria, phase: requirements_domain, type: REQUIRED, verification: evidence}
   - {id: requirements.traceability, phase: requirements_domain, type: REQUIRED, verification: evidence}
+  - {id: requirements.mobile_licensing_decision, phase: requirements_domain, type: CONDITIONAL, capability: android, verification: evidence, rule: android_project_must_explicitly_answer_mobile_licensing_true_or_false}
 
   - {id: ui.interface_scope_baseline, phase: interface_scope_baseline, type: REQUIRED, verification: evidence}
   - {id: ui.interface_scope_traceability, phase: interface_scope_baseline, type: REQUIRED, verification: evidence}
@@ -33,6 +34,12 @@ checks:
   - {id: api.auth_strategy, phase: architecture_security_data, type: REQUIRED, verification: evidence}
   - {id: api.error_contract, phase: architecture_security_data, type: REQUIRED, verification: evidence}
   - {id: api.versioning_policy, phase: architecture_security_data, type: REQUIRED, verification: evidence}
+  - {id: licensing.profile_contract, phase: architecture_security_data, type: CONDITIONAL, capability: mobile_licensing, verification: file}
+  - {id: licensing.security_architecture, phase: architecture_security_data, type: CONDITIONAL, capability: mobile_licensing, verification: evidence}
+  - {id: licensing.private_key_isolation, phase: architecture_security_data, type: CONDITIONAL, capability: mobile_licensing, verification: evidence, rule: production_private_signing_key_absent_from_customer_app_and_repository}
+  - {id: licensing.backup_separation, phase: architecture_security_data, type: CONDITIONAL, capability: mobile_licensing, verification: evidence, rule: portable_business_backup_must_not_clone_device_bound_entitlement}
+  - {id: licensing.issuer_boundary, phase: architecture_security_data, type: CONDITIONAL, capability: mobile_licensing, verification: evidence}
+  - {id: licensing.key_lifecycle, phase: architecture_security_data, type: CONDITIONAL, capability: mobile_licensing, verification: evidence, rule: production_signing_key_recovery_and_rotation_defined_before_release}
 
   - {id: api.scope_defined, phase: api_contract_design, type: REQUIRED, verification: evidence}
   - {id: api.endpoint_inventory, phase: api_contract_design, type: REQUIRED, verification: evidence}
@@ -149,9 +156,12 @@ checks:
   - {id: qa.e2e, phase: integration_qa, type: REQUIRED, verification: evidence}
   - {id: qa.idempotency, phase: integration_qa, type: CONDITIONAL, verification: evidence}
   - {id: qa.offline, phase: integration_qa, type: CONDITIONAL, verification: evidence}
+  - {id: licensing.automated_tests, phase: integration_qa, type: CONDITIONAL, capability: mobile_licensing, verification: evidence, rule: all_mandatory_mobile_licensing_positive_negative_and_tamper_tests_pass}
+  - {id: licensing.interoperability, phase: integration_qa, type: CONDITIONAL, capability: mobile_licensing, verification: evidence, rule: issuer_and_customer_validate_shared_canonical_test_vectors}
 
   - {id: release.functional_slices_accepted, phase: release_gate, type: REQUIRED, verification: evidence}
   - {id: release.security_accepted, phase: release_gate, type: REQUIRED, verification: evidence}
   - {id: release.documentation, phase: release_gate, type: REQUIRED, verification: evidence}
   - {id: release.backup_restore, phase: release_gate, type: CONDITIONAL, verification: evidence}
+  - {id: licensing.release_build, phase: release_gate, type: CONDITIONAL, capability: mobile_licensing, verification: evidence, rule: licensing_verification_and_private_key_absence_validated_on_exact_release_build}
   - {id: operations.observability, phase: operations, type: REQUIRED, verification: evidence}

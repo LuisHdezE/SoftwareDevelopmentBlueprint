@@ -1,4 +1,4 @@
-version: 0.5.0
+version: 0.5.3-dev
 mode: greenfield
 entry_condition: new_solution
 sequence:
@@ -38,6 +38,7 @@ gates:
   per_slice_platform_after_functional_dod: functional_slice_ready
   per_slice_platform_after_visual_functional_review: visual_functional_review_pass
   per_slice_platform_after_integration_qa: integration_qa_pass
+  before_release_if_mobile_licensing: mobile_licensing_ready
   before_release: release_gate
 
 api_contract_evolution:
@@ -126,8 +127,39 @@ conditional_capabilities:
       - consumer_may_require_mockup_review_pass_for_a_specific_slice
       - mockups_never_override_api_contract_or_permissions
 
+  mobile_licensing:
+    applicability: CONDITIONAL
+    decision_required_when:
+      android: true
+    enabled_when:
+      mobile_licensing: true
+    default_strategy: offline_signed_device_bound_trial
+    default_profile: templates/mobile-licensing.example.yaml
+    contract: documentation/BLUEPRINT_V0_5_3_MOBILE_LICENSING.md
+    skill: dev-mobile-licensing
+    sequence:
+      - licensing_requirements
+      - licensing_architecture_security
+      - licensing_implementation
+      - licensing_qa
+    exit_gate: mobile_licensing_ready
+    default_blocks_release: true
+    rules:
+      - android_project_must_explicitly_answer_mobile_licensing_true_or_false
+      - false_makes_licensing_artifacts_checks_and_gate_not_applicable
+      - true_uses_default_strategy_unless_approved_adr_documents_equivalent_or_stronger_alternative
+      - customer_app_must_never_contain_production_private_signing_key
+      - trial_expiration_must_preserve_read_backup_and_export_access_to_user_owned_data
+      - device_bound_license_must_not_be_cloned_by_portable_business_backup
+      - issuer_signing_boundary_must_be_separate_and_protected
+      - production_signing_key_recovery_and_rotation_must_exist_before_release
+      - mandatory_positive_negative_tamper_interoperability_and_release_build_tests_required
+      - offline_antitamper_is_best_effort_not_absolute
+      - store_distribution_must_respect_applicable_payment_and_entitlement_policy
+
 rules:
   - do_not_implement_before_discovery
+  - android_projects_must_explicitly_decide_mobile_licensing
   - requirements_ready_must_pass_before_interface_scope_baseline
   - interface_scope_ready_must_pass_before_architecture_or_api_design
   - interface_scope_is_non_executable_pre_api_planning
@@ -152,4 +184,5 @@ rules:
   - generated_is_not_reviewed_and_reviewed_is_not_approved
   - preserve_traceability_interface_to_requirements_permissions_operationids_and_tests
   - integration_qa_pass_is_scoped_and_release_gate_aggregates_required_slices
+  - enabled_mobile_licensing_requires_mobile_licensing_ready_before_release
   - no_gate_advances_without_required_human_acceptance

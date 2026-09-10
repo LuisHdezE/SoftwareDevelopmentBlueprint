@@ -15,6 +15,7 @@ STABLE_V4 = "0.4.0"
 STABLE_V5 = "0.5.0"
 STABLE_V51 = "0.5.1"
 STABLE_V52 = "0.5.2"
+DEV_V53 = "0.5.3-dev"
 
 V4_COUNTS = {
     "phases": 25,
@@ -38,14 +39,14 @@ V51_COUNTS = {
     "planned_skills": 25,
 }
 V52_COUNTS = dict(V51_COUNTS)
+V53_DEV_COUNTS = {
+    "phases": 28,
+    "checks": 145,
+    "gates": 19,
+    "materialized_skills": 15,
+    "planned_skills": 25,
+}
 
-UNCHANGED_V5_YAML_COMPONENTS = [
-    "catalog/phases.yaml",
-    "catalog/skills.yaml",
-    "catalog/reference-pilots.yaml",
-    "workflows/greenfield.yaml",
-    "workflows/brownfield.yaml",
-]
 UNCHANGED_V5_SCHEMAS = [
     "schemas/api-impact.schema.json",
     "schemas/client-architecture.schema.json",
@@ -89,7 +90,7 @@ REQUIRED_SCOPED_GATES = {
     "visual_functional_review_pass": "interface_slice_platform",
     "integration_qa_pass": "interface_slice_platform",
 }
-VALIDATORS = [
+BASE_VALIDATORS = [
     "scripts/validate-experience-artifacts.py",
     "scripts/validate-skills.py",
     "scripts/validate-client-architecture.py",
@@ -158,6 +159,18 @@ def assert_contiguous(sequence: list[str], subsequence: list[str], label: str) -
         if sequence[index:index + len(subsequence)] == subsequence:
             return
     fail(f"{label} does not contain expected pipeline contiguously: {subsequence}")
+
+
+def is_v53_hardening() -> bool:
+    checks_version = load_yaml("catalog/checks.yaml").get("version")
+    gates_version = load_yaml("catalog/gates.yaml").get("version")
+    skills_version = load_yaml("catalog/skills.yaml").get("version")
+    green_version = load_yaml("workflows/greenfield.yaml").get("version")
+    brown_version = load_yaml("workflows/brownfield.yaml").get("version")
+    versions = {checks_version, gates_version, skills_version, green_version, brown_version}
+    if DEV_V53 in versions and versions != {DEV_V53}:
+        fail(f"partial 0.5.3-dev component activation detected: {sorted(str(v) for v in versions)}")
+    return versions == {DEV_V53}
 
 
 def validate_historical_releases() -> None:
@@ -231,53 +244,79 @@ def validate_v52_release_manifest() -> None:
     }
     if provenance != expected_provenance:
         fail("0.5.2 component provenance manifest drifted")
-    print("PASS stable v0.5.2 release manifest")
+    print("PASS stable v0.5.2 release manifest preserved")
 
 
-def validate_root_and_component_identity() -> None:
+def validate_root_and_component_identity(hardening: bool) -> None:
     if VERSION != STABLE_V52:
-        fail(f"stable release requires VERSION={STABLE_V52}, got {VERSION}")
+        fail(f"0.5.3-dev hardening must branch from stable VERSION={STABLE_V52}, got {VERSION}")
 
-    if load_yaml("catalog/checks.yaml").get("version") != STABLE_V51:
-        fail("0.5.2 reuses checks catalog with 0.5.1 provenance")
-    if load_yaml("catalog/gates.yaml").get("version") != STABLE_V51:
-        fail("0.5.2 reuses gates catalog with 0.5.1 provenance")
-    for path in UNCHANGED_V5_YAML_COMPONENTS:
-        if load_yaml(path).get("version") != STABLE_V5:
-            fail(f"unchanged component must retain 0.5.0 provenance: {path}")
+    phases_version = load_yaml("catalog/phases.yaml").get("version")
+    refs_version = load_yaml("catalog/reference-pilots.yaml").get("version")
+    if phases_version != STABLE_V5 or refs_version != STABLE_V5:
+        fail("unchanged phase/reference-pilot components must retain 0.5.0 provenance")
+
+    if hardening:
+        for path in ("catalog/checks.yaml", "catalog/gates.yaml", "catalog/skills.yaml", "workflows/greenfield.yaml", "workflows/brownfield.yaml"):
+            if load_yaml(path).get("version") != DEV_V53:
+                fail(f"0.5.3-dev hardening component identity mismatch: {path}")
+        expected_counts = V53_DEV_COUNTS
+        expected_project_version = DEV_V53
+    else:
+        if load_yaml("catalog/checks.yaml").get("version") != STABLE_V51:
+            fail("stable 0.5.2 reuses checks catalog with 0.5.1 provenance")
+        if load_yaml("catalog/gates.yaml").get("version") != STABLE_V51:
+            fail("stable 0.5.2 reuses gates catalog with 0.5.1 provenance")
+        if load_yaml("catalog/skills.yaml").get("version") != STABLE_V5:
+            fail("stable 0.5.2 reuses skill catalog with 0.5.0 provenance")
+        for path in ("workflows/greenfield.yaml", "workflows/brownfield.yaml"):
+            if load_yaml(path).get("version") != STABLE_V5:
+                fail(f"stable 0.5.2 workflow provenance drifted: {path}")
+        expected_counts = V52_COUNTS
+        expected_project_version = STABLE_V52
 
     project_template = load_yaml("templates/project.example.yaml")
     status_template = load_yaml("templates/status.example.yaml")
-    if project_template.get("blueprint", {}).get("version") != STABLE_V52:
-        fail("canonical project template must declare 0.5.2")
+    if project_template.get("blueprint", {}).get("version") != expected_project_version:
+        fail(f"canonical project template must declare {expected_project_version}")
     if status_template.get("blueprint_version") != STABLE_V52:
-        fail("canonical status template must declare 0.5.2")
+        fail("status template remains stable 0.5.2 until release closure")
 
     actual_counts = catalog_counts()
-    if actual_counts != V52_COUNTS:
-        fail(f"0.5.2 core counts drifted: expected {V52_COUNTS}, got {actual_counts}")
-    print(f"PASS root/component identity and counts: {V52_COUNTS}")
+    if actual_counts != expected_counts:
+        fail(f"core counts drifted: expected {expected_counts}, got {actual_counts}")
+    label = DEV_V53 if hardening else STABLE_V52
+    print(f"PASS root/component identity for {label}: {expected_counts}")
 
 
-def validate_schema_provenance() -> None:
+def validate_schema_provenance(hardening: bool) -> None:
     project = load_json("schemas/project.schema.json")
-    if "/blueprint/0.5.2/" not in project.get("$id", ""):
-        fail("project schema $id must be version-pinned to 0.5.2")
-    if project["properties"]["blueprint"]["properties"]["version"].get("const") != STABLE_V52:
-        fail("project schema consumer version must be const 0.5.2")
+    expected_project_version = DEV_V53 if hardening else STABLE_V52
+    if f"/blueprint/{expected_project_version}/" not in project.get("$id", ""):
+        fail(f"project schema $id must be version-pinned to {expected_project_version}")
+    if project["properties"]["blueprint"]["properties"]["version"].get("const") != expected_project_version:
+        fail(f"project schema consumer version must be const {expected_project_version}")
 
     status = load_json("schemas/status.schema.json")
     if "/blueprint/0.5.2/" not in status.get("$id", ""):
-        fail("status schema $id must be version-pinned to 0.5.2")
+        fail("status schema remains stable 0.5.2 during 0.5.3-dev hardening")
     if status["properties"]["blueprint_version"].get("const") != STABLE_V52:
-        fail("status schema blueprint_version must be const 0.5.2")
+        fail("status schema blueprint_version must remain const 0.5.2 before release closure")
 
     ci_runtime = load_json("schemas/ci-runtime.schema.json")
     Draft202012Validator.check_schema(ci_runtime)
     if "/blueprint/0.5.2/" not in ci_runtime.get("$id", ""):
-        fail("ci-runtime schema $id must be version-pinned to 0.5.2")
+        fail("ci-runtime schema must retain stable 0.5.2 provenance")
     if ci_runtime["properties"]["schema_version"].get("const") != STABLE_V52:
-        fail("ci-runtime schema_version must be const 0.5.2")
+        fail("ci-runtime schema_version must remain const 0.5.2")
+
+    if hardening:
+        licensing = load_json("schemas/mobile-licensing.schema.json")
+        Draft202012Validator.check_schema(licensing)
+        if f"/blueprint/{DEV_V53}/" not in licensing.get("$id", ""):
+            fail("mobile licensing schema must be version-pinned to 0.5.3-dev")
+        if licensing.get("properties", {}).get("schema_version", {}).get("const") != DEV_V53:
+            fail("mobile licensing schema_version must be 0.5.3-dev")
 
     for path in UNCHANGED_V5_SCHEMAS:
         schema = load_json(path)
@@ -288,7 +327,7 @@ def validate_schema_provenance() -> None:
         value = schema.get("properties", {}).get("schema_version", {}).get("const")
         if value != STABLE_V5:
             fail(f"unchanged schema_version must remain const 0.5.0: {path}")
-    print("PASS 0.5.2 project/status/CI runtime provenance with compatible component reuse")
+    print("PASS project/status/CI/mobile-licensing schema provenance")
 
 
 def validate_ci_runtime_semantics() -> None:
@@ -312,7 +351,7 @@ def validate_ci_runtime_semantics() -> None:
     workflow = (ROOT / ".github/workflows/blueprint-ci-runtime-validation.yml").read_text(encoding="utf-8")
     if "runs-on: [self-hosted, linux, x64, blueprint]" not in workflow:
         fail("CI runtime validation workflow must select canonical self-hosted labels")
-    print("PASS 0.5.2 CI execution portability semantics")
+    print("PASS 0.5.2 CI execution portability semantics preserved")
 
 
 def validate_architecture_conformance_semantics() -> None:
@@ -321,7 +360,7 @@ def validate_architecture_conformance_semantics() -> None:
     check_id = "api.architecture_implementation_conformance"
     check = checks.get(check_id)
     if not check:
-        fail("0.5.2 must retain architecture implementation conformance check")
+        fail("architecture implementation conformance check must remain present")
     if check.get("phase") != "api_implementation" or check.get("type") != "REQUIRED" or check.get("verification") != "evidence":
         fail("architecture implementation conformance check classification drifted")
     for gate_id in ("api_implemented", "api_gate"):
@@ -350,10 +389,43 @@ def validate_core_v5_semantics() -> None:
     print("PASS retained 0.5.x core semantics")
 
 
-def validate_workflows() -> None:
+def validate_mobile_licensing_hardening(hardening: bool) -> None:
+    if not hardening:
+        return
+    checks = by_id(load_yaml("catalog/checks.yaml").get("checks", []))
+    gates = by_id(load_yaml("catalog/gates.yaml").get("gates", []))
+    required_checks = {
+        "requirements.mobile_licensing_decision",
+        "licensing.profile_contract",
+        "licensing.security_architecture",
+        "licensing.private_key_isolation",
+        "licensing.backup_separation",
+        "licensing.issuer_boundary",
+        "licensing.key_lifecycle",
+        "licensing.automated_tests",
+        "licensing.interoperability",
+        "licensing.release_build",
+    }
+    if not required_checks.issubset(checks):
+        fail("0.5.3-dev mobile licensing checks incomplete")
+    gate = gates.get("mobile_licensing_ready")
+    if not gate or gate.get("applicability_capability") != "mobile_licensing":
+        fail("0.5.3-dev mobile_licensing_ready conditional gate missing")
+    if not required_checks.issubset(set(gate.get("require_all", []))):
+        fail("mobile_licensing_ready does not aggregate the full licensing contract")
+    release = gates.get("release_gate", {})
+    if "mobile_licensing_ready" not in set(release.get("prerequisite_gates_if_applicable", [])):
+        fail("release_gate must depend conditionally on mobile_licensing_ready")
+    print("PASS 0.5.3-dev conditional mobile licensing catalog semantics")
+
+
+def validate_workflows(hardening: bool) -> None:
     expected_lifecycle = ["INVENTORIED", "READY", "IN_PROGRESS", "FUNCTIONAL", "ACCEPTED"]
+    expected_version = DEV_V53 if hardening else STABLE_V5
     for path in ("workflows/greenfield.yaml", "workflows/brownfield.yaml"):
         workflow = load_yaml(path)
+        if workflow.get("version") != expected_version:
+            fail(f"{path} expected component version {expected_version}")
         assert_contiguous(workflow.get("sequence", []), POST_API_PIPELINE, path)
         pipeline = workflow.get("functional_interface_slice_pipeline", {})
         if pipeline.get("scope_key") != "interface_slice_platform" or pipeline.get("lifecycle") != expected_lifecycle:
@@ -361,7 +433,18 @@ def validate_workflows() -> None:
         blocker = pipeline.get("blocker_condition", {})
         if blocker.get("id") != "BLOCKED_BY_API" or blocker.get("overlays_lifecycle") is not True:
             fail(f"{path} BLOCKED_BY_API semantics drifted")
-    print("PASS unchanged 0.5.0 workflows reused by 0.5.2")
+        if hardening:
+            licensing = workflow.get("conditional_capabilities", {}).get("mobile_licensing", {})
+            if licensing.get("applicability") != "CONDITIONAL":
+                fail(f"{path} mobile licensing must be conditional")
+            if licensing.get("decision_required_when", {}).get("android") is not True:
+                fail(f"{path} Android licensing decision must be explicit")
+            if licensing.get("enabled_when", {}).get("mobile_licensing") is not True:
+                fail(f"{path} mobile licensing enable condition drifted")
+            if licensing.get("exit_gate") != "mobile_licensing_ready":
+                fail(f"{path} mobile licensing must exit through mobile_licensing_ready")
+    label = DEV_V53 if hardening else STABLE_V52
+    print(f"PASS workflow semantics for {label}")
 
 
 def validate_reference_pilot_history() -> None:
@@ -374,7 +457,7 @@ def validate_reference_pilot_history() -> None:
     print("PASS reference pilot history preserved")
 
 
-def validate_active_docs() -> None:
+def validate_active_docs(hardening: bool) -> None:
     required = {
         "BLUEPRINT.md": ["Stable release: **0.5.2**", "CI Execution Portability", "schemas/ci-runtime.schema.json", "pre-execution infrastructure failure != test failure"],
         "README.md": ["Blueprint 0.5.2", "135 checks", "CI Execution Portability", "self_hosted"],
@@ -389,7 +472,18 @@ def validate_active_docs() -> None:
         for token in tokens:
             if token not in text:
                 fail(f"{path} missing stable 0.5.2 token: {token}")
-    print("PASS active 0.5.2 documentation")
+
+    if hardening:
+        path = ROOT / "documentation/BLUEPRINT_V0_5_3_MOBILE_LICENSING.md"
+        if not path.is_file():
+            fail("0.5.3-dev mobile licensing hardening document missing")
+        text = path.read_text(encoding="utf-8")
+        for token in ("0.5.3-dev", "mobile_licensing", "mobile_licensing_ready", "Mandatory test contract", "separate protected issuer"):
+            if token not in text:
+                fail(f"0.5.3-dev licensing document missing token: {token}")
+        print("PASS stable 0.5.2 docs preserved + 0.5.3-dev hardening document present")
+    else:
+        print("PASS active 0.5.2 documentation")
 
 
 def run_validator(path: str) -> None:
@@ -407,19 +501,27 @@ def run_validator(path: str) -> None:
 
 
 def main() -> int:
-    validate_root_and_component_identity()
-    validate_schema_provenance()
+    hardening = is_v53_hardening()
+    validate_root_and_component_identity(hardening)
+    validate_schema_provenance(hardening)
     validate_historical_releases()
     validate_v52_release_manifest()
     validate_reference_pilot_history()
     validate_architecture_conformance_semantics()
     validate_ci_runtime_semantics()
     validate_core_v5_semantics()
-    validate_workflows()
-    validate_active_docs()
-    for validator in VALIDATORS:
+    validate_mobile_licensing_hardening(hardening)
+    validate_workflows(hardening)
+    validate_active_docs(hardening)
+
+    validators = list(BASE_VALIDATORS)
+    if hardening:
+        validators.append("scripts/validate-mobile-licensing.py")
+    for validator in validators:
         run_validator(validator)
-    print(f"\nBlueprint stable release validation: PASS (VERSION={VERSION}; counts={catalog_counts()})")
+
+    state = DEV_V53 if hardening else f"stable {STABLE_V52}"
+    print(f"\nBlueprint validation: PASS (state={state}; root VERSION={VERSION}; counts={catalog_counts()})")
     return 0
 
 

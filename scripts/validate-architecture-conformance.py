@@ -13,6 +13,7 @@ DEV_VERSION = "0.5.1-dev"
 STABLE_V50 = "0.5.0"
 STABLE_V51 = "0.5.1"
 STABLE_V52 = "0.5.2"
+DEV_V53 = "0.5.3-dev"
 
 
 def fail(message: str) -> None:
@@ -86,12 +87,19 @@ def validate_identity() -> str:
 
     if root_version == STABLE_V50:
         expected_component = DEV_VERSION
+        expected_counts = (135, 18)
         state = DEV_VERSION
     elif root_version == STABLE_V51:
         expected_component = STABLE_V51
+        expected_counts = (135, 18)
         state = STABLE_V51
+    elif root_version == STABLE_V52 and checks_version == DEV_V53 and gates_version == DEV_V53:
+        expected_component = DEV_V53
+        expected_counts = (145, 19)
+        state = DEV_V53
     elif root_version == STABLE_V52:
         expected_component = STABLE_V51
+        expected_counts = (135, 18)
         state = STABLE_V52
     else:
         fail(f"unsupported root VERSION for architecture conformance validator: {root_version}")
@@ -105,10 +113,10 @@ def validate_identity() -> str:
     phases = load_yaml("catalog/phases.yaml").get("phases", [])
     if len(phases) != 28:
         fail("architecture conformance hardening must not add/remove phases")
-    if len(checks_doc.get("checks", [])) != 135:
-        fail("architecture conformance component must contain 135 checks")
-    if len(gates_doc.get("gates", [])) != 18:
-        fail("architecture conformance hardening must not add/remove gates")
+    if len(checks_doc.get("checks", [])) != expected_counts[0]:
+        fail(f"architecture conformance component must contain {expected_counts[0]} checks in {state}")
+    if len(gates_doc.get("gates", [])) != expected_counts[1]:
+        fail(f"architecture conformance component must contain {expected_counts[1]} gates in {state}")
 
     assert_contract(checks_doc, gates_doc)
 
@@ -120,7 +128,7 @@ def validate_identity() -> str:
         if manifest.get("version") != STABLE_V51 or manifest.get("status") != "stable":
             fail("0.5.1 release manifest must declare stable 0.5.1")
         if manifest.get("counts", {}).get("checks") != 135:
-            fail("0.5.1 release manifest must record 135 checks")
+            fail("0.5.1 release manifest must record historical 135 checks")
 
     return state
 

@@ -15,6 +15,7 @@ DEV_V5 = "0.5.0-dev"
 STABLE_V5 = "0.5.0"
 STABLE_V51 = "0.5.1"
 STABLE_V52 = "0.5.2"
+DEV_V53 = "0.5.3-dev"
 
 REQUIRED_FRONTMATTER = {
     "id",
@@ -44,6 +45,7 @@ PRODUCT_MARKERS = [
     "VolquetasManager",
     "Volquetas Manager",
     "vm-",
+    "GestioApp",
 ]
 
 
@@ -103,15 +105,22 @@ def validate_catalog_identity(catalog_version: str) -> None:
         return
     if STABLE_VERSION == STABLE_V4 and catalog_version == DEV_V5:
         return
-    # Blueprint 0.5.1 and 0.5.2 do not modify materialized skill procedures.
-    # The stable 0.5.0 skill component is therefore reused explicitly.
     if STABLE_VERSION in {STABLE_V51, STABLE_V52} and catalog_version == STABLE_V5:
+        return
+    # 0.5.3 hardening is developed on top of stable 0.5.2 before release closure.
+    if STABLE_VERSION == STABLE_V52 and catalog_version == DEV_V53:
         return
     fail(
         "catalog/skills.yaml version must match root VERSION or an explicitly "
         "supported component-provenance compatibility transition; "
         f"VERSION={STABLE_VERSION}, catalog={catalog_version}"
     )
+
+
+def expected_skill_version(skill_id: str, catalog_version: str) -> str:
+    if catalog_version == DEV_V53 and skill_id != "dev-mobile-licensing":
+        return STABLE_V5
+    return catalog_version
 
 
 def validate_skill(skill_id: str, spec: dict, catalog_version: str) -> None:
@@ -142,9 +151,10 @@ def validate_skill(skill_id: str, spec: dict, catalog_version: str) -> None:
             f"{skill_id}: category mismatch "
             f"catalog={spec.get('category')} file={frontmatter['category']}"
         )
-    if frontmatter["version"] != catalog_version:
+    expected_version = expected_skill_version(skill_id, catalog_version)
+    if frontmatter["version"] != expected_version:
         fail(
-            f"{skill_id}: expected version {catalog_version}, "
+            f"{skill_id}: expected version {expected_version}, "
             f"got {frontmatter['version']}"
         )
     if not isinstance(frontmatter["applies_to"], list) or not frontmatter["applies_to"]:
@@ -208,7 +218,7 @@ def main() -> int:
 
     current_mandatory_key = (
         "mandatory_v0_5_materialized"
-        if catalog_version.startswith("0.5.0")
+        if catalog_version.startswith("0.5")
         else "mandatory_v0_4_materialized"
     )
     mandatory = catalog.get(current_mandatory_key, [])
