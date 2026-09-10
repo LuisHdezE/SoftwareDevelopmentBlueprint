@@ -1,4 +1,4 @@
-version: 0.5.1
+version: 0.5.3-dev
 gates:
   - id: brownfield_baseline
     name: Brownfield Baseline Gate
@@ -25,6 +25,8 @@ gates:
       - requirements.use_cases
       - requirements.acceptance_criteria
       - requirements.traceability
+    require_if_applicable:
+      - requirements.mobile_licensing_decision
     result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
 
   - id: interface_scope_ready
@@ -60,7 +62,14 @@ gates:
       - api.auth_strategy
       - api.error_contract
       - api.versioning_policy
-    require_if_applicable: [architecture.threat_model]
+    require_if_applicable:
+      - architecture.threat_model
+      - licensing.profile_contract
+      - licensing.security_architecture
+      - licensing.private_key_isolation
+      - licensing.backup_separation
+      - licensing.issuer_boundary
+      - licensing.key_lifecycle
     result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
 
   - id: api_contract_ready
@@ -368,6 +377,33 @@ gates:
       aggregation of every committed slice required by the release; one slice cannot
       unlock the project Release Gate by itself.
 
+  - id: mobile_licensing_ready
+    name: Mobile Licensing Ready Gate
+    phase: release_gate
+    evaluation_scope: project
+    applicability_capability: mobile_licensing
+    blocks: [release_gate]
+    require_all:
+      - requirements.mobile_licensing_decision
+      - licensing.profile_contract
+      - licensing.security_architecture
+      - licensing.private_key_isolation
+      - licensing.backup_separation
+      - licensing.issuer_boundary
+      - licensing.key_lifecycle
+      - licensing.automated_tests
+      - licensing.interoperability
+      - licensing.release_build
+    result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
+    rule: >-
+      CONDITIONAL gate. It is evaluated only when capabilities.mobile_licensing=true.
+      PASS requires the default signed device-bound trial/activation contract or an
+      approved equivalent ADR, proof that no production private signing key ships in the
+      customer application, business-backup/license separation, protected issuer and key
+      lifecycle, the complete automated positive/negative/tamper test matrix, issuer/client
+      interoperability evidence and validation on the exact release build. When licensing
+      is false this gate is N/A and cannot block release.
+
   - id: release_gate
     name: Release Gate
     phase: release_gate
@@ -376,8 +412,10 @@ gates:
       - release.security_accepted
       - release.documentation
     require_if_applicable: [release.backup_restore]
+    prerequisite_gates_if_applicable: [mobile_licensing_ready]
     result_values: [READY_FOR_REVIEW, PASS, FAIL, BLOCKED]
     rule: >-
       Release only after all committed Functional Interface Slices required by the
       release have passed their scoped review/integration obligations and explicit
-      acceptance is evidenced.
+      acceptance is evidenced. When mobile licensing is enabled, mobile_licensing_ready
+      must also PASS before Release Gate can PASS.
