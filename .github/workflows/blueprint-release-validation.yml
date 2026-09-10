@@ -33,12 +33,14 @@ on:
       - documentation/BLUEPRINT_V0_5_2_CI_EXECUTION_PORTABILITY.md
       - documentation/BLUEPRINT_V0_5_2_RELEASE.json
       - documentation/BLUEPRINT_V0_5_2_RELEASE_NOTES.md
+      - documentation/BLUEPRINT_V0_5_3_MOBILE_LICENSING.md
       - documentation/SELF_HOSTED_RUNNER_BOOTSTRAP.md
       - documentation/EXPERIENCE_ARTIFACT_MODEL.md
       - documentation/CLIENT_ARCHITECTURE_CONTRACT.md
       - documentation/SKILL_MODEL.md
       - .github/workflows/blueprint-release-validation.yml
       - .github/workflows/blueprint-ci-runtime-validation.yml
+      - .github/workflows/blueprint-mobile-licensing-validation.yml
   pull_request:
     branches: [main]
     paths:
@@ -67,12 +69,14 @@ on:
       - documentation/BLUEPRINT_V0_5_2_CI_EXECUTION_PORTABILITY.md
       - documentation/BLUEPRINT_V0_5_2_RELEASE.json
       - documentation/BLUEPRINT_V0_5_2_RELEASE_NOTES.md
+      - documentation/BLUEPRINT_V0_5_3_MOBILE_LICENSING.md
       - documentation/SELF_HOSTED_RUNNER_BOOTSTRAP.md
       - documentation/EXPERIENCE_ARTIFACT_MODEL.md
       - documentation/CLIENT_ARCHITECTURE_CONTRACT.md
       - documentation/SKILL_MODEL.md
       - .github/workflows/blueprint-release-validation.yml
       - .github/workflows/blueprint-ci-runtime-validation.yml
+      - .github/workflows/blueprint-mobile-licensing-validation.yml
 
 permissions:
   contents: read
