@@ -10,7 +10,7 @@ For every Android consumer, Blueprint discovery/requirements must explicitly ans
 
 The answer is recorded as `capabilities.mobile_licensing: true|false`. Silence is not an answer for an Android project.
 
-When `mobile_licensing = false`, licensing artifacts, checks and gate are N/A.
+When `mobile_licensing = false`, no licensing profile is required, licensing checks may be projected as `N/A`, and `mobile_licensing_ready` is not instantiated/evaluated. It cannot block release.
 
 When `mobile_licensing = true`, the default Blueprint mechanism is the profile defined here unless an approved Architecture Decision Record explicitly justifies another licensing strategy.
 
@@ -23,7 +23,7 @@ The DEFAULT profile is:
 Core invariants:
 
 1. Trial duration is configurable; the template default is 7 days.
-2. Trial activation and subsequent license verification work without a required backend.
+2. Trial state evaluation and subsequent license verification work without a required backend.
 3. Trial expiration never deletes, encrypts or makes existing user-owned business data inaccessible.
 4. Expired users retain read-only access plus backup/export and activation/help flows.
 5. A privacy-safe request code is derived from an approved device/application binding. Raw privileged hardware identifiers are not required.
@@ -121,7 +121,7 @@ Security review must additionally prove by inspection/static evidence that the p
 
 It requires approved licensing requirements, architecture/security, private-key isolation, backup separation, issuer boundary, automated licensing tests, interoperability evidence and release-build verification.
 
-The project Release Gate requires `mobile_licensing_ready` only when this capability applies.
+The project Release Gate requires `mobile_licensing_ready` only when this capability applies. When licensing is disabled, the gate is omitted from the consumer status projection rather than recorded with an unsupported gate state.
 
 ## Consumer override
 
