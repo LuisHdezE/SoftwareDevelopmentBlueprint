@@ -1,0 +1,53 @@
+name: Blueprint Mobile Licensing Validation
+
+on:
+  push:
+    branches:
+      - main
+      - 'blueprint/**'
+    paths:
+      - 'schemas/mobile-licensing.schema.json'
+      - 'schemas/project.schema.json'
+      - 'templates/mobile-licensing.example.yaml'
+      - 'templates/project.example.yaml'
+      - 'catalog/checks.yaml'
+      - 'catalog/gates.yaml'
+      - 'catalog/skills.yaml'
+      - 'workflows/greenfield.yaml'
+      - 'workflows/brownfield.yaml'
+      - 'skills/dev-mobile-licensing/**'
+      - 'scripts/validate-mobile-licensing.py'
+      - '.github/workflows/blueprint-mobile-licensing-validation.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'schemas/mobile-licensing.schema.json'
+      - 'schemas/project.schema.json'
+      - 'templates/mobile-licensing.example.yaml'
+      - 'templates/project.example.yaml'
+      - 'catalog/checks.yaml'
+      - 'catalog/gates.yaml'
+      - 'catalog/skills.yaml'
+      - 'workflows/greenfield.yaml'
+      - 'workflows/brownfield.yaml'
+      - 'skills/dev-mobile-licensing/**'
+      - 'scripts/validate-mobile-licensing.py'
+      - '.github/workflows/blueprint-mobile-licensing-validation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: [self-hosted, linux, x64, blueprint]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+      - name: Install validator dependencies
+        run: python -m pip install --disable-pip-version-check jsonschema==4.26.0 PyYAML==6.0.2
+      - name: Validate mobile licensing contract
+        run: python scripts/validate-mobile-licensing.py
