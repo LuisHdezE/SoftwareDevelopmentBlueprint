@@ -1,0 +1,71 @@
+name: Blueprint Platform Matrix Validation
+
+on:
+  push:
+    branches:
+      - main
+      - 'blueprint/**'
+      - 'release/**'
+    paths:
+      - VERSION
+      - DEVELOPMENT_VERSION
+      - 'schemas/project.schema.json'
+      - 'schemas/status.schema.json'
+      - 'schemas/evidence.schema.json'
+      - 'schemas/api-impact.schema.json'
+      - 'schemas/interface-inventory.schema.json'
+      - 'schemas/functional-interface-slice.schema.json'
+      - 'templates/project.example.yaml'
+      - 'templates/status.example.yaml'
+      - 'templates/evidence.example.json'
+      - 'templates/api-impact.example.json'
+      - 'templates/interface-scope-baseline.example.json'
+      - 'templates/interface-inventory.example.json'
+      - 'templates/functional-interface-slice.example.json'
+      - 'scripts/validate-artifact-graph.py'
+      - 'scripts/validate-platform-matrix.py'
+      - 'tests/fixtures/platform-matrix/**'
+      - '.github/workflows/blueprint-platform-matrix-validation.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - VERSION
+      - DEVELOPMENT_VERSION
+      - 'schemas/project.schema.json'
+      - 'schemas/status.schema.json'
+      - 'schemas/evidence.schema.json'
+      - 'schemas/api-impact.schema.json'
+      - 'schemas/interface-inventory.schema.json'
+      - 'schemas/functional-interface-slice.schema.json'
+      - 'templates/project.example.yaml'
+      - 'templates/status.example.yaml'
+      - 'templates/evidence.example.json'
+      - 'templates/api-impact.example.json'
+      - 'templates/interface-scope-baseline.example.json'
+      - 'templates/interface-inventory.example.json'
+      - 'templates/functional-interface-slice.example.json'
+      - 'scripts/validate-artifact-graph.py'
+      - 'scripts/validate-platform-matrix.py'
+      - 'tests/fixtures/platform-matrix/**'
+      - '.github/workflows/blueprint-platform-matrix-validation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: [self-hosted, linux, x64, blueprint]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+
+      - name: Install validator dependencies
+        run: python -m pip install --disable-pip-version-check jsonschema==4.26.0 PyYAML==6.0.2
+
+      - name: Validate governed platform matrix
+        run: python scripts/validate-platform-matrix.py

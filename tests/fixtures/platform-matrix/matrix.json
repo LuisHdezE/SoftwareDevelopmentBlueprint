@@ -1,0 +1,131 @@
+{
+  "schema_version": "0.5.4-dev",
+  "description": "Governed platform and cross-artifact matrix for Blueprint 0.5.4-dev. Mobile Licensing exhaustive coverage remains reserved for Increment 6.",
+  "positive_cases": [
+    {
+      "id": "web-only",
+      "targets": ["web"],
+      "mobile_strategy": null,
+      "offline_mobile": false,
+      "graph_platforms": ["web"]
+    },
+    {
+      "id": "android-native",
+      "targets": ["android"],
+      "mobile_strategy": "native",
+      "offline_mobile": false,
+      "graph_platforms": ["android"]
+    },
+    {
+      "id": "ios-native",
+      "targets": ["ios"],
+      "mobile_strategy": "native",
+      "offline_mobile": false,
+      "graph_platforms": ["ios"]
+    },
+    {
+      "id": "android-ios-native",
+      "targets": ["android", "ios"],
+      "mobile_strategy": "native",
+      "offline_mobile": false,
+      "graph_platforms": ["android", "ios"]
+    },
+    {
+      "id": "web-android-ios-native",
+      "targets": ["web", "android", "ios"],
+      "mobile_strategy": "native",
+      "offline_mobile": false,
+      "graph_platforms": ["web", "android", "ios"]
+    },
+    {
+      "id": "legacy-compatible-android",
+      "targets": ["android"],
+      "mobile_strategy": "native",
+      "offline_mobile": false,
+      "graph_platforms": ["android"],
+      "legacy_omit_ios": true
+    },
+    {
+      "id": "cross-platform-android-only",
+      "targets": ["android"],
+      "mobile_strategy": "cross_platform",
+      "offline_mobile": false,
+      "graph_platforms": ["android"]
+    },
+    {
+      "id": "cross-platform-ios-only",
+      "targets": ["ios"],
+      "mobile_strategy": "cross_platform",
+      "offline_mobile": false,
+      "graph_platforms": ["ios"]
+    },
+    {
+      "id": "cross-platform-both",
+      "targets": ["android", "ios"],
+      "mobile_strategy": "cross_platform",
+      "offline_mobile": false,
+      "graph_platforms": ["android", "ios"]
+    },
+    {
+      "id": "api-backed-offline-android",
+      "targets": ["android"],
+      "mobile_strategy": "native",
+      "offline_mobile": true,
+      "graph_platforms": ["android"]
+    },
+    {
+      "id": "api-backed-offline-ios",
+      "targets": ["ios"],
+      "mobile_strategy": "native",
+      "offline_mobile": true,
+      "graph_platforms": ["ios"]
+    }
+  ],
+  "negative_cases": [
+    {
+      "id": "ios-disabled-artifacts",
+      "scenario": "ios_disabled_artifacts",
+      "expected_message": "disabled project capability ios"
+    },
+    {
+      "id": "ios-slice-with-android-baseline",
+      "scenario": "ios_slice_with_android_baseline",
+      "expected_message": "references missing inventory ID"
+    },
+    {
+      "id": "ios-slice-with-android-evidence",
+      "scenario": "ios_slice_with_android_evidence",
+      "expected_message": "requires ios evidence"
+    },
+    {
+      "id": "ios-accepted-without-ios-integration-qa",
+      "scenario": "ios_accepted_without_integration_qa",
+      "expected_message": "PASS"
+    },
+    {
+      "id": "invalid-mobile-strategy",
+      "scenario": "invalid_mobile_strategy",
+      "expected_message": "hybrid_magic"
+    },
+    {
+      "id": "invalid-ios-namespace",
+      "scenario": "invalid_ios_namespace",
+      "expected_message": "APP-001"
+    },
+    {
+      "id": "cross-platform-does-not-auto-enable-ios",
+      "scenario": "cross_platform_does_not_auto_enable_ios",
+      "expected_message": "disabled project capability ios"
+    },
+    {
+      "id": "shared-gate-evidence-across-platforms",
+      "scenario": "shared_gate_evidence_across_platforms",
+      "expected_message": "requires ios evidence"
+    },
+    {
+      "id": "offline-without-openapi",
+      "scenario": "offline_without_openapi",
+      "expected_message": "openapi"
+    }
+  ]
+}
