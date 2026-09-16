@@ -151,16 +151,21 @@ def validate_project_applicability() -> None:
 
 
 def validate_catalog_and_workflows() -> None:
+    active_version = active_project_version()
     checks_doc = load_yaml("catalog/checks.yaml")
-    if checks_doc.get("version") != STABLE_VERSION:
-        fail("checks catalog must retain stable 0.5.3 provenance during this increment")
-    check_ids = {item.get("id") for item in checks_doc.get("checks", [])}
-    missing = REQUIRED_CHECKS - check_ids
+    if checks_doc.get("version") != active_version:
+        fail(f"checks catalog must declare active component provenance {active_version}")
+    checks = {item.get("id"): item for item in checks_doc.get("checks", [])}
+    missing = REQUIRED_CHECKS - set(checks)
     if missing:
         fail(f"missing mobile licensing checks: {sorted(missing)}")
+    decision = checks.get("requirements.mobile_licensing_decision", {})
+    if decision.get("capability") != "android":
+        fail("mobile licensing applicability decision must remain Android-scoped")
+
     gates_doc = load_yaml("catalog/gates.yaml")
-    if gates_doc.get("version") != STABLE_VERSION:
-        fail("gates catalog must retain stable 0.5.3 provenance during this increment")
+    if gates_doc.get("version") != active_version:
+        fail(f"gates catalog must declare active component provenance {active_version}")
     gate = next((g for g in gates_doc.get("gates", []) if g.get("id") == "mobile_licensing_ready"), None)
     if not gate or gate.get("applicability_capability") != "mobile_licensing":
         fail("mobile_licensing_ready conditional gate missing")
@@ -171,27 +176,29 @@ def validate_catalog_and_workflows() -> None:
         fail("release_gate must depend conditionally on mobile_licensing_ready")
 
     skills = load_yaml("catalog/skills.yaml")
+    if skills.get("version") != active_version:
+        fail(f"skills catalog must declare active component provenance {active_version}")
     spec = skills.get("registry", {}).get("dev-mobile-licensing")
     if not spec or spec.get("status") != "materialized":
-        fail("dev-mobile-licensing must be materialized")
+        fail("dev-mobile-licensing must remain materialized")
     conditional = skills.get("categories", {}).get("mobile_licensing", {}).get("conditional_on", {})
     if conditional.get("mobile_licensing") is not True:
         fail("mobile licensing skill must load only when capability is true")
 
     for path in ("workflows/greenfield.yaml", "workflows/brownfield.yaml"):
         workflow = load_yaml(path)
-        if workflow.get("version") != STABLE_VERSION:
-            fail(f"{path} must retain stable 0.5.3 provenance during this increment")
+        if workflow.get("version") != active_version:
+            fail(f"{path} must declare active component provenance {active_version}")
         capability = workflow.get("conditional_capabilities", {}).get("mobile_licensing", {})
         if capability.get("applicability") != "CONDITIONAL":
             fail(f"{path} missing conditional mobile licensing branch")
-        if capability.get("decision_required_when", {}).get("android") is not True:
-            fail(f"{path} must require explicit licensing decision for Android")
+        if capability.get("decision_required_when") != {"android": True}:
+            fail(f"{path} mobile licensing decision boundary must remain exactly Android-only")
         if capability.get("enabled_when", {}).get("mobile_licensing") is not True:
             fail(f"{path} licensing enable condition drifted")
         if capability.get("exit_gate") != "mobile_licensing_ready":
             fail(f"{path} must exit licensing branch through mobile_licensing_ready")
-    print("PASS retained Android mobile licensing catalogs/workflow semantics")
+    print(f"PASS retained Android-only mobile licensing boundary under {active_version}")
 
 
 def main() -> int:

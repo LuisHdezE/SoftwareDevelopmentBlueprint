@@ -1,4 +1,4 @@
-version: 0.5.3
+version: 0.5.4-dev
 checks:
   - {id: discovery.product_vision, phase: discovery, type: REQUIRED, verification: manual}
   - {id: discovery.scope_mvp, phase: discovery, type: REQUIRED, verification: manual}
@@ -72,6 +72,7 @@ checks:
 
   - {id: ui.web_inventory, phase: interface_inventory, type: CONDITIONAL, capability: web, verification: evidence}
   - {id: ui.android_inventory, phase: interface_inventory, type: CONDITIONAL, capability: android, verification: evidence}
+  - {id: ui.ios_inventory, phase: interface_inventory, type: CONDITIONAL, capability: ios, verification: evidence}
   - {id: ui.inventory_scope_complete, phase: interface_inventory, type: REQUIRED, verification: evidence}
   - {id: ui.inventory_traceability, phase: interface_inventory, type: REQUIRED, verification: evidence}
   - {id: ui.inventory_requirement_links, phase: interface_inventory, type: REQUIRED, verification: evidence}

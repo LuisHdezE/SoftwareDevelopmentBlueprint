@@ -16,7 +16,7 @@ Make reusable process knowledge executable by an AI directly from the repository
 
 `planned` reserves an identifier but provides no runnable procedure.
 
-`materialized` means `catalog/skills.yaml` resolves the identifier to `skills/<skill-id>/SKILL.md`, its frontmatter matches the active Blueprint version and automated validation passes.
+`materialized` means `catalog/skills.yaml` resolves the identifier to `skills/<skill-id>/SKILL.md`, its frontmatter matches the active Blueprint component provenance and automated validation passes.
 
 ## Loading algorithm
 
@@ -54,7 +54,7 @@ Required sections:
 
 ## Blueprint 0.5.0 set
 
-There are **14 materialized skills**:
+There are **14 materialized skills** in the historical 0.5.0 component set:
 
 1. `dev-git-workflow`
 2. `dev-brownfield-analysis`
@@ -71,9 +71,31 @@ There are **14 materialized skills**:
 13. `dev-functional-interface-slice`
 14. `dev-event-logging-audit`
 
-The remaining 25 catalog identifiers stay `planned`.
+The stable 0.5.3 line additionally materialized `dev-mobile-licensing`, for 15 materialized skills, while preserving 25 planned identifiers.
 
-`dev-functional-interface-slice` operationalizes real client delivery from executable inventory + effective Client Architecture through Functional DoD, Visual & Functional Review, Integration QA and human acceptance. It also enforces `BLOCKED_BY_API` semantics.
+## Blueprint 0.5.4-dev hardening set
+
+The 0.5.4 development lane materializes **16 skills** and keeps the existing 25 planned identifiers. It adds:
+
+- `dev-ios-client-architecture` under a new `ios` category loaded only when `capabilities.ios=true`.
+
+The following client-execution skills carry 0.5.4-dev provenance because their contracts were changed by the iOS/cross-platform hardening:
+
+- `dev-android-client-architecture`
+- `dev-ios-client-architecture`
+- `dev-functional-interface-slice`
+
+Unchanged skills retain their truthful historical component provenance. `dev-mobile-licensing` remains a 0.5.3 component because iOS support does not generalize the Android-scoped licensing contract.
+
+`dev-functional-interface-slice` operationalizes real client delivery from executable inventory + effective Client Architecture through Functional DoD, Visual & Functional Review, Integration QA and human acceptance for Web, Android and iOS. It also enforces `BLOCKED_BY_API`, namespace isolation and platform-specific evidence/acceptance.
+
+## Technology neutrality
+
+Platform architecture skills describe required architectural decisions but do not mandate a language or framework. Native and cross-platform implementation choices belong to the consumer project contract.
+
+`mobile.strategy=cross_platform` means implementation/code sharing strategy only. It does not enable Android or iOS automatically, and it never lets one platform reuse another platform's gate PASS, QA evidence or human acceptance.
+
+The existing Android `APP-###` namespace remains Android-specific. iOS uses `IOS-###`; Web uses `WEB-###`.
 
 ## Product neutrality
 
@@ -81,8 +103,10 @@ Generic `dev-*` skills must not leak product names, private routes, domain entit
 
 ## Validation
 
-`scripts/validate-skills.py` verifies catalog identity, current mandatory set, file existence, frontmatter version/category/status, required sections, canonical references, category resolution and known product-specific leakage markers.
+`scripts/validate-skills.py` is mode-aware. It verifies catalog identity, active mandatory set, file existence, frontmatter version/category/status, required sections, canonical references, category resolution, skill counts and known product-specific leakage markers.
 
-CI: `.github/workflows/blueprint-skill-validation.yml`.
+During 0.5.4 hardening, `scripts/validate-ios-workflow.py` additionally verifies the iOS skill/category, Web/Android/iOS implementation profiles, conditional iOS inventory check, scoped gate reuse and Android-only Mobile Licensing boundary.
+
+CI: `.github/workflows/blueprint-skill-validation.yml` plus the global Blueprint Release Validation lane.
 
 A new Blueprint version may change skill identity only in its explicit release/adoption process; consumer project-specific skills remain versioned by the consumer.

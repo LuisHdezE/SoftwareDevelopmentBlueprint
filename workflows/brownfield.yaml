@@ -1,4 +1,4 @@
-version: 0.5.3
+version: 0.5.4-dev
 mode: brownfield
 entry_condition: existing_solution
 sequence:
@@ -66,6 +66,7 @@ functional_interface_slice_pipeline:
   client_implementation:
     web: web_implementation
     android: android_implementation
+    ios: ios_implementation
   lifecycle:
     - INVENTORIED
     - READY
@@ -153,6 +154,7 @@ conditional_capabilities:
     rules:
       - brownfield_existing_license_behavior_must_be_inventoried_before_replacement
       - android_project_must_explicitly_answer_mobile_licensing_true_or_false
+      - ios_alone_does_not_trigger_mobile_licensing
       - false_makes_licensing_artifacts_checks_and_gate_not_applicable
       - true_uses_default_strategy_unless_approved_adr_documents_equivalent_or_stronger_alternative
       - customer_app_must_never_contain_production_private_signing_key
@@ -173,6 +175,7 @@ rules:
   - inventory_existing_api_ui_tests_security_and_dependencies
   - produce_as_is_gap_analysis_and_to_be_before_alignment_work
   - android_projects_must_explicitly_decide_mobile_licensing
+  - ios_projects_do_not_inherit_android_mobile_licensing_applicability
   - requirements_ready_must_pass_before_interface_scope_baseline
   - interface_scope_baseline_must_preserve_observed_brownfield_interfaces
   - interface_scope_ready_must_pass_before_architecture_or_api_design

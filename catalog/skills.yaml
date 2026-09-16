@@ -1,4 +1,4 @@
-version: 0.5.3
+version: 0.5.4-dev
 
 skill_model:
   principles:
@@ -83,6 +83,13 @@ categories:
       - dev-mobile-security
       - dev-android-view-inventory
 
+  ios:
+    conditional_on:
+      ios: true
+    skills:
+      - dev-ios-client-architecture
+      - dev-functional-interface-slice
+
   mobile_licensing:
     conditional_on:
       mobile_licensing: true
@@ -145,6 +152,24 @@ mandatory_v0_5_materialized:
   - dev-functional-interface-slice
   - dev-event-logging-audit
 
+mandatory_v0_5_4_development_materialized:
+  - dev-git-workflow
+  - dev-brownfield-analysis
+  - dev-api-design
+  - dev-openapi
+  - dev-postman-qa
+  - dev-contract-testing
+  - dev-web-view-inventory
+  - dev-design-system
+  - dev-mockup-planning
+  - dev-accessibility
+  - dev-react-client-architecture
+  - dev-android-client-architecture
+  - dev-ios-client-architecture
+  - dev-functional-interface-slice
+  - dev-event-logging-audit
+  - dev-mobile-licensing
+
 registry:
   dev-git-workflow:
     status: materialized
@@ -194,6 +219,10 @@ registry:
     status: materialized
     category: android
     path: skills/dev-android-client-architecture/SKILL.md
+  dev-ios-client-architecture:
+    status: materialized
+    category: ios
+    path: skills/dev-ios-client-architecture/SKILL.md
   dev-functional-interface-slice:
     status: materialized
     category: core
