@@ -1,6 +1,6 @@
 {
   "schema_version": "0.5.4-dev",
-  "description": "Governed platform and cross-artifact matrix for Blueprint 0.5.4-dev. Mobile Licensing exhaustive coverage remains reserved for Increment 6.",
+  "description": "Governed platform and cross-artifact matrix for Blueprint 0.5.4-dev. Mobile Licensing exhaustive coverage is governed separately by tests/fixtures/mobile-licensing-boundary/matrix.json.",
   "positive_cases": [
     {
       "id": "web-only",

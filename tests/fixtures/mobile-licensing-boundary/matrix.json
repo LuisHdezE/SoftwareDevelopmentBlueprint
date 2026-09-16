@@ -1,0 +1,158 @@
+{
+  "schema_version": "0.5.4-dev",
+  "description": "Governed Mobile Licensing applicability regression matrix for Blueprint 0.5.4-dev. Android alone owns the decision boundary; iOS does not inherit it and cross_platform does not change applicability.",
+  "policy": {
+    "decision_required_when": {
+      "android": true
+    },
+    "ios_alone_requires_decision": false,
+    "cross_platform_changes_applicability": false,
+    "enabled_profile_required": true
+  },
+  "cases": [
+    {
+      "id": "web-only-no-decision",
+      "targets": ["web"],
+      "mobile_strategy": null,
+      "mobile_licensing": "omit",
+      "profile_path": false,
+      "expected": "valid"
+    },
+    {
+      "id": "ios-native-no-decision",
+      "targets": ["ios"],
+      "mobile_strategy": "native",
+      "mobile_licensing": "omit",
+      "profile_path": false,
+      "expected": "valid"
+    },
+    {
+      "id": "ios-cross-platform-no-decision",
+      "targets": ["ios"],
+      "mobile_strategy": "cross_platform",
+      "mobile_licensing": "omit",
+      "profile_path": false,
+      "expected": "valid"
+    },
+    {
+      "id": "web-ios-cross-platform-no-decision",
+      "targets": ["web", "ios"],
+      "mobile_strategy": "cross_platform",
+      "mobile_licensing": "omit",
+      "profile_path": false,
+      "expected": "valid"
+    },
+    {
+      "id": "android-native-disabled",
+      "targets": ["android"],
+      "mobile_strategy": "native",
+      "mobile_licensing": false,
+      "profile_path": false,
+      "expected": "valid"
+    },
+    {
+      "id": "android-native-enabled",
+      "targets": ["android"],
+      "mobile_strategy": "native",
+      "mobile_licensing": true,
+      "profile_path": true,
+      "expected": "valid"
+    },
+    {
+      "id": "android-cross-platform-disabled",
+      "targets": ["android"],
+      "mobile_strategy": "cross_platform",
+      "mobile_licensing": false,
+      "profile_path": false,
+      "expected": "valid"
+    },
+    {
+      "id": "android-ios-native-disabled",
+      "targets": ["android", "ios"],
+      "mobile_strategy": "native",
+      "mobile_licensing": false,
+      "profile_path": false,
+      "expected": "valid"
+    },
+    {
+      "id": "android-ios-cross-platform-disabled",
+      "targets": ["android", "ios"],
+      "mobile_strategy": "cross_platform",
+      "mobile_licensing": false,
+      "profile_path": false,
+      "expected": "valid"
+    },
+    {
+      "id": "android-ios-cross-platform-enabled",
+      "targets": ["android", "ios"],
+      "mobile_strategy": "cross_platform",
+      "mobile_licensing": true,
+      "profile_path": true,
+      "expected": "valid"
+    },
+    {
+      "id": "legacy-android-disabled",
+      "targets": ["android"],
+      "mobile_strategy": "native",
+      "mobile_licensing": false,
+      "profile_path": false,
+      "expected": "valid",
+      "legacy_omit_ios": true
+    },
+    {
+      "id": "android-native-missing-decision",
+      "targets": ["android"],
+      "mobile_strategy": "native",
+      "mobile_licensing": "omit",
+      "profile_path": false,
+      "expected": "invalid",
+      "expected_error": "mobile_licensing"
+    },
+    {
+      "id": "android-cross-platform-missing-decision",
+      "targets": ["android"],
+      "mobile_strategy": "cross_platform",
+      "mobile_licensing": "omit",
+      "profile_path": false,
+      "expected": "invalid",
+      "expected_error": "mobile_licensing"
+    },
+    {
+      "id": "android-ios-native-missing-decision",
+      "targets": ["android", "ios"],
+      "mobile_strategy": "native",
+      "mobile_licensing": "omit",
+      "profile_path": false,
+      "expected": "invalid",
+      "expected_error": "mobile_licensing"
+    },
+    {
+      "id": "android-ios-cross-platform-missing-decision",
+      "targets": ["android", "ios"],
+      "mobile_strategy": "cross_platform",
+      "mobile_licensing": "omit",
+      "profile_path": false,
+      "expected": "invalid",
+      "expected_error": "mobile_licensing"
+    },
+    {
+      "id": "legacy-android-missing-decision",
+      "targets": ["android"],
+      "mobile_strategy": "native",
+      "mobile_licensing": "omit",
+      "profile_path": false,
+      "expected": "invalid",
+      "expected_error": "mobile_licensing",
+      "legacy_omit_ios": true
+    },
+    {
+      "id": "android-enabled-without-profile",
+      "targets": ["android"],
+      "mobile_strategy": "native",
+      "mobile_licensing": true,
+      "profile_path": false,
+      "expected": "invalid",
+      "expected_error": "mobile_licensing"
+    }
+  ]
+}
