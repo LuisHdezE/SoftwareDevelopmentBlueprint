@@ -10,6 +10,7 @@ on:
       - 'v*'
     paths:
       - VERSION
+      - DEVELOPMENT_VERSION
       - README.md
       - BLUEPRINT.md
       - catalog/**
@@ -37,6 +38,7 @@ on:
       - documentation/BLUEPRINT_V0_5_3_MOBILE_LICENSING.md
       - documentation/BLUEPRINT_V0_5_3_RELEASE.json
       - documentation/BLUEPRINT_V0_5_3_RELEASE_NOTES.md
+      - documentation/BLUEPRINT_V0_5_4_DEVELOPMENT.json
       - documentation/SELF_HOSTED_RUNNER_BOOTSTRAP.md
       - documentation/EXPERIENCE_ARTIFACT_MODEL.md
       - documentation/CLIENT_ARCHITECTURE_CONTRACT.md
@@ -48,6 +50,7 @@ on:
     branches: [main]
     paths:
       - VERSION
+      - DEVELOPMENT_VERSION
       - README.md
       - BLUEPRINT.md
       - catalog/**
@@ -75,6 +78,7 @@ on:
       - documentation/BLUEPRINT_V0_5_3_MOBILE_LICENSING.md
       - documentation/BLUEPRINT_V0_5_3_RELEASE.json
       - documentation/BLUEPRINT_V0_5_3_RELEASE_NOTES.md
+      - documentation/BLUEPRINT_V0_5_4_DEVELOPMENT.json
       - documentation/SELF_HOSTED_RUNNER_BOOTSTRAP.md
       - documentation/EXPERIENCE_ARTIFACT_MODEL.md
       - documentation/CLIENT_ARCHITECTURE_CONTRACT.md
@@ -98,5 +102,18 @@ jobs:
           python-version: '3.14'
       - name: Install validator dependencies
         run: python -m pip install --disable-pip-version-check jsonschema==4.26.0 PyYAML==6.0.2
-      - name: Validate Blueprint release state
+      - name: Detect Blueprint validation mode
+        id: validation-mode
+        shell: bash
+        run: |
+          if [[ -f DEVELOPMENT_VERSION ]]; then
+            echo "mode=development" >> "$GITHUB_OUTPUT"
+          else
+            echo "mode=stable" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Validate Blueprint stable release state
+        if: steps.validation-mode.outputs.mode == 'stable'
         run: python scripts/validate-release.py
+      - name: Validate Blueprint development hardening state
+        if: steps.validation-mode.outputs.mode == 'development'
+        run: python scripts/validate-development.py
