@@ -11,6 +11,7 @@ import yaml
 from jsonschema import Draft202012Validator, FormatChecker
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+PLATFORM_PREFIX = {"web": "WEB-", "android": "APP-", "ios": "IOS-"}
 
 
 def load(path: str) -> Any:
@@ -29,7 +30,10 @@ def validate(schema_path: str, instance_path: str) -> None:
     validator = Draft202012Validator(schema, format_checker=FormatChecker())
     errors = sorted(validator.iter_errors(instance), key=lambda e: list(e.path))
     if errors:
-        details = "\n".join(f"- {instance_path}:{'/'.join(map(str, e.path)) or '<root>'}: {e.message}" for e in errors)
+        details = "\n".join(
+            f"- {instance_path}:{'/'.join(map(str, e.path)) or '<root>'}: {e.message}"
+            for e in errors
+        )
         raise AssertionError(f"Schema validation failed:\n{details}")
 
 
@@ -60,7 +64,9 @@ def validate_catalog_references() -> None:
                     raise AssertionError(f"Gate {gate['id']} references unknown check {check_id}")
         for prerequisite_gate in gate.get("prerequisite_gates_if_applicable", []):
             if prerequisite_gate not in gate_ids:
-                raise AssertionError(f"Gate {gate['id']} references unknown prerequisite gate {prerequisite_gate}")
+                raise AssertionError(
+                    f"Gate {gate['id']} references unknown prerequisite gate {prerequisite_gate}"
+                )
     for workflow_path in ("workflows/greenfield.yaml", "workflows/brownfield.yaml"):
         workflow = load(workflow_path)
         for phase in workflow["sequence"]:
@@ -72,6 +78,8 @@ def validate_catalog_references() -> None:
 
 
 def validate_mockup_pair(inventory_path: str, batch_path: str) -> None:
+    project = load("templates/project.example.yaml")
+    capabilities = project.get("capabilities", {})
     inventory = load(inventory_path)
     batch = load(batch_path)
     inventory_ids = {item["id"] for item in inventory["items"]}
@@ -84,9 +92,21 @@ def validate_mockup_pair(inventory_path: str, batch_path: str) -> None:
     assert_unique([v["inventory_id"] for v in views], "batch inventory IDs")
     by_id = {item["id"]: item for item in inventory["items"]}
     for view in views:
+        platform = view["platform"]
+        expected_prefix = PLATFORM_PREFIX[platform]
+        if capabilities.get(platform) is not True:
+            raise AssertionError(
+                f"{view['mockup_id']} materializes disabled project capability {platform}"
+            )
+        if not view["inventory_id"].startswith(expected_prefix):
+            raise AssertionError(
+                f"{view['mockup_id']} crosses {platform} namespace with {view['inventory_id']}"
+            )
         if view["inventory_id"] not in inventory_ids:
-            raise AssertionError(f"{view['mockup_id']} references missing inventory ID {view['inventory_id']}")
-        if by_id[view["inventory_id"]]["platform"] != view["platform"]:
+            raise AssertionError(
+                f"{view['mockup_id']} references missing inventory ID {view['inventory_id']}"
+            )
+        if by_id[view["inventory_id"]]["platform"] != platform:
             raise AssertionError(f"{view['mockup_id']} platform differs from inventory platform")
         asset = view.get("visual_asset_path")
         generated = view["generation_status"] == "GENERATED"
@@ -98,12 +118,18 @@ def validate_mockup_pair(inventory_path: str, batch_path: str) -> None:
             if not generated:
                 raise AssertionError(f"{view['mockup_id']} APPROVED without GENERATED status")
             if view["contract_review_status"] not in {"PASS", "N/A"}:
-                raise AssertionError(f"{view['mockup_id']} APPROVED without contract review PASS/N/A")
+                raise AssertionError(
+                    f"{view['mockup_id']} APPROVED without contract review PASS/N/A"
+                )
             if view["accessibility_review_status"] != "PASS":
-                raise AssertionError(f"{view['mockup_id']} APPROVED without accessibility PASS")
+                raise AssertionError(
+                    f"{view['mockup_id']} APPROVED without accessibility PASS"
+                )
         for reference in view.get("reference_inputs", []):
             if not (ROOT / reference).is_file():
-                raise AssertionError(f"{view['mockup_id']} reference input does not exist: {reference}")
+                raise AssertionError(
+                    f"{view['mockup_id']} reference input does not exist: {reference}"
+                )
 
 
 def validate_scoped_gate_examples() -> None:
@@ -115,13 +141,21 @@ def validate_scoped_gate_examples() -> None:
                 raise AssertionError("mockup_review_pass must use interface_slice scope")
             continue
         if gate["scope"] != "interface_slice_platform" or "platform" not in gate:
-            raise AssertionError(f"{gate['gate']} must use interface_slice_platform with platform")
+            raise AssertionError(
+                f"{gate['gate']} must use interface_slice_platform with platform"
+            )
         if (gate["scope_id"], gate["platform"]) not in slice_keys:
             raise AssertionError(f"{gate['gate']} references unknown slice/platform")
 
 
 def run_artifact_graph_validator() -> None:
-    result = subprocess.run([sys.executable, "scripts/validate-artifact-graph.py"], cwd=ROOT, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    result = subprocess.run(
+        [sys.executable, "scripts/validate-artifact-graph.py"],
+        cwd=ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    )
     print(result.stdout, end="")
     if result.returncode != 0:
         raise AssertionError(f"artifact graph validator failed with exit {result.returncode}")
@@ -149,9 +183,14 @@ def main() -> int:
         print(f"PASS schema: {instance} -> {schema}")
     validate_catalog_references()
     print("PASS catalog/workflow references")
-    validate_mockup_pair("templates/interface-inventory.example.json", "templates/mockup-batch.example.json")
-    validate_mockup_pair("tests/fixtures/experience/interface-inventory.json", "tests/fixtures/experience/mockup-batch.json")
-    print("PASS conditional mockup fixtures")
+    validate_mockup_pair(
+        "templates/interface-inventory.example.json", "templates/mockup-batch.example.json"
+    )
+    validate_mockup_pair(
+        "tests/fixtures/experience/interface-inventory.json",
+        "tests/fixtures/experience/mockup-batch.json",
+    )
+    print("PASS conditional mockup fixtures with platform namespace/capability integrity")
     validate_scoped_gate_examples()
     print("PASS v0.5 scoped gate semantics")
     run_artifact_graph_validator()
