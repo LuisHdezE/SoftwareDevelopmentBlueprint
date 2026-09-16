@@ -16,7 +16,9 @@ on:
       - 'workflows/greenfield.yaml'
       - 'workflows/brownfield.yaml'
       - 'skills/dev-mobile-licensing/**'
+      - 'tests/fixtures/mobile-licensing-boundary/**'
       - 'scripts/validate-mobile-licensing.py'
+      - 'scripts/validate-mobile-licensing-boundary.py'
       - '.github/workflows/blueprint-mobile-licensing-validation.yml'
   pull_request:
     branches: [main]
@@ -31,7 +33,9 @@ on:
       - 'workflows/greenfield.yaml'
       - 'workflows/brownfield.yaml'
       - 'skills/dev-mobile-licensing/**'
+      - 'tests/fixtures/mobile-licensing-boundary/**'
       - 'scripts/validate-mobile-licensing.py'
+      - 'scripts/validate-mobile-licensing-boundary.py'
       - '.github/workflows/blueprint-mobile-licensing-validation.yml'
 
 permissions:
@@ -51,3 +55,5 @@ jobs:
         run: python -m pip install --disable-pip-version-check jsonschema==4.26.0 PyYAML==6.0.2
       - name: Validate mobile licensing contract
         run: python scripts/validate-mobile-licensing.py
+      - name: Validate mobile licensing regression boundary
+        run: python scripts/validate-mobile-licensing-boundary.py

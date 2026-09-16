@@ -20,6 +20,7 @@ BASELINE_TAG = "v0.5.3"
 DEVELOPMENT_VALIDATORS = [
     "scripts/validate-platform-capabilities.py",
     "scripts/validate-ios-workflow.py",
+    "scripts/validate-mobile-licensing-boundary.py",
 ]
 
 EXPECTED_FROZEN_DECISIONS = {
