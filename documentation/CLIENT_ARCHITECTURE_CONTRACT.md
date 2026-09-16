@@ -1,4 +1,4 @@
-# Client Architecture Contract - Blueprint 0.5.0
+# Client Architecture Contract - Blueprint 0.5.4-dev
 
 ## Purpose
 
@@ -6,11 +6,13 @@ Client Architecture is the mandatory pre-implementation contract for each Functi
 
 ## Composition
 
-The canonical contract is:
+The canonical contract remains:
 
 **Platform Client Architecture Baseline + Slice Architecture Binding = Effective Client Architecture Contract**
 
 The scoped gate remains `client_architecture_ready` for the exact `interface_slice + platform`.
+
+Supported client platforms in the v0.5.4 hardening lane are `web`, `android`, and `ios`. A PASS for one platform never authorizes another platform, even when implementation code is shared through a cross-platform strategy.
 
 ## Platform Client Architecture Baseline
 
@@ -26,18 +28,32 @@ The scoped gate remains `client_architecture_ready` for the exact `interface_sli
 - request correlation/observability;
 - accessibility;
 - unit/UI/integration/E2E strategy;
-- offline policy;
+- API-backed offline policy;
 - implementation guardrails;
-- React or Kotlin/Android platform specifics;
+- platform-specific implementation data for Web, Android, or iOS;
 - Brownfield coexistence, cutover and rollback when applicable.
 
-A baseline is reusable only while those decisions still apply.
+Framework, language and UI toolkit technology choices are consumer data. The Blueprint defines required architectural decisions and safety boundaries but does not mandate React, Kotlin, Swift, Flutter, React Native, Kotlin Multiplatform or any other implementation technology universally.
+
+Legacy `0.5.0` client architecture documents remain schema-compatible while new iOS examples use `0.5.4-dev` provenance.
+
+## Platform namespaces
+
+Client architecture namespaces are platform-specific and must not be reinterpreted:
+
+- `WEB-###` -> Web executable inventory;
+- `APP-###` -> Android executable inventory, preserved as the existing legacy Android namespace;
+- `IOS-###` -> iOS executable inventory.
+
+The corresponding architecture identifiers are `CLIENT-WEB-*`, `CLIENT-ANDROID-*`, and `CLIENT-IOS-*`. Platform baseline identifiers follow `CLIENT-BASELINE-WEB-*`, `CLIENT-BASELINE-ANDROID-*`, and `CLIENT-BASELINE-IOS-*`.
+
+A document whose declared platform and identifier namespace disagree is invalid.
 
 ## Slice Architecture Binding/Override
 
 `schemas/client-architecture.schema.json` binds the exact slice to:
 
-- `WEB-###` or `APP-###` executable inventory IDs;
+- platform-compatible `WEB-###`, `APP-###`, or `IOS-###` executable inventory IDs;
 - the compatible platform baseline;
 - OpenAPI path and API revision;
 - canonical `operationId` values;
@@ -67,14 +83,16 @@ The binding consumes `EXECUTABLE_INVENTORY`, not the early scope baseline.
 
 For the exact slice/platform:
 
-- every inventory ID must exist and belong to that slice;
-- namespaces cannot cross Web/Android;
+- every inventory ID must exist and belong to that slice once that platform inventory is materialized;
+- namespaces cannot cross Web, Android, or iOS;
 - declared permissions must match executable inventory;
 - declared routes must cover the inventory routes;
 - every bound `operationId` must exist in current OpenAPI;
 - slice `operationId` set must agree with the selected inventory;
 - idempotency operations must be a subset of bound operations;
 - API revision is explicit for impact/revalidation.
+
+The v0.5.4 iOS architecture increment introduces the iOS namespace and architecture contracts only. iOS executable inventory materialization remains a separate governed increment.
 
 ## Security and business guardrails
 
@@ -96,14 +114,15 @@ A Brownfield platform baseline requires coexistence metadata. Existing working U
 
 `scripts/validate-client-architecture.py` validates:
 
-- both platform schemas/examples;
-- Web and Android slice bindings;
+- Web, Android and iOS platform schemas/examples;
+- Web, Android and iOS slice bindings;
 - semantic compatibility between baseline and binding;
-- executable inventory and OpenAPI references;
-- Functional Interface Slice -> Client Architecture binding;
+- platform-specific identifier and inventory namespaces;
+- technology-neutral platform declarations;
+- executable Web inventory and OpenAPI references;
+- Functional Interface Slice -> Web Client Architecture binding already materialized in the repository;
 - conditional visual references;
-- negative cases for fake inventory IDs, operationIds, permissions and references;
-- namespace and baseline mismatches;
+- negative cases for foreign namespaces, incompatible platform baselines, fake inventory IDs, operationIds, permissions and references;
 - idempotency subset rules;
 - `client_architecture_ready` catalog semantics.
 
