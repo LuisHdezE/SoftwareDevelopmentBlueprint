@@ -10,8 +10,10 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 CHECK_ID = "api.architecture_implementation_conformance"
 ROOT_VERSION = "0.5.3"
-CATALOG_VERSION = "0.5.3"
-EXPECTED_COUNTS = (145, 19)
+STABLE_CATALOG_VERSION = "0.5.3"
+DEVELOPMENT_CATALOG_VERSION = "0.5.4-dev"
+STABLE_COUNTS = {"phases": 28, "checks": 145, "gates": 19}
+DEVELOPMENT_COUNTS = {"phases": 29, "checks": 146, "gates": 19}
 HISTORICAL_ORIGIN = "0.5.1"
 
 
@@ -36,6 +38,16 @@ def by_id(values: list[dict]) -> dict[str, dict]:
             fail(f"duplicate catalog id: {item_id}")
         result[item_id] = value
     return result
+
+
+def active_catalog_contract() -> tuple[str, dict[str, int]]:
+    marker = ROOT / "DEVELOPMENT_VERSION"
+    if not marker.exists():
+        return STABLE_CATALOG_VERSION, STABLE_COUNTS
+    value = marker.read_text(encoding="utf-8").strip()
+    if value != DEVELOPMENT_CATALOG_VERSION:
+        fail(f"unexpected DEVELOPMENT_VERSION for architecture conformance validation: {value}")
+    return DEVELOPMENT_CATALOG_VERSION, DEVELOPMENT_COUNTS
 
 
 def assert_contract(checks_doc: dict, gates_doc: dict) -> None:
@@ -66,18 +78,36 @@ def validate_identity() -> None:
     root = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
     if root != ROOT_VERSION:
         fail(f"architecture conformance validator requires root {ROOT_VERSION}, got {root}")
+
+    active_version, expected_counts = active_catalog_contract()
     checks_doc = load_yaml("catalog/checks.yaml")
     gates_doc = load_yaml("catalog/gates.yaml")
-    if checks_doc.get("version") != CATALOG_VERSION or gates_doc.get("version") != CATALOG_VERSION:
-        fail("stable 0.5.3 checks/gates component identity mismatch")
-    if len(load_yaml("catalog/phases.yaml").get("phases", [])) != 28:
-        fail("stable 0.5.3 must retain 28 phases")
-    if len(checks_doc.get("checks", [])) != EXPECTED_COUNTS[0] or len(gates_doc.get("gates", [])) != EXPECTED_COUNTS[1]:
-        fail("stable 0.5.3 architecture conformance counts drifted")
+    phases_doc = load_yaml("catalog/phases.yaml")
+    for path, document in (
+        ("catalog/checks.yaml", checks_doc),
+        ("catalog/gates.yaml", gates_doc),
+        ("catalog/phases.yaml", phases_doc),
+    ):
+        if document.get("version") != active_version:
+            fail(f"{path} must declare active architecture-conformance component provenance {active_version}")
+
+    actual_counts = {
+        "phases": len(phases_doc.get("phases", [])),
+        "checks": len(checks_doc.get("checks", [])),
+        "gates": len(gates_doc.get("gates", [])),
+    }
+    if actual_counts != expected_counts:
+        fail(
+            f"architecture conformance counts drifted for {active_version}: "
+            f"expected {expected_counts}, got {actual_counts}"
+        )
+
     assert_contract(checks_doc, gates_doc)
+
     manifest = json.loads((ROOT / "documentation/BLUEPRINT_V0_5_1_RELEASE.json").read_text(encoding="utf-8"))
     if manifest.get("version") != HISTORICAL_ORIGIN or manifest.get("status") != "stable" or manifest.get("counts", {}).get("checks") != 135:
         fail("historical 0.5.1 architecture-conformance provenance drifted")
+    print(f"PASS architecture implementation conformance preserved under {active_version}")
 
 
 def validate_negative_guards() -> None:
@@ -114,7 +144,7 @@ def main() -> int:
     validate_identity()
     validate_negative_guards()
     validate_hardening_note()
-    print("PASS Blueprint 0.5.3 retains architecture implementation conformance")
+    print("PASS Blueprint architecture implementation conformance retention")
     return 0
 
 

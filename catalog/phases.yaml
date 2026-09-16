@@ -1,4 +1,4 @@
-version: 0.5.0
+version: 0.5.4-dev
 phases:
   - id: discovery
     name: Discovery
@@ -137,11 +137,11 @@ phases:
     exit_gate: functional_slice_ready
     rule: >-
       Canonical client execution unit. Implementation is performed through the
-      applicable web or Android profile and can become FUNCTIONAL only after the
-      functional Definition of Done is evidenced.
+      applicable platform profile and can become FUNCTIONAL only after the functional
+      Definition of Done is evidenced for the exact slice + platform.
 
   - id: web_implementation
-    name: React Web Implementation Profile
+    name: Web Implementation Profile
     applies_to: [greenfield, brownfield]
     order: 171
     execution_scope: interface_slice_platform
@@ -150,12 +150,21 @@ phases:
     requires_gates: [client_architecture_ready]
 
   - id: android_implementation
-    name: Kotlin Android Implementation Profile
+    name: Android Implementation Profile
     applies_to: [greenfield, brownfield]
     order: 172
     execution_scope: interface_slice_platform
     parent_phase: functional_interface_slice
     conditional_capability: android
+    requires_gates: [client_architecture_ready]
+
+  - id: ios_implementation
+    name: iOS Implementation Profile
+    applies_to: [greenfield, brownfield]
+    order: 173
+    execution_scope: interface_slice_platform
+    parent_phase: functional_interface_slice
+    conditional_capability: ios
     requires_gates: [client_architecture_ready]
 
   - id: visual_functional_review

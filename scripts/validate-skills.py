@@ -11,8 +11,14 @@ ROOT = Path(__file__).resolve().parents[1]
 CATALOG_PATH = ROOT / "catalog" / "skills.yaml"
 ROOT_VERSION = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
 STABLE_V53 = "0.5.3"
+DEVELOPMENT_V54 = "0.5.4-dev"
 LEGACY_SKILL_COMPONENT = "0.5.0"
 MOBILE_LICENSING_SKILL = "dev-mobile-licensing"
+DEVELOPMENT_SKILLS = {
+    "dev-android-client-architecture",
+    "dev-ios-client-architecture",
+    "dev-functional-interface-slice",
+}
 
 REQUIRED_FRONTMATTER = {
     "id", "title", "version", "status", "category",
@@ -27,6 +33,16 @@ PRODUCT_MARKERS = ["CareShift", "VolquetasManager", "Volquetas Manager", "vm-", 
 
 def fail(message: str) -> None:
     raise AssertionError(message)
+
+
+def active_catalog_version() -> str:
+    marker = ROOT / "DEVELOPMENT_VERSION"
+    if not marker.exists():
+        return STABLE_V53
+    value = marker.read_text(encoding="utf-8").strip()
+    if value != DEVELOPMENT_V54:
+        fail(f"unexpected DEVELOPMENT_VERSION for skill validation: {value}")
+    return DEVELOPMENT_V54
 
 
 def parse_frontmatter(path: Path) -> tuple[dict, str]:
@@ -74,11 +90,15 @@ def category_references(categories: dict) -> set[str]:
     return refs
 
 
-def expected_skill_version(skill_id: str) -> str:
-    return STABLE_V53 if skill_id == MOBILE_LICENSING_SKILL else LEGACY_SKILL_COMPONENT
+def expected_skill_version(skill_id: str, active_version: str) -> str:
+    if active_version == DEVELOPMENT_V54 and skill_id in DEVELOPMENT_SKILLS:
+        return DEVELOPMENT_V54
+    if skill_id == MOBILE_LICENSING_SKILL:
+        return STABLE_V53
+    return LEGACY_SKILL_COMPONENT
 
 
-def validate_skill(skill_id: str, spec: dict) -> None:
+def validate_skill(skill_id: str, spec: dict, active_version: str) -> None:
     if spec.get("status") != "materialized":
         fail(f"{skill_id}: registry status must be materialized")
     path_value = spec.get("path")
@@ -97,7 +117,7 @@ def validate_skill(skill_id: str, spec: dict) -> None:
         fail(f"{skill_id}: frontmatter identity/status mismatch")
     if frontmatter["category"] != spec.get("category"):
         fail(f"{skill_id}: category mismatch")
-    expected_version = expected_skill_version(skill_id)
+    expected_version = expected_skill_version(skill_id, active_version)
     if frontmatter["version"] != expected_version:
         fail(f"{skill_id}: expected version {expected_version}, got {frontmatter['version']}")
     if not isinstance(frontmatter["applies_to"], list) or not frontmatter["applies_to"]:
@@ -120,15 +140,29 @@ def validate_skill(skill_id: str, spec: dict) -> None:
             fail(f"{skill_id}: product-specific marker leaked: {marker}")
     if len(body.strip()) < 900:
         fail(f"{skill_id}: procedure is suspiciously small")
-    print(f"PASS skill: {skill_id} -> {expected_path}")
+    print(f"PASS skill: {skill_id} -> {expected_path} ({expected_version})")
+
+
+def validate_development_ios_category(catalog: dict, materialized: set[str]) -> None:
+    ios = catalog.get("categories", {}).get("ios")
+    if not isinstance(ios, dict):
+        fail("0.5.4-dev skill catalog must define ios category")
+    if ios.get("conditional_on") != {"ios": True}:
+        fail("iOS skill category must load only when capabilities.ios=true")
+    required = {"dev-ios-client-architecture", "dev-functional-interface-slice"}
+    if not required.issubset(set(ios.get("skills", []))):
+        fail("iOS skill category missing required client architecture/functional slice skills")
+    if "dev-ios-client-architecture" not in materialized:
+        fail("0.5.4-dev must materialize dev-ios-client-architecture")
 
 
 def main() -> int:
     if ROOT_VERSION != STABLE_V53:
-        fail(f"stable skill validator requires VERSION={STABLE_V53}, got {ROOT_VERSION}")
+        fail(f"skill validator requires stable root VERSION={STABLE_V53}, got {ROOT_VERSION}")
+    active_version = active_catalog_version()
     catalog = yaml.safe_load(CATALOG_PATH.read_text(encoding="utf-8")) or {}
-    if catalog.get("version") != STABLE_V53:
-        fail("catalog/skills.yaml must declare stable 0.5.3")
+    if catalog.get("version") != active_version:
+        fail(f"catalog/skills.yaml must declare active component version {active_version}")
     contract = catalog.get("skill_model", {}).get("contract", {})
     if set(contract.get("required_frontmatter", [])) != REQUIRED_FRONTMATTER:
         fail("catalog skill frontmatter contract drifted")
@@ -142,14 +176,16 @@ def main() -> int:
     materialized = set(registry)
     if materialized & planned:
         fail(f"skills cannot be both materialized and planned: {sorted(materialized & planned)}")
-    mandatory = catalog.get("mandatory_v0_5_materialized", [])
+
+    mandatory_key = "mandatory_v0_5_4_development_materialized" if active_version == DEVELOPMENT_V54 else "mandatory_v0_5_materialized"
+    mandatory = catalog.get(mandatory_key, [])
     if not isinstance(mandatory, list) or not mandatory:
-        fail("mandatory_v0_5_materialized must be non-empty")
+        fail(f"{mandatory_key} must be non-empty")
     missing = set(mandatory) - materialized
     if missing:
         fail(f"mandatory skills missing: {sorted(missing)}")
     if MOBILE_LICENSING_SKILL not in materialized:
-        fail("stable 0.5.3 must materialize dev-mobile-licensing")
+        fail("mobile licensing skill must remain materialized")
 
     category_ids = category_references(catalog.get("categories", {}))
     unknown = category_ids - materialized - planned
@@ -159,12 +195,24 @@ def main() -> int:
     if unreferenced:
         fail(f"materialized skills unreferenced by categories: {sorted(unreferenced)}")
 
-    for skill_id, spec in registry.items():
-        validate_skill(skill_id, spec)
+    if active_version == DEVELOPMENT_V54:
+        validate_development_ios_category(catalog, materialized)
+        if set(mandatory) != materialized:
+            fail("0.5.4-dev mandatory skill set must cover every materialized skill")
 
-    if len(materialized) != 15 or len(planned) != 25:
-        fail(f"stable 0.5.3 skill counts drifted: materialized={len(materialized)}, planned={len(planned)}")
-    print("Blueprint skill validation: PASS (stable 0.5.3; 15 materialized, 25 planned)")
+    for skill_id, spec in registry.items():
+        validate_skill(skill_id, spec, active_version)
+
+    expected_counts = (16, 25) if active_version == DEVELOPMENT_V54 else (15, 25)
+    if (len(materialized), len(planned)) != expected_counts:
+        fail(
+            f"skill counts drifted for {active_version}: "
+            f"materialized={len(materialized)}, planned={len(planned)}, expected={expected_counts}"
+        )
+    print(
+        "Blueprint skill validation: PASS "
+        f"(active={active_version}; materialized={len(materialized)}; planned={len(planned)})"
+    )
     return 0
 
 

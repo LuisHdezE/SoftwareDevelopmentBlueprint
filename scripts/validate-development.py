@@ -19,6 +19,7 @@ BASELINE_COMMIT = "b1df5ca09ad38e39a1b51006aa441786afdb946c"
 BASELINE_TAG = "v0.5.3"
 DEVELOPMENT_VALIDATORS = [
     "scripts/validate-platform-capabilities.py",
+    "scripts/validate-ios-workflow.py",
 ]
 
 EXPECTED_FROZEN_DECISIONS = {
