@@ -13,6 +13,6 @@
   "routing": {"routes": ["login", "home", "task-detail"], "permission_aware_navigation": true},
   "async_states": {"loading": "REQUIRED", "empty": "REQUIRED", "error": "REQUIRED", "401": "REQUIRED", "403": "REQUIRED", "404": "REQUIRED", "409": "REQUIRED", "422": "REQUIRED", "429": "REQUIRED", "offline": "REQUIRED"},
   "idempotency": {"required_operations": [], "key_generation": "Generate a UUID only for operations marked idempotent by the API contract.", "replay_handling": "Use the canonical replay response and avoid duplicate local side effects.", "conflict_handling": "Block changed-payload reuse of the same idempotency key."},
-  "slice_overrides": {"cache_invalidation": ["Refresh affected aggregate after successful mutation."], "offline_override": "inherit", "testing_notes": ["Exercise navigation, auth and offline transitions on simulator/device."]},
+  "slice_overrides": {"cache_invalidation": ["Refresh affected aggregate after successful mutation."], "offline_override": "inherit", "testing_notes": ["Exercise navigation, auth and offline transitions on simulator/device and keep acceptance scoped to iOS."]},
   "implementation_guardrails": {"api_authoritative": true, "no_new_api_behavior": true, "approved_inventory_only": true, "no_hardcoded_authoritative_business_data": true}
 }
