@@ -21,6 +21,7 @@ DEVELOPMENT_VALIDATORS = [
     "scripts/validate-platform-capabilities.py",
     "scripts/validate-ios-workflow.py",
     "scripts/validate-mobile-licensing-boundary.py",
+    "scripts/validate-release-closure.py",
 ]
 
 EXPECTED_FROZEN_DECISIONS = {

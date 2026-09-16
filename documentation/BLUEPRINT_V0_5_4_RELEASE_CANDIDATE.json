@@ -1,0 +1,119 @@
+{
+  "schema_version": "1.0.0",
+  "target_version": "0.5.4",
+  "development_version": "0.5.4-dev",
+  "stable_version": "0.5.3",
+  "status": "release_candidate",
+  "candidate_date": "2026-09-16",
+  "baseline": {
+    "branch": "main",
+    "commit": "b1df5ca09ad38e39a1b51006aa441786afdb946c",
+    "tag": "v0.5.3"
+  },
+  "hardening_complete_through_main": "965e2c060e2193d50d0937fd425802fb1b193c60",
+  "counts": {
+    "phases": 29,
+    "checks": 146,
+    "gates": 19,
+    "materialized_skills": 16,
+    "planned_skills": 25
+  },
+  "hardening_lineage": [
+    {
+      "increment": 0,
+      "pull_request": 31,
+      "merge_commit": "25b74c2cd92ad7aa4171196df3cc52cc3c58954d",
+      "scope": "governed_development_lane"
+    },
+    {
+      "increment": 1,
+      "pull_request": 32,
+      "merge_commit": "408880be8536828dfe12de98c2ea511e8bdcc5a8",
+      "scope": "platform_capability_model"
+    },
+    {
+      "increment": 2,
+      "pull_request": 33,
+      "merge_commit": "8207c23ccf6ab519431a26ad564a42d960033d3f",
+      "scope": "ios_client_architecture_contracts"
+    },
+    {
+      "increment": 3,
+      "pull_request": 34,
+      "merge_commit": "fad8eef654cb7825b03e77f5eb3dae6fbf7698e0",
+      "scope": "ios_workflows_catalogs_skills"
+    },
+    {
+      "increment": 4,
+      "pull_request": 35,
+      "merge_commit": "e18eda4d2676f47cdee1f9eed68f9f1a63941b1d",
+      "scope": "cross_artifact_ios_integrity"
+    },
+    {
+      "increment": 5,
+      "pull_request": 36,
+      "merge_commit": "fc4446f869f9f903b1ef1bc3761e2ec222ac602c",
+      "scope": "governed_platform_matrix_ci"
+    },
+    {
+      "increment": 6,
+      "pull_request": 37,
+      "merge_commit": "965e2c060e2193d50d0937fd425802fb1b193c60",
+      "scope": "mobile_licensing_regression_boundary"
+    }
+  ],
+  "release_highlights": [
+    "explicit_ios_target_capability",
+    "native_and_cross_platform_mobile_strategy",
+    "independent_platform_architecture_gates_evidence_qa_and_acceptance",
+    "web_android_ios_namespace_isolation",
+    "api_backed_offline_mobile_boundary",
+    "ios_workflow_phase_check_and_skill_support",
+    "cross_artifact_platform_integrity",
+    "governed_platform_matrix_regression_suite",
+    "android_only_mobile_licensing_applicability_boundary"
+  ],
+  "frozen_decisions": {
+    "cross_platform_does_not_enable_targets": true,
+    "cross_platform_does_not_share_platform_gates": true,
+    "platform_acceptance_remains_independent": true,
+    "mobile_licensing_android_applicability_preserved": true,
+    "ios_does_not_imply_mobile_licensing": true,
+    "offline_scope_is_api_backed_only": true,
+    "api_less_local_authoritative_is_deferred": true
+  },
+  "component_provenance": {
+    "root_release": "0.5.3-stable-until-promotion",
+    "development_lane": "0.5.4-dev",
+    "project_and_status_contracts": "0.5.4-dev",
+    "platform_bearing_client_and_experience_contracts": "0.5.4-dev",
+    "catalogs_and_workflows": "0.5.4-dev",
+    "ios_client_architecture_and_functional_slice_skills": "0.5.4-dev",
+    "mobile_licensing_contract": "0.5.3-compatible",
+    "ci_runtime_contract": "0.5.2-compatible",
+    "architecture_implementation_conformance": "0.5.1-compatible",
+    "unchanged_reference_compliance_and_design_contracts": "0.5.0-compatible"
+  },
+  "consumer_policy": {
+    "automatic_adoption": false,
+    "compliance_review_required": true,
+    "explicit_consumer_change_required": true,
+    "impact_appropriate_revalidation_required": true
+  },
+  "deferred_scope": {
+    "api_less_local_authoritative_mobile": true,
+    "ios_mobile_licensing_generalization": true,
+    "universal_cross_platform_framework_mandate": true
+  },
+  "final_release_requirements": {
+    "final_release_pr_required": true,
+    "promote_development_contracts_to_0_5_4": true,
+    "set_root_version_to_0_5_4": true,
+    "remove_development_version_marker": true,
+    "create_stable_release_manifest_and_notes": true,
+    "update_normative_and_active_docs_to_stable_0_5_4": true,
+    "post_merge_stable_validation_on_exact_sha": true,
+    "tag_requires_separate_explicit_human_approval": true,
+    "prospective_merge_sha_is_not_release_evidence": true
+  }
+}
