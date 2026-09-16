@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate Blueprint 0.5 composed client architecture contracts."""
+"""Validate Blueprint v0.5 composed client architecture contracts."""
 
 from __future__ import annotations
 
@@ -13,15 +13,26 @@ import yaml
 from jsonschema import Draft202012Validator, FormatChecker
 
 ROOT = Path(__file__).resolve().parents[1]
+
 BASELINE_SCHEMA_PATH = ROOT / "schemas/client-platform-architecture.schema.json"
 BINDING_SCHEMA_PATH = ROOT / "schemas/client-architecture.schema.json"
-WEB_BASELINE_PATH = ROOT / "templates/client-platform-architecture.web.example.json"
-ANDROID_BASELINE_PATH = ROOT / "templates/client-platform-architecture.android.example.json"
-WEB_BINDING_PATH = ROOT / "templates/client-architecture.web.example.json"
-ANDROID_BINDING_PATH = ROOT / "templates/client-architecture.android.example.json"
+
+BASELINE_PATHS = {
+    "web": ROOT / "templates/client-platform-architecture.web.example.json",
+    "android": ROOT / "templates/client-platform-architecture.android.example.json",
+    "ios": ROOT / "templates/client-platform-architecture.ios.example.json",
+}
+BINDING_PATHS = {
+    "web": ROOT / "templates/client-architecture.web.example.json",
+    "android": ROOT / "templates/client-architecture.android.example.json",
+    "ios": ROOT / "templates/client-architecture.ios.example.json",
+}
+
 INVENTORY_PATH = ROOT / "templates/interface-inventory.example.json"
 OPENAPI_PATH = ROOT / "tests/fixtures/artifact-graph/openapi.yaml"
 FUNCTIONAL_SLICE_PATH = ROOT / "templates/functional-interface-slice.example.json"
+
+PLATFORM_NAMESPACE = {"web": "WEB-", "android": "APP-", "ios": "IOS-"}
 
 EXPECTED_GATE_CHECKS = {
     "client.architecture_contract",
@@ -106,10 +117,21 @@ def validate_file_reference(value: str, label: str) -> None:
 
 def baseline_semantic_errors(baseline: dict[str, Any]) -> list[str]:
     errors: list[str] = []
+    platform = baseline["platform"]
+
     if baseline["api_client"]["request_id_header"] != baseline["observability"]["request_id_header"]:
         errors.append("API client and observability request ID headers differ")
     if baseline["permissions"]["api_remains_authoritative"] is not True:
         errors.append("API authorization must remain authoritative")
+
+    namespace = {
+        "web": "CLIENT-BASELINE-WEB-",
+        "android": "CLIENT-BASELINE-ANDROID-",
+        "ios": "CLIENT-BASELINE-IOS-",
+    }[platform]
+    if not baseline["baseline_id"].startswith(namespace):
+        errors.append(f"baseline_id namespace does not match {platform}")
+
     guardrails = baseline["implementation_guardrails"]
     for key in (
         "no_new_api_behavior",
@@ -120,8 +142,10 @@ def baseline_semantic_errors(baseline: dict[str, Any]) -> list[str]:
     ):
         if guardrails[key] is not True:
             errors.append(f"platform guardrail disabled: {key}")
+
     if baseline["mode"] == "brownfield" and "brownfield" not in baseline:
         errors.append("Brownfield baseline lacks coexistence contract")
+
     return errors
 
 
@@ -147,6 +171,20 @@ def binding_semantic_errors(
     for key in ("project_id", "mode", "platform"):
         if binding[key] != baseline[key]:
             errors.append(f"binding {key} does not match platform baseline")
+
+    platform = binding["platform"]
+    expected_arch_prefix = {
+        "web": "CLIENT-WEB-",
+        "android": "CLIENT-ANDROID-",
+        "ios": "CLIENT-IOS-",
+    }[platform]
+    if not binding["architecture_id"].startswith(expected_arch_prefix):
+        errors.append(f"architecture_id namespace does not match {platform}")
+
+    expected_inventory_prefix = PLATFORM_NAMESPACE[platform]
+    for inventory_id in binding["inventory_ids"]:
+        if not inventory_id.startswith(expected_inventory_prefix):
+            errors.append(f"{inventory_id} namespace does not match {platform}")
 
     if binding["api_binding"]["openapi_path"] != baseline["api_client"]["openapi_path"]:
         errors.append("binding OpenAPI path differs from platform baseline")
@@ -181,7 +219,9 @@ def binding_semantic_errors(
             if item["platform"] != binding["platform"]:
                 errors.append(f"{inventory_id} platform differs from binding platform")
             if item.get("slice_id") != binding["interface_slice"]:
-                errors.append(f"{inventory_id} belongs to slice {item.get('slice_id')}, not {binding['interface_slice']}")
+                errors.append(
+                    f"{inventory_id} belongs to slice {item.get('slice_id')}, not {binding['interface_slice']}"
+                )
 
         selected_ops: set[str] = set()
         selected_permissions: set[str] = set()
@@ -195,12 +235,14 @@ def binding_semantic_errors(
 
         if operations != selected_ops:
             errors.append(
-                f"binding operationIds differ from executable inventory: binding={sorted(operations)} inventory={sorted(selected_ops)}"
+                f"binding operationIds differ from executable inventory: "
+                f"binding={sorted(operations)} inventory={sorted(selected_ops)}"
             )
         declared_permissions = set(binding["api_binding"]["permissions"])
         if declared_permissions != selected_permissions:
             errors.append(
-                f"binding permissions differ from executable inventory: binding={sorted(declared_permissions)} inventory={sorted(selected_permissions)}"
+                f"binding permissions differ from executable inventory: "
+                f"binding={sorted(declared_permissions)} inventory={sorted(selected_permissions)}"
             )
         if not selected_routes.issubset(set(binding["routing"]["routes"])):
             errors.append("binding routes do not cover executable inventory routes")
@@ -236,7 +278,7 @@ def assert_binding_semantics(
 def validate_functional_slice_binding(web_binding: dict[str, Any]) -> None:
     functional = load(FUNCTIONAL_SLICE_PATH)
     artifact = functional["client_architecture"]["artifact"]
-    expected = str(WEB_BINDING_PATH.relative_to(ROOT)).replace("\\", "/")
+    expected = str(BINDING_PATHS["web"].relative_to(ROOT)).replace("\\", "/")
     if artifact != expected:
         fail(f"functional slice points to {artifact}, expected {expected}")
     if functional["id"] != web_binding["interface_slice"]:
@@ -267,7 +309,9 @@ def validate_catalog_gate() -> None:
     required = set(gate.get("require_all", []))
     if required != EXPECTED_GATE_CHECKS:
         fail(
-            f"client_architecture_ready check set drifted; missing={sorted(EXPECTED_GATE_CHECKS-required)} extra={sorted(required-EXPECTED_GATE_CHECKS)}"
+            f"client_architecture_ready check set drifted; "
+            f"missing={sorted(EXPECTED_GATE_CHECKS-required)} "
+            f"extra={sorted(required-EXPECTED_GATE_CHECKS)}"
         )
 
     unknown = sorted((required | set(gate.get("require_if_applicable", []))) - check_ids)
@@ -278,77 +322,163 @@ def validate_catalog_gate() -> None:
     print("PASS catalog: composed architecture feeds existing scoped gate")
 
 
-def expect_semantic_failure(label: str, binding: dict[str, Any], baseline: dict[str, Any], inventory: dict[str, Any], openapi: dict[str, Any]) -> None:
+def expect_semantic_failure(
+    label: str,
+    binding: dict[str, Any],
+    baseline: dict[str, Any],
+    inventory: dict[str, Any] | None,
+    openapi: dict[str, Any],
+) -> None:
     if not binding_semantic_errors(binding, baseline, inventory=inventory, openapi=openapi):
         fail(f"negative semantic fixture unexpectedly passed: {label}")
     print(f"PASS negative semantics: {label}")
 
 
+def validate_technology_neutrality(
+    baselines: dict[str, dict[str, Any]],
+    baseline_schema: dict[str, Any],
+) -> None:
+    web_alt = copy.deepcopy(baselines["web"])
+    web_alt["web"]["framework"] = "vue"
+    assert_schema_valid("web technology choice remains data", web_alt, baseline_schema)
+
+    android_alt = copy.deepcopy(baselines["android"])
+    android_alt["android"]["language"] = "dart"
+    android_alt["android"]["ui_toolkit"] = "flutter"
+    assert_schema_valid("Android technology choice remains data", android_alt, baseline_schema)
+
+    ios_alt = copy.deepcopy(baselines["ios"])
+    ios_alt["ios"]["language"] = "dart"
+    ios_alt["ios"]["ui_toolkit"] = "flutter"
+    assert_schema_valid("iOS technology choice remains data", ios_alt, baseline_schema)
+
+
 def run_negative_tests(
-    web_baseline: dict[str, Any],
-    android_baseline: dict[str, Any],
-    web_binding: dict[str, Any],
-    android_binding: dict[str, Any],
+    baselines: dict[str, dict[str, Any]],
+    bindings: dict[str, dict[str, Any]],
     baseline_schema: dict[str, Any],
     binding_schema: dict[str, Any],
     inventory: dict[str, Any],
     openapi: dict[str, Any],
 ) -> None:
-    bad_brownfield = copy.deepcopy(web_baseline)
+    bad_brownfield = copy.deepcopy(baselines["web"])
     del bad_brownfield["brownfield"]
     assert_schema_invalid("Brownfield baseline requires coexistence", bad_brownfield, baseline_schema)
 
-    bad_guardrail = copy.deepcopy(web_baseline)
+    bad_guardrail = copy.deepcopy(baselines["web"])
     bad_guardrail["implementation_guardrails"]["no_hardcoded_authoritative_business_data"] = False
-    assert_schema_invalid("platform hardcoded authoritative data guardrail cannot be disabled", bad_guardrail, baseline_schema)
+    assert_schema_invalid(
+        "platform hardcoded authoritative data guardrail cannot be disabled",
+        bad_guardrail,
+        baseline_schema,
+    )
 
-    bad_none_visual = copy.deepcopy(web_binding)
+    for platform, foreign_key in (("web", "android"), ("android", "ios"), ("ios", "android")):
+        bad = copy.deepcopy(baselines[platform])
+        bad[foreign_key] = copy.deepcopy(baselines[foreign_key][foreign_key])
+        assert_schema_invalid(f"{platform} baseline rejects foreign platform block", bad, baseline_schema)
+
+    bad_ios_id = copy.deepcopy(baselines["ios"])
+    bad_ios_id["baseline_id"] = "CLIENT-BASELINE-ANDROID-WRONG"
+    assert_schema_invalid("iOS baseline rejects Android baseline namespace", bad_ios_id, baseline_schema)
+
+    bad_none_visual = copy.deepcopy(bindings["web"])
     bad_none_visual["visual_references"]["approved_reference_paths"] = ["fake.png"]
     assert_schema_invalid("visual mode none rejects reference paths", bad_none_visual, binding_schema)
 
-    bad_optional_visual = copy.deepcopy(web_binding)
+    bad_optional_visual = copy.deepcopy(bindings["web"])
     bad_optional_visual["visual_references"] = {"mode": "approved_optional", "approved_reference_paths": []}
     assert_schema_invalid("approved_optional requires at least one reference", bad_optional_visual, binding_schema)
 
-    missing_optional_file = copy.deepcopy(web_binding)
+    missing_optional_file = copy.deepcopy(bindings["web"])
     missing_optional_file["visual_references"] = {
         "mode": "approved_optional",
         "approved_reference_paths": ["does/not/exist.png"],
     }
-    expect_semantic_failure("approved visual reference path must exist", missing_optional_file, web_baseline, inventory, openapi)
+    expect_semantic_failure(
+        "approved visual reference path must exist",
+        missing_optional_file,
+        baselines["web"],
+        inventory,
+        openapi,
+    )
 
-    wrong_namespace = copy.deepcopy(web_binding)
-    wrong_namespace["inventory_ids"] = ["APP-999"]
-    assert_schema_invalid("web slice binding rejects APP inventory", wrong_namespace, binding_schema)
+    namespace_cases = [
+        ("web", "APP-999"),
+        ("web", "IOS-999"),
+        ("android", "WEB-999"),
+        ("android", "IOS-999"),
+        ("ios", "WEB-999"),
+        ("ios", "APP-999"),
+    ]
+    for platform, bad_id in namespace_cases:
+        bad = copy.deepcopy(bindings[platform])
+        bad["inventory_ids"] = [bad_id]
+        assert_schema_invalid(
+            f"{platform} binding rejects foreign inventory namespace {bad_id}",
+            bad,
+            binding_schema,
+        )
 
-    wrong_baseline = copy.deepcopy(web_binding)
+    bad_ios_arch_id = copy.deepcopy(bindings["ios"])
+    bad_ios_arch_id["architecture_id"] = "CLIENT-ANDROID-WRONG"
+    assert_schema_invalid("iOS binding rejects Android architecture namespace", bad_ios_arch_id, binding_schema)
+
+    wrong_baseline = copy.deepcopy(bindings["ios"])
     wrong_baseline["platform_baseline_ref"] = "templates/client-platform-architecture.android.example.json"
-    expect_semantic_failure("slice cannot inherit incompatible platform baseline", wrong_baseline, android_baseline, inventory, openapi)
+    expect_semantic_failure(
+        "iOS slice cannot inherit Android platform baseline",
+        wrong_baseline,
+        baselines["android"],
+        None,
+        openapi,
+    )
 
-    unknown_inventory = copy.deepcopy(web_binding)
+    unknown_inventory = copy.deepcopy(bindings["web"])
     unknown_inventory["inventory_ids"] = ["WEB-001", "WEB-999"]
-    expect_semantic_failure("slice binding rejects unknown inventory ID", unknown_inventory, web_baseline, inventory, openapi)
+    expect_semantic_failure(
+        "slice binding rejects unknown inventory ID",
+        unknown_inventory,
+        baselines["web"],
+        inventory,
+        openapi,
+    )
 
-    unknown_operation = copy.deepcopy(web_binding)
+    unknown_operation = copy.deepcopy(bindings["web"])
     unknown_operation["api_binding"]["operation_ids"] = ["loginUser", "missingOperation"]
-    expect_semantic_failure("slice binding rejects unknown operationId", unknown_operation, web_baseline, inventory, openapi)
+    expect_semantic_failure(
+        "slice binding rejects unknown operationId",
+        unknown_operation,
+        baselines["web"],
+        inventory,
+        openapi,
+    )
 
-    invented_permission = copy.deepcopy(web_binding)
+    invented_permission = copy.deepcopy(bindings["web"])
     invented_permission["api_binding"]["permissions"].append("invented.permission")
-    expect_semantic_failure("slice binding rejects invented permission", invented_permission, web_baseline, inventory, openapi)
+    expect_semantic_failure(
+        "slice binding rejects invented permission",
+        invented_permission,
+        baselines["web"],
+        inventory,
+        openapi,
+    )
 
-    bad_idempotency = copy.deepcopy(web_binding)
+    bad_idempotency = copy.deepcopy(bindings["web"])
     bad_idempotency["idempotency"]["required_operations"] = ["missingOperation"]
-    expect_semantic_failure("idempotency operation must belong to binding operationIds", bad_idempotency, web_baseline, inventory, openapi)
-
-    android_with_web_id = copy.deepcopy(android_binding)
-    android_with_web_id["inventory_ids"] = ["WEB-001"]
-    assert_schema_invalid("Android binding rejects WEB inventory", android_with_web_id, binding_schema)
+    expect_semantic_failure(
+        "idempotency operation must belong to binding operationIds",
+        bad_idempotency,
+        baselines["web"],
+        inventory,
+        openapi,
+    )
 
 
 def validate_blueprint_references() -> None:
     blueprint = (ROOT / "BLUEPRINT.md").read_text(encoding="utf-8")
     documentation = (ROOT / "documentation/CLIENT_ARCHITECTURE_CONTRACT.md").read_text(encoding="utf-8")
+
     for token in (
         "Platform Client Architecture Baseline",
         "Slice Architecture Binding/Override",
@@ -356,13 +486,17 @@ def validate_blueprint_references() -> None:
     ):
         if token not in blueprint:
             fail(f"BLUEPRINT.md missing composed Client Architecture token: {token}")
+
     for token in (
         "Platform Client Architecture Baseline + Slice Architecture Binding",
         "visual_references.mode",
         "schemas/client-platform-architecture.schema.json",
+        "IOS-###",
+        "technology choices are consumer data",
     ):
         if token not in documentation:
             fail(f"CLIENT_ARCHITECTURE_CONTRACT.md missing token: {token}")
+
     print("PASS normative references: composed Client Architecture model")
 
 
@@ -373,35 +507,41 @@ def main() -> int:
     Draft202012Validator.check_schema(binding_schema)
     print("PASS schema definitions: platform baseline + slice binding")
 
-    web_baseline = load(WEB_BASELINE_PATH)
-    android_baseline = load(ANDROID_BASELINE_PATH)
-    web_binding = load(WEB_BINDING_PATH)
-    android_binding = load(ANDROID_BINDING_PATH)
+    baselines = {platform: load(path) for platform, path in BASELINE_PATHS.items()}
+    bindings = {platform: load(path) for platform, path in BINDING_PATHS.items()}
     inventory = load(INVENTORY_PATH)
     openapi = load(OPENAPI_PATH)
 
-    assert_schema_valid("web platform baseline", web_baseline, baseline_schema)
-    assert_schema_valid("Android platform baseline", android_baseline, baseline_schema)
-    assert_schema_valid("web slice binding", web_binding, binding_schema)
-    assert_schema_valid("Android slice binding", android_binding, binding_schema)
+    for platform in ("web", "android", "ios"):
+        assert_schema_valid(f"{platform} platform baseline", baselines[platform], baseline_schema)
+        assert_schema_valid(f"{platform} slice binding", bindings[platform], binding_schema)
+        assert_baseline_semantics(f"{platform} platform baseline", baselines[platform])
 
-    assert_baseline_semantics("web platform baseline", web_baseline)
-    assert_baseline_semantics("Android platform baseline", android_baseline)
     assert_binding_semantics(
         "web operational-core binding",
-        web_binding,
-        web_baseline,
+        bindings["web"],
+        baselines["web"],
         inventory=inventory,
         openapi=openapi,
     )
-    assert_binding_semantics("Android example binding", android_binding, android_baseline, openapi=openapi)
-    validate_functional_slice_binding(web_binding)
+    assert_binding_semantics(
+        "Android example binding",
+        bindings["android"],
+        baselines["android"],
+        openapi=openapi,
+    )
+    assert_binding_semantics(
+        "iOS example binding",
+        bindings["ios"],
+        baselines["ios"],
+        openapi=openapi,
+    )
 
+    validate_functional_slice_binding(bindings["web"])
+    validate_technology_neutrality(baselines, baseline_schema)
     run_negative_tests(
-        web_baseline,
-        android_baseline,
-        web_binding,
-        android_binding,
+        baselines,
+        bindings,
         baseline_schema,
         binding_schema,
         inventory,

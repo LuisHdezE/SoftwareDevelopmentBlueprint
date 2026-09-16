@@ -1,0 +1,20 @@
+{
+  "schema_version": "0.5.4-dev",
+  "baseline_id": "CLIENT-BASELINE-IOS-EXAMPLE",
+  "project_id": "example-project",
+  "mode": "greenfield",
+  "platform": "ios",
+  "status": "APPROVED",
+  "design_system": {"design_system_path": "templates/design-system.example.json", "tokens_path": "templates/design-tokens.example.json"},
+  "api_client": {"openapi_path": "tests/fixtures/artifact-graph/openapi.yaml", "authorization_boundary": "api", "error_contract": "RFC 9457 Problem Details", "request_id_header": "X-Request-ID", "idempotency_header": "Idempotency-Key"},
+  "auth_lifecycle": {"mechanism": "bearer_jwt", "access_credential_storage": "memory", "refresh_credential_storage": "platform_secure_storage", "refresh_enabled": true, "refresh_rotation": true, "concurrent_refresh_policy": "single_flight", "unauthenticated_behavior": "Navigate to login and clear protected navigation state.", "forbidden_behavior": "Render a permission-safe state without exposing protected data.", "logout_behavior": "Revoke refresh token and clear secure local credentials.", "secrets_must_not_be_logged": true},
+  "permissions": {"source": "api_contract", "ui_hides_or_disables_unauthorized_actions": true, "api_remains_authoritative": true},
+  "state_management": {"server_state_strategy": "Repository and observable presentation state own API-derived state.", "ui_state_strategy": "Platform presentation state owns ephemeral screen state.", "cache_strategy": "Persist only explicitly approved API-backed offline data."},
+  "forms_validation": {"client_validation_strategy": "Local validation mirrors contract constraints without redefining server business rules.", "api_validation_mapping": "Map 422 fields and Problem Details to accessible field/global errors.", "conflict_mapping": "Map 409 to explicit non-destructive conflict handling.", "rate_limit_mapping": "Map 429 to Retry-After guidance without retry storms."},
+  "observability": {"request_id_header": "X-Request-ID", "client_error_strategy": "Attach request ID and route context to sanitized client diagnostics.", "secret_redaction": true, "pii_policy": "Redact credentials and sensitive domain payloads."},
+  "accessibility": {"target": "iOS accessibility with WCAG-equivalent interaction principles", "keyboard_or_switch_navigation": "Support keyboard and Switch Control traversal where applicable.", "screen_reader_or_talkback": "VoiceOver semantics and meaningful accessibility labels.", "focus_management": "Restore and move accessibility focus intentionally after navigation, validation and dialogs.", "min_touch_target_px": 44},
+  "testing": {"unit": {"required": true, "strategy": "Domain-facing mapper and presentation-state unit tests."}, "component_or_ui": {"required": true, "strategy": "UI tests for permissions, states and accessibility semantics."}, "integration": {"required": true, "strategy": "API client, secure credential and auth lifecycle integration tests."}, "e2e": {"required": true, "strategy": "Critical slice journeys on simulator/device against a real test API."}},
+  "offline": {"mode": "queued_writes", "storage_strategy": "Local persistence stores only approved API-backed entities and explicit mutation queue state.", "sync_conflict_policy": "Server remains canonical; conflicts require documented merge/retry behavior."},
+  "implementation_guardrails": {"no_new_api_behavior": true, "no_auth_bypass": true, "approved_inventory_only": true, "high_risk_mutations_follow_idempotency": true, "no_hardcoded_authoritative_business_data": true},
+  "ios": {"language": "Swift", "ui_toolkit": "SwiftUI", "architecture_pattern": "MVVM with repository/use-case boundaries", "networking_library": "URLSession", "local_persistence": "SwiftData", "background_work": "BGTaskScheduler", "min_os_version": "17.0"}
+}
