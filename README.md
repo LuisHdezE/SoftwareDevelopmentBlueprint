@@ -8,7 +8,7 @@ El Blueprint define **cómo** descubrir, reconstruir, documentar, diseñar, impl
 
 **Blueprint 0.5.3**
 
-0.5.3 es un hardening enfocado en **Optional Mobile Licensing** sobre 0.5.2. Mantiene CI Execution Portability, Architecture Implementation Conformance y el pipeline funcional existente, y añade una capacidad reusable de trial/activación para Android sin convertirla en requisito universal.
+0.5.3 es la release estable vigente y está enfocada en **Optional Mobile Licensing** sobre 0.5.2. Mantiene CI Execution Portability, Architecture Implementation Conformance y el pipeline funcional existente, y añade una capacidad reusable de trial/activación para Android sin convertirla en requisito universal.
 
 Para Android, el proyecto debe responder explícitamente:
 
@@ -16,7 +16,31 @@ Para Android, el proyecto debe responder explícitamente:
 
 Si es `false`, la rama de licenciamiento es N/A. Si es `true`, el contrato por defecto usa trial configurable, expiración segura en modo read-only, activación firmada y ligada al dispositivo, verificación offline, separación de backup/licencia, issuer protegido, recuperación/rotación de claves y un gate condicional `mobile_licensing_ready`.
 
-Cadena principal:
+El núcleo estable 0.5.3 conserva **28 fases, 145 checks, 19 gates, 15 skills materializadas y 25 planificadas**.
+
+## Carril de desarrollo 0.5.4-dev
+
+El repositorio mantiene en paralelo un candidato de hardening **0.5.4-dev**. No es todavía una release estable y no cambia `VERSION=0.5.3` ni autoriza por sí solo la creación del tag `v0.5.4`.
+
+El cierre de hardening 0.5.4-dev está preparado como release candidate con:
+
+- **29 fases**;
+- **146 checks**;
+- **19 gates**;
+- **16 skills materializadas**;
+- **25 skills planificadas**.
+
+El candidato formaliza iOS como target explícito, conserva `APP-###` para Android e introduce `IOS-###` para iOS, define `mobile.strategy: native|cross_platform`, mantiene aceptación/evidencia/gates independientes por plataforma, limita offline mobile a clientes API-backed y preserva Mobile Licensing como decisión obligatoria únicamente cuando Android está habilitado.
+
+`cross_platform` significa compartir estrategia de implementación/código entre targets habilitados. No habilita targets automáticamente y no comparte PASS, evidencia, QA ni aceptación entre Web, Android e iOS.
+
+La trazabilidad del candidato y el cierre previo al PR final viven en:
+
+- `documentation/BLUEPRINT_V0_5_4_RELEASE_CANDIDATE.json`;
+- `documentation/BLUEPRINT_V0_5_4_RELEASE_CANDIDATE.md`;
+- `documentation/BLUEPRINT_V0_5_4_DEVELOPMENT.json`.
+
+## Cadena principal
 
 ```text
 Discovery / Brownfield
@@ -39,20 +63,6 @@ Discovery / Brownfield
 
 `Visual Identity`, `Mockups / Prototypes` y `Mobile Licensing` son capacidades condicionales según su propia aplicabilidad.
 
-## Qué cambia en 0.5.3
-
-La release estabiliza:
-
-- `schemas/mobile-licensing.schema.json`;
-- `templates/mobile-licensing.example.yaml`;
-- el capability `mobile_licensing` en project schema/template;
-- 10 checks de licensing distribuidos entre Requirements, Architecture, Integration QA y Release;
-- el gate project-scoped `mobile_licensing_ready`;
-- el skill `skills/dev-mobile-licensing/SKILL.md`;
-- validación dedicada de casos positivos, negativos y de manipulación.
-
-El contrato exige 17 pruebas cuando licensing está habilitado. También exige que la clave privada de producción no exista en la aplicación cliente, que la expiración no bloquee los datos del usuario y que un backup portable no clone una licencia device-bound.
-
 ## Principios clave
 
 1. **Single Source of Truth** en el repositorio.
@@ -68,7 +78,7 @@ El contrato exige 17 pruebas cuando licensing está habilitado. También exige q
 11. Client Architecture = Platform Baseline + Slice Binding.
 12. Los mockups son condicionales; `GENERATED != REVIEWED != APPROVED`.
 13. Visual & Functional Review revisa el cliente real.
-14. Web PASS no autoriza Android ni otro slice.
+14. Un PASS de una plataforma no autoriza otra plataforma ni otro slice.
 15. Cambios API posteriores al baseline usan impact-based revalidation.
 16. Brownfield aplica **ALIGN, DO NOT REWRITE**.
 17. Arquitectura aprobada debe verificarse también contra la implementación real.
@@ -77,21 +87,10 @@ El contrato exige 17 pruebas cuando licensing está habilitado. También exige q
 20. La semántica de evidencia CI es independiente de quién posee el runner.
 21. Un fallo pre-ejecución de infraestructura no se falsifica como fallo de producto.
 22. Android debe responder explícitamente si Mobile Licensing aplica.
-23. Licensing habilitado no puede enviar una production private signing key en el cliente.
-24. Expirar un trial no autoriza a secuestrar datos del usuario.
-25. Un backup portable no puede clonar una licencia ligada al dispositivo.
-
-## Núcleo 0.5.3
-
-- **28 fases** canónicas.
-- **145 checks**.
-- **19 gates**.
-- **15 skills materializadas** y **25 planificadas**.
-- Interface Scope Baseline + Executable Interface Inventory.
-- Functional Interface Slice machine-readable.
-- Architecture Implementation Conformance.
-- CI Execution Portability con `github_hosted`, `self_hosted` y `hybrid`.
-- Mobile Licensing condicional con signed offline activation por defecto.
+23. iOS por sí solo no implica Mobile Licensing.
+24. `cross_platform` no cambia la aplicabilidad de Mobile Licensing.
+25. Offline mobile 0.5.4 permanece dentro de la frontera API-backed.
+26. API-less/local-authoritative permanece diferido a un hardening separado.
 
 ## Modos
 
@@ -111,7 +110,7 @@ Cuando no exista una decisión documentada que justifique otra opción:
 - QA operacional API: Postman cuando aplica.
 - Repositorio/CI: GitHub.
 
-Son defaults. Brownfield no recibe autorización para reescribir funcionalidad existente por estilo.
+Son defaults. La estrategia móvil y la tecnología concreta del cliente son decisiones del consumidor; el Blueprint no impone un framework cross-platform universal. Brownfield no recibe autorización para reescribir funcionalidad existente por estilo.
 
 ## Estructura
 
@@ -119,6 +118,7 @@ Son defaults. Brownfield no recibe autorización para reescribir funcionalidad e
 SoftwareDevelopmentBlueprint/
 ├── BLUEPRINT.md
 ├── VERSION
+├── DEVELOPMENT_VERSION
 ├── catalog/
 ├── workflows/
 ├── schemas/
@@ -133,25 +133,28 @@ SoftwareDevelopmentBlueprint/
 
 ## Documentación clave
 
-- `BLUEPRINT.md`: estándar normativo.
-- `documentation/BLUEPRINT_CURRENT_STATE.md`: checkpoint humano derivado.
-- `documentation/BLUEPRINT_V0_5_3_MOBILE_LICENSING.md`: contrato de Mobile Licensing.
+- `BLUEPRINT.md`: estándar normativo de la release estable vigente.
+- `documentation/BLUEPRINT_CURRENT_STATE.md`: checkpoint humano derivado que distingue estable y candidato.
+- `documentation/BLUEPRINT_V0_5_4_RELEASE_CANDIDATE.json`: snapshot machine-readable del candidato 0.5.4.
+- `documentation/BLUEPRINT_V0_5_4_RELEASE_CANDIDATE.md`: alcance y reglas de promoción del candidato.
+- `documentation/BLUEPRINT_V0_5_4_DEVELOPMENT.json`: gobernanza del carril 0.5.4-dev.
+- `documentation/BLUEPRINT_V0_5_3_MOBILE_LICENSING.md`: contrato histórico estable de Mobile Licensing.
 - `documentation/BLUEPRINT_V0_5_3_RELEASE_NOTES.md`: alcance y compatibilidad de 0.5.3.
-- `documentation/BLUEPRINT_V0_5_3_RELEASE.json`: manifest machine-readable de la release.
-- `documentation/BLUEPRINT_V0_5_2_CI_EXECUTION_PORTABILITY.md`: historia del hardening CI 0.5.2.
-- `documentation/BLUEPRINT_V0_5_1_ARCHITECTURE_CONFORMANCE_HARDENING.md`: historia del hardening arquitectónico 0.5.1.
+- `documentation/BLUEPRINT_V0_5_3_RELEASE.json`: manifest machine-readable de la release estable actual.
 - `documentation/EXPERIENCE_ARTIFACT_MODEL.md`, `documentation/CLIENT_ARCHITECTURE_CONTRACT.md` y `documentation/SKILL_MODEL.md`: contratos complementarios.
 
 Los documentos/manifests anteriores se conservan como historia y no se reescriben para aparentar adopción posterior.
 
 ## Consumidores y Compliance Review
 
-Un consumidor permanece en su versión declarada hasta un **Compliance Review** y una adopción explícita. La publicación de Blueprint 0.5.3 no modifica GestioApp, CUSA-Digital ni ningún otro repositorio consumidor.
+Un consumidor permanece en su versión declarada hasta un **Compliance Review** y una adopción explícita. Ni la existencia de 0.5.4-dev ni una futura publicación estable modifican automáticamente repositorios consumidores.
 
 La adopción debe clasificar cambios como KEEP / ADOPT / MIGRATE / DEFER / N/A, obtener aprobación humana y revalidar el impacto real.
 
 ## Versionado y provenance
 
-`VERSION = 0.5.3` identifica la release raíz. Los nuevos contratos de licensing y los checks/gates/workflows asociados son 0.5.3. CI Runtime conserva provenance compatible 0.5.2; Architecture Implementation Conformance conserva 0.5.1; phases y contratos de experiencia sin cambio conservan 0.5.0.
+`VERSION = 0.5.3` identifica la release estable vigente. `DEVELOPMENT_VERSION = 0.5.4-dev` identifica exclusivamente el carril de hardening previo a promoción.
 
-La etiqueta de esta release será `v0.5.3`; se crea únicamente después de fusionar el PR de release, verificar el árbol aprobado en `main` y confirmar validación post-merge sobre ese SHA exacto.
+Los contratos nuevos o modificados por 0.5.4-dev conservan provenance explícita de desarrollo. Mobile Licensing permanece 0.5.3-compatible; CI Runtime permanece 0.5.2-compatible; Architecture Implementation Conformance conserva origen 0.5.1-compatible; contratos históricos sin cambio semántico conservan su provenance anterior.
+
+La promoción final a 0.5.4 requiere un PR de release separado, validación estable post-merge sobre el SHA real de `main` y aprobación humana separada antes de crear `v0.5.4`.

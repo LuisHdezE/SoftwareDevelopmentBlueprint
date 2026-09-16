@@ -40,6 +40,8 @@ on:
       - documentation/BLUEPRINT_V0_5_3_RELEASE_NOTES.md
       - documentation/BLUEPRINT_V0_5_4_DEVELOPMENT.json
       - documentation/BLUEPRINT_V0_5_4_PLATFORM_CAPABILITIES.md
+      - documentation/BLUEPRINT_V0_5_4_RELEASE_CANDIDATE.json
+      - documentation/BLUEPRINT_V0_5_4_RELEASE_CANDIDATE.md
       - documentation/SELF_HOSTED_RUNNER_BOOTSTRAP.md
       - documentation/EXPERIENCE_ARTIFACT_MODEL.md
       - documentation/CLIENT_ARCHITECTURE_CONTRACT.md
@@ -81,6 +83,8 @@ on:
       - documentation/BLUEPRINT_V0_5_3_RELEASE_NOTES.md
       - documentation/BLUEPRINT_V0_5_4_DEVELOPMENT.json
       - documentation/BLUEPRINT_V0_5_4_PLATFORM_CAPABILITIES.md
+      - documentation/BLUEPRINT_V0_5_4_RELEASE_CANDIDATE.json
+      - documentation/BLUEPRINT_V0_5_4_RELEASE_CANDIDATE.md
       - documentation/SELF_HOSTED_RUNNER_BOOTSTRAP.md
       - documentation/EXPERIENCE_ARTIFACT_MODEL.md
       - documentation/CLIENT_ARCHITECTURE_CONTRACT.md
