@@ -17,6 +17,9 @@ STABLE_VERSION = "0.5.3"
 DEVELOPMENT_VERSION = "0.5.4-dev"
 BASELINE_COMMIT = "b1df5ca09ad38e39a1b51006aa441786afdb946c"
 BASELINE_TAG = "v0.5.3"
+DEVELOPMENT_VALIDATORS = [
+    "scripts/validate-platform-capabilities.py",
+]
 
 EXPECTED_FROZEN_DECISIONS = {
     "cross_platform_does_not_enable_targets": True,
@@ -118,6 +121,8 @@ def validate_stable_baseline_preserved(stable: ModuleType) -> None:
 
 def run_current_validators(stable: ModuleType) -> None:
     for validator in stable.VALIDATORS:
+        stable.run_validator(validator)
+    for validator in DEVELOPMENT_VALIDATORS:
         stable.run_validator(validator)
     print("PASS current repository validators under 0.5.4 hardening lane")
 

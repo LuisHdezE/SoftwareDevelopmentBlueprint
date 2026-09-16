@@ -1,9 +1,9 @@
 project:
   name: Example Project
   repository: owner/repository
-  description: Example Blueprint 0.5.3 stable project
+  description: Example Blueprint 0.5.4-dev hardening project
 blueprint:
-  version: 0.5.3
+  version: 0.5.4-dev
   mode: brownfield
 stack:
   backend: laravel
@@ -11,9 +11,12 @@ stack:
   frontend: react
   styling: tailwind
   mobile: kotlin
+mobile:
+  strategy: native
 capabilities:
   web: true
   android: true
+  ios: false
   mobile_licensing: false
   saas: false
   multi_tenant: false
