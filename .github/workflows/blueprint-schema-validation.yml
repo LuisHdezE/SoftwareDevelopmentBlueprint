@@ -11,6 +11,7 @@ on:
       - 'catalog/**'
       - 'workflows/**'
       - 'scripts/validate-experience-artifacts.py'
+      - 'scripts/validate-artifact-graph.py'
       - 'tests/fixtures/experience/**'
       - '.github/workflows/blueprint-schema-validation.yml'
   pull_request:
@@ -21,6 +22,7 @@ on:
       - 'catalog/**'
       - 'workflows/**'
       - 'scripts/validate-experience-artifacts.py'
+      - 'scripts/validate-artifact-graph.py'
       - 'tests/fixtures/experience/**'
       - '.github/workflows/blueprint-schema-validation.yml'
 
