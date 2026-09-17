@@ -1,9 +1,9 @@
 project:
   name: Example Project
   repository: owner/repository
-  description: Example Blueprint 0.5.4-dev hardening project
+  description: Example Blueprint 0.5.4 hardening project
 blueprint:
-  version: 0.5.4-dev
+  version: 0.5.4
   mode: brownfield
 stack:
   backend: laravel

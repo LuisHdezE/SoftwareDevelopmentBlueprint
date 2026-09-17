@@ -1,7 +1,7 @@
 ---
 id: dev-android-client-architecture
 title: Android Client Architecture
-version: 0.5.4-dev
+version: 0.5.4
 status: materialized
 category: android
 applies_to:

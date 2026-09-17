@@ -2,10 +2,9 @@
 
 > CURRENT CHECKPOINT / DERIVED SUMMARY  
 > Fecha de cierre representada: **2026-09-16 America/Montevideo**.  
-> Release representada: **0.5.3**.  
-> Carril de desarrollo actual: **0.5.4-dev release candidate**.
+> Release representada: **0.5.4**.
 
-Este documento es un resumen humano. No sustituye a `BLUEPRINT.md`, `VERSION`, `DEVELOPMENT_VERSION`, `catalog/`, `workflows/`, `schemas/`, `templates/`, `skills/` ni a la evidencia de los repositorios consumidores.
+Este documento es un resumen humano. No sustituye a `BLUEPRINT.md`, `VERSION`, `catalog/`, `workflows/`, `schemas/`, `templates/`, `skills/` ni a la evidencia de los repositorios consumidores.
 
 ## 1. Autoridad
 
@@ -13,29 +12,13 @@ Cuando exista contradicción, prevalecen: contratos/evidencia del consumidor par
 
 GitHub versionado prevalece sobre handoffs conversacionales.
 
-## 2. Release estable vigente
+## 2. Blueprint estable
 
 Repositorio: `LuisHdezE/SoftwareDevelopmentBlueprint`
 
-Versión estable representada: **0.5.3**
+Versión estable representada: **0.5.4**
 
-Conteos del núcleo estable:
-
-- **28 fases**;
-- **145 checks**;
-- **19 gates**;
-- **15 skills materializadas**;
-- **25 skills planificadas**.
-
-0.5.3 añadió Optional Mobile Licensing mediante PR #25. Su publicación estable posterior permanece como historia inmutable y `VERSION` continúa en `0.5.3` durante todo el hardening 0.5.4-dev.
-
-## 3. Estado actual de 0.5.4-dev
-
-`DEVELOPMENT_VERSION = 0.5.4-dev` identifica el carril de hardening. No es una release estable y no constituye adopción automática para consumidores.
-
-El hardening funcional planificado de 0.5.4 está completo a través de `main@965e2c060e2193d50d0937fd425802fb1b193c60`, merge de PR #37. El siguiente paso permitido es el PR final de promoción, después de cerrar y aprobar este checkpoint de Release Closure.
-
-Conteos actuales del candidato:
+Conteos del núcleo:
 
 - **29 fases**;
 - **146 checks**;
@@ -43,11 +26,11 @@ Conteos actuales del candidato:
 - **16 skills materializadas**;
 - **25 skills planificadas**.
 
-El snapshot machine-readable vive en `documentation/BLUEPRINT_V0_5_4_RELEASE_CANDIDATE.json` y las notas de cierre en `documentation/BLUEPRINT_V0_5_4_RELEASE_CANDIDATE.md`.
+0.5.4 promueve el hardening multiplataforma completado mediante los incrementos PR #31 a #38. No existe automatic consumer upgrade.
 
-## 4. Línea de hardening 0.5.4-dev
+## 3. Línea de hardening y release closure
 
-Los incrementos aceptados hasta el cierre funcional son:
+El carril 0.5.4 fue construido y aceptado incrementalmente:
 
 | Incremento | PR | Merge SHA | Alcance |
 | --- | ---: | --- | --- |
@@ -58,16 +41,21 @@ Los incrementos aceptados hasta el cierre funcional son:
 | 4 | #35 | `e18eda4d2676f47cdee1f9eed68f9f1a63941b1d` | integridad semántica cross-artifact |
 | 5 | #36 | `fc4446f869f9f903b1ef1bc3761e2ec222ac602c` | governed platform matrix + CI |
 | 6 | #37 | `965e2c060e2193d50d0937fd425802fb1b193c60` | Mobile Licensing regression boundary |
+| 7 | #38 | `1f852ad831f6cb16b92c697fa97c46ac0e71049a` | release closure / release candidate |
 
-Cada incremento fue integrado únicamente después de aprobación humana explícita y validado nuevamente sobre su merge SHA real en `main`.
+PR #38 dejó el árbol listo para promoción estable. El PR final de release parte exactamente de `main@1f852ad831f6cb16b92c697fa97c46ac0e71049a`.
 
-## 5. Modelo de plataformas del candidato
+Los manifests `BLUEPRINT_V0_5_4_DEVELOPMENT.json` y `BLUEPRINT_V0_5_4_RELEASE_CANDIDATE.*` permanecen como historia del proceso previo a la release estable.
+
+## 4. Modelo de plataformas 0.5.4
 
 Targets explícitos:
 
 - Web -> namespace `WEB-###`;
 - Android -> namespace histórico `APP-###`;
 - iOS -> namespace `IOS-###`.
+
+`APP-###` continúa siendo Android-specific y nunca significa “mobile genérico”.
 
 `mobile.strategy` admite:
 
@@ -78,15 +66,17 @@ Targets explícitos:
 
 La unidad de ejecución sigue siendo `interface_slice + platform`.
 
-## 6. Client Architecture e iOS
+## 5. Client Architecture e iOS
 
 El contrato efectivo continúa siendo:
 
 `Platform Client Architecture Baseline + Slice Architecture Binding/Override = Effective Client Architecture Contract`
 
-Web, Android e iOS conservan baseline, binding, evidencia y aceptación independientes. Las tecnologías concretas del cliente son decisión del consumidor; el Blueprint no impone Flutter, React Native, Kotlin Multiplatform ni otro framework universal.
+Web, Android e iOS conservan baseline, binding, evidencia y aceptación independientes. Las tecnologías concretas del cliente son decisión del consumidor; Blueprint no impone SwiftUI, Flutter, React Native, Kotlin Multiplatform ni otro framework universal.
 
-## 7. Functional Interface Slice
+Los gates `client_architecture_ready`, `functional_slice_ready`, `visual_functional_review_pass` e `integration_qa_pass` permanecen scoped por `interface_slice + platform`.
+
+## 6. Functional Interface Slice
 
 Lifecycle:
 
@@ -94,80 +84,68 @@ Lifecycle:
 
 Visual & Functional Review e Integration QA son gates independientes. `BLOCKED_BY_API` sigue siendo overlay y no un estado lifecycle.
 
-Los gates `client_architecture_ready`, `functional_slice_ready`, `visual_functional_review_pass` e `integration_qa_pass` permanecen scoped por `interface_slice + platform`.
+## 7. Offline boundary
+
+0.5.4 formaliza únicamente offline mobile **API-backed**: cache, queue, retry y operación temporal disconnected/degraded con la API como autoridad de negocio y seguridad.
+
+API-less/local-authoritative permanece fuera de 0.5.4 porque alteraría API Gate, OpenAPI, Definition of Done y QA. No debe inventarse una API solo para satisfacer el Blueprint.
 
 ## 8. Mobile Licensing boundary
 
-El contrato estable de `mobile_licensing` conserva provenance 0.5.3.
+El contrato `mobile_licensing` conserva provenance **0.5.3-compatible**.
 
-La frontera validada para 0.5.4-dev es:
+La frontera estable es:
 
 - Web-only -> no exige decisión Mobile Licensing;
 - iOS-only -> no exige decisión Mobile Licensing;
 - Android -> exige `capabilities.mobile_licensing: true|false`;
 - Android+iOS -> exige la decisión porque Android está habilitado;
 - `cross_platform` no altera aplicabilidad;
-- si licensing está habilitado, el perfil machine-readable sigue siendo obligatorio.
+- si licensing está habilitado, el perfil machine-readable y `mobile_licensing_ready` siguen siendo obligatorios.
 
-No se generaliza Mobile Licensing a iOS.
+0.5.4 no generaliza Mobile Licensing a iOS.
 
-## 9. Offline boundary
+## 9. Platform matrix y CI
 
-0.5.4-dev formaliza únicamente offline mobile **API-backed**: cache, queue, retry y degraded/disconnected operation temporal con la API como autoridad de negocio.
+0.5.4 contiene una matriz gobernada de plataformas con casos positivos y negativos para Web, Android, iOS, multi-target, `native`, `cross_platform` y API-backed offline.
 
-API-less/local-authoritative permanece fuera de este hardening porque alteraría API Gate, OpenAPI, DoD y QA. No debe inventarse una API solo para satisfacer el Blueprint.
-
-## 10. Platform matrix y CI
-
-El candidato contiene una matriz gobernada de plataformas con casos positivos y negativos para Web, Android, iOS, multi-target, `native`, `cross_platform` y API-backed offline.
-
-Existe además una matriz dedicada de regresión de Mobile Licensing que congela la aplicabilidad Android-only.
+Existe además una matriz dedicada de regresión de Mobile Licensing que congela la aplicabilidad Android-only, incluyendo compatibilidad con manifests Android heredados.
 
 Los workflows especializados y Release Validation forman evidencia automatizada, pero CI no sustituye aprobación humana de review, merge, aceptación ni tag.
 
-## 11. Provenance de componentes
+## 10. Provenance de componentes
 
-Durante el release candidate:
-
-- root estable: `0.5.3` hasta promoción;
-- carril de desarrollo: `0.5.4-dev`;
-- project/status y contratos platform-bearing modificados: `0.5.4-dev`;
-- catalogs/workflows modificados: `0.5.4-dev`;
-- skills iOS/client architecture/functional slice modificadas: `0.5.4-dev`;
+- root release: `0.5.4`;
+- project/status y contratos platform-bearing modificados: `0.5.4`;
+- catalogs/workflows modificados: `0.5.4`;
+- `dev-android-client-architecture`, `dev-ios-client-architecture` y `dev-functional-interface-slice`: `0.5.4`;
 - Mobile Licensing schema/template/skill: `0.5.3-compatible`;
 - CI Runtime: `0.5.2-compatible`;
 - Architecture Implementation Conformance: `0.5.1-compatible`;
-- contratos históricos no modificados conservan su provenance anterior.
+- componentes históricos no modificados conservan su provenance anterior.
 
 No se re-etiquetan componentes sin cambio semántico.
 
-## 12. Consumidores y adopción
+## 11. Consumidores y adopción
 
 No existe automatic consumer upgrade.
 
-Una futura release estable 0.5.4 no cambia por sí misma `.blueprint/status.yaml`, código, workflows ni comportamiento de un consumidor. La adopción requiere verificación live del Master/consumidor, Compliance Review, clasificación KEEP / ADOPT / MIGRATE / DEFER / N/A, aprobación explícita, PR de adopción y revalidación según impacto real.
+La publicación de 0.5.4 no cambia por sí misma `.blueprint/status.yaml`, código, workflows ni comportamiento de un consumidor. La adopción requiere verificación live del Master/consumidor, Compliance Review, clasificación KEEP / ADOPT / MIGRATE / DEFER / N/A, aprobación explícita, PR de adopción y revalidación según impacto real.
 
-## 13. Release closure y siguiente frontera
+## 12. Release manifest y tag
 
-Este checkpoint no publica 0.5.4. Mantiene:
+El manifest estable es `documentation/BLUEPRINT_V0_5_4_RELEASE.json` y las notas están en `documentation/BLUEPRINT_V0_5_4_RELEASE_NOTES.md`.
 
-- `VERSION = 0.5.3`;
-- `DEVELOPMENT_VERSION = 0.5.4-dev`;
-- ausencia de `documentation/BLUEPRINT_V0_5_4_RELEASE.json` estable;
-- ausencia de tag `v0.5.4`.
+El tag esperado es `v0.5.4`, pero **no se crea como parte del PR de release**. Solo puede crearse después de:
 
-El PR final de release debe, como una frontera separada:
-
-1. promover contratos activos de desarrollo a `0.5.4` estable;
-2. establecer `VERSION = 0.5.4`;
-3. retirar `DEVELOPMENT_VERSION`;
-4. crear manifest y release notes estables 0.5.4;
-5. actualizar `BLUEPRINT.md`, README y Current State a identidad estable;
-6. ejecutar validación estable sobre el SHA real resultante en `main`;
-7. pedir aprobación humana separada antes de crear `v0.5.4`.
+1. aprobación humana explícita del merge del PR final;
+2. merge y captura del SHA real devuelto por GitHub;
+3. verificación del árbol aprobado en `main`;
+4. CI estable post-merge sobre ese SHA exacto;
+5. aprobación humana separada para crear el tag.
 
 Un `merge_commit_sha` prospectivo mostrado mientras un PR está abierto nunca sustituye al SHA real devuelto por la operación de merge.
 
-## 14. Fuera de 0.5.4
+## 13. Fuera de 0.5.4
 
 Permanece diferido el modelo API-less/local-authoritative mobile. Tampoco se impone un framework móvil universal, se generaliza Mobile Licensing a iOS, se mutan consumidores automáticamente ni se materializan por obligación todas las skills todavía planned.

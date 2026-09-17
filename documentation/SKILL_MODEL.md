@@ -73,13 +73,13 @@ There are **14 materialized skills** in the historical 0.5.0 component set:
 
 The stable 0.5.3 line additionally materialized `dev-mobile-licensing`, for 15 materialized skills, while preserving 25 planned identifiers.
 
-## Blueprint 0.5.4-dev hardening set
+## Blueprint 0.5.4 hardening set
 
 The 0.5.4 development lane materializes **16 skills** and keeps the existing 25 planned identifiers. It adds:
 
 - `dev-ios-client-architecture` under a new `ios` category loaded only when `capabilities.ios=true`.
 
-The following client-execution skills carry 0.5.4-dev provenance because their contracts were changed by the iOS/cross-platform hardening:
+The following client-execution skills carry 0.5.4 provenance because their contracts were changed by the iOS/cross-platform hardening:
 
 - `dev-android-client-architecture`
 - `dev-ios-client-architecture`

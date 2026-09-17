@@ -1,7 +1,7 @@
 ---
 id: dev-ios-client-architecture
 title: iOS Client Architecture
-version: 0.5.4-dev
+version: 0.5.4
 status: materialized
 category: ios
 applies_to:

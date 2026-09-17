@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.5.4-dev",
+  "schema_version": "0.5.4",
   "architecture_id": "CLIENT-IOS-OPS-MOBILE",
   "project_id": "example-project",
   "mode": "greenfield",
