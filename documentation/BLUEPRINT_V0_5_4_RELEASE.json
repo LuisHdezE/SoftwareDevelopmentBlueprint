@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.0.0",
+  "version": "0.5.4",
+  "status": "stable",
+  "release_date": "2026-09-16",
+  "previous_stable": "0.5.3",
+  "pre_release_main": "1f852ad831f6cb16b92c697fa97c46ac0e71049a",
+  "tag": "v0.5.4",
+  "release_candidate": {
+    "closure_pull_request": 38,
+    "closure_merge_commit": "1f852ad831f6cb16b92c697fa97c46ac0e71049a",
+    "candidate_manifest": "documentation/BLUEPRINT_V0_5_4_RELEASE_CANDIDATE.json",
+    "candidate_notes": "documentation/BLUEPRINT_V0_5_4_RELEASE_CANDIDATE.md"
+  },
+  "hardening_lineage": [
+    {"increment": 0, "pull_request": 31, "merge_commit": "25b74c2cd92ad7aa4171196df3cc52cc3c58954d", "scope": "governed_development_lane"},
+    {"increment": 1, "pull_request": 32, "merge_commit": "408880be8536828dfe12de98c2ea511e8bdcc5a8", "scope": "platform_capability_model"},
+    {"increment": 2, "pull_request": 33, "merge_commit": "8207c23ccf6ab519431a26ad564a42d960033d3f", "scope": "ios_client_architecture_contracts"},
+    {"increment": 3, "pull_request": 34, "merge_commit": "fad8eef654cb7825b03e77f5eb3dae6fbf7698e0", "scope": "ios_workflows_catalogs_skills"},
+    {"increment": 4, "pull_request": 35, "merge_commit": "e18eda4d2676f47cdee1f9eed68f9f1a63941b1d", "scope": "cross_artifact_ios_integrity"},
+    {"increment": 5, "pull_request": 36, "merge_commit": "fc4446f869f9f903b1ef1bc3761e2ec222ac602c", "scope": "governed_platform_matrix_ci"},
+    {"increment": 6, "pull_request": 37, "merge_commit": "965e2c060e2193d50d0937fd425802fb1b193c60", "scope": "mobile_licensing_regression_boundary"},
+    {"increment": 7, "pull_request": 38, "merge_commit": "1f852ad831f6cb16b92c697fa97c46ac0e71049a", "scope": "release_candidate_closure"}
+  ],
+  "counts": {
+    "phases": 29,
+    "checks": 146,
+    "gates": 19,
+    "materialized_skills": 16,
+    "planned_skills": 25
+  },
+  "release_highlights": [
+    "explicit_ios_target_capability",
+    "native_and_cross_platform_mobile_strategy",
+    "independent_platform_architecture_gates_evidence_qa_and_acceptance",
+    "web_android_ios_namespace_isolation",
+    "api_backed_offline_mobile_boundary",
+    "ios_client_architecture_workflow_and_skill_support",
+    "cross_artifact_platform_integrity",
+    "governed_platform_matrix_regression_suite",
+    "android_only_mobile_licensing_applicability_boundary"
+  ],
+  "compatibility": {
+    "consumer_auto_upgrade": false,
+    "brownfield_align_do_not_rewrite": true,
+    "grandfather_existing_evidence": true,
+    "mockups_conditional": true,
+    "impact_based_api_revalidation": true,
+    "cross_platform_does_not_enable_targets": true,
+    "cross_platform_does_not_share_platform_acceptance": true,
+    "offline_mobile_api_backed_only": true,
+    "api_less_local_authoritative_deferred": true,
+    "mobile_licensing_android_applicability_preserved": true,
+    "ios_does_not_imply_mobile_licensing": true
+  },
+  "component_provenance": {
+    "root_release": "0.5.4",
+    "project_and_status_contracts": "0.5.4",
+    "platform_bearing_client_and_experience_contracts": "0.5.4",
+    "catalogs_and_workflows": "0.5.4",
+    "android_ios_client_architecture_and_functional_slice_skills": "0.5.4",
+    "mobile_licensing_contract": "0.5.3-compatible",
+    "ci_runtime_contract": "0.5.2-compatible",
+    "architecture_implementation_conformance": "0.5.1-compatible",
+    "unchanged_reference_compliance_and_design_contracts": "0.5.0-compatible"
+  },
+  "consumer_policy": {
+    "automatic_adoption": false,
+    "compliance_review_required": true,
+    "explicit_consumer_change_required": true,
+    "impact_appropriate_revalidation_required": true
+  },
+  "deferred_scope": {
+    "api_less_local_authoritative_mobile": true,
+    "ios_mobile_licensing_generalization": true,
+    "universal_cross_platform_framework_mandate": true
+  },
+  "release_rule": "Create v0.5.4 only after the release PR merges, the real merge SHA is verified on main, stable post-merge validation passes on that exact SHA, and separate explicit human approval authorizes the tag."
+}

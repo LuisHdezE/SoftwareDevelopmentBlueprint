@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.5.4-dev",
+  "schema_version": "0.5.4",
   "baseline_id": "CLIENT-BASELINE-IOS-EXAMPLE",
   "project_id": "example-project",
   "mode": "greenfield",

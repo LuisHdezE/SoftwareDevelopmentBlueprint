@@ -42,6 +42,8 @@ on:
       - documentation/BLUEPRINT_V0_5_4_PLATFORM_CAPABILITIES.md
       - documentation/BLUEPRINT_V0_5_4_RELEASE_CANDIDATE.json
       - documentation/BLUEPRINT_V0_5_4_RELEASE_CANDIDATE.md
+      - documentation/BLUEPRINT_V0_5_4_RELEASE.json
+      - documentation/BLUEPRINT_V0_5_4_RELEASE_NOTES.md
       - documentation/SELF_HOSTED_RUNNER_BOOTSTRAP.md
       - documentation/EXPERIENCE_ARTIFACT_MODEL.md
       - documentation/CLIENT_ARCHITECTURE_CONTRACT.md
@@ -85,6 +87,8 @@ on:
       - documentation/BLUEPRINT_V0_5_4_PLATFORM_CAPABILITIES.md
       - documentation/BLUEPRINT_V0_5_4_RELEASE_CANDIDATE.json
       - documentation/BLUEPRINT_V0_5_4_RELEASE_CANDIDATE.md
+      - documentation/BLUEPRINT_V0_5_4_RELEASE.json
+      - documentation/BLUEPRINT_V0_5_4_RELEASE_NOTES.md
       - documentation/SELF_HOSTED_RUNNER_BOOTSTRAP.md
       - documentation/EXPERIENCE_ARTIFACT_MODEL.md
       - documentation/CLIENT_ARCHITECTURE_CONTRACT.md
@@ -119,7 +123,12 @@ jobs:
           fi
       - name: Validate Blueprint stable release state
         if: steps.validation-mode.outputs.mode == 'stable'
-        run: python scripts/validate-release.py
+        run: |
+          if [[ "$(cat VERSION)" == "0.5.4" ]]; then
+            python scripts/validate-release-v054.py
+          else
+            python scripts/validate-release.py
+          fi
       - name: Validate Blueprint development hardening state
         if: steps.validation-mode.outputs.mode == 'development'
         run: python scripts/validate-development.py

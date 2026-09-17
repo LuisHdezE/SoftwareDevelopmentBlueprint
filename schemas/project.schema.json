@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://eliasworks.dev/blueprint/0.5.4-dev/project.schema.json",
+  "$id": "https://eliasworks.dev/blueprint/0.5.4/project.schema.json",
   "title": "Blueprint Project Manifest",
   "type": "object",
   "required": ["project", "blueprint", "stack", "capabilities", "artifact_locations"],
@@ -19,7 +19,7 @@
       "type": "object",
       "required": ["version", "mode"],
       "properties": {
-        "version": {"const": "0.5.4-dev"},
+        "version": {"const": "0.5.4"},
         "mode": {"enum": ["greenfield", "brownfield"]}
       },
       "additionalProperties": false

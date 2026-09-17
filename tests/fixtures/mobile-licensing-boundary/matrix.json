@@ -1,6 +1,6 @@
 {
-  "schema_version": "0.5.4-dev",
-  "description": "Governed Mobile Licensing applicability regression matrix for Blueprint 0.5.4-dev. Android alone owns the decision boundary; iOS does not inherit it and cross_platform does not change applicability.",
+  "schema_version": "0.5.4",
+  "description": "Governed Mobile Licensing applicability regression matrix for Blueprint 0.5.4. Android alone owns the decision boundary; iOS does not inherit it and cross_platform does not change applicability.",
   "policy": {
     "decision_required_when": {
       "android": true

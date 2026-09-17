@@ -1,4 +1,4 @@
-version: 0.5.4-dev
+version: 0.5.4
 gates:
   - id: brownfield_baseline
     name: Brownfield Baseline Gate

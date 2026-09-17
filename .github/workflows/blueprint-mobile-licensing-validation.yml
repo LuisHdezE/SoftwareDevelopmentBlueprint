@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - 'blueprint/**'
+      - 'release/**'
     paths:
       - 'schemas/mobile-licensing.schema.json'
       - 'schemas/project.schema.json'
@@ -19,6 +20,7 @@ on:
       - 'tests/fixtures/mobile-licensing-boundary/**'
       - 'scripts/validate-mobile-licensing.py'
       - 'scripts/validate-mobile-licensing-boundary.py'
+      - 'scripts/validate-release-v054.py'
       - '.github/workflows/blueprint-mobile-licensing-validation.yml'
   pull_request:
     branches: [main]
@@ -36,6 +38,7 @@ on:
       - 'tests/fixtures/mobile-licensing-boundary/**'
       - 'scripts/validate-mobile-licensing.py'
       - 'scripts/validate-mobile-licensing-boundary.py'
+      - 'scripts/validate-release-v054.py'
       - '.github/workflows/blueprint-mobile-licensing-validation.yml'
 
 permissions:
@@ -53,7 +56,11 @@ jobs:
           python-version: '3.14'
       - name: Install validator dependencies
         run: python -m pip install --disable-pip-version-check jsonschema==4.26.0 PyYAML==6.0.2
-      - name: Validate mobile licensing contract
-        run: python scripts/validate-mobile-licensing.py
-      - name: Validate mobile licensing regression boundary
-        run: python scripts/validate-mobile-licensing-boundary.py
+      - name: Validate mobile licensing contract and boundary
+        run: |
+          if [[ "$(cat VERSION)" == "0.5.4" && ! -f DEVELOPMENT_VERSION ]]; then
+            python scripts/validate-release-v054.py --scope mobile-licensing
+          else
+            python scripts/validate-mobile-licensing.py
+            python scripts/validate-mobile-licensing-boundary.py
+          fi

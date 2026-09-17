@@ -1,4 +1,4 @@
-# Client Architecture Contract - Blueprint 0.5.4-dev
+# Client Architecture Contract - Blueprint 0.5.4
 
 ## Purpose
 
@@ -12,7 +12,7 @@ The canonical contract remains:
 
 The scoped gate remains `client_architecture_ready` for the exact `interface_slice + platform`.
 
-Supported client platforms in the v0.5.4 hardening lane are `web`, `android`, and `ios`. A PASS for one platform never authorizes another platform, even when implementation code is shared through a cross-platform strategy.
+Supported client platforms in Blueprint 0.5.4 are `web`, `android`, and `ios`. A PASS for one platform never authorizes another platform, even when implementation code is shared through a cross-platform strategy.
 
 ## Platform Client Architecture Baseline
 
@@ -35,7 +35,7 @@ Supported client platforms in the v0.5.4 hardening lane are `web`, `android`, an
 
 Framework, language and UI toolkit technology choices are consumer data. The Blueprint defines required architectural decisions and safety boundaries but does not mandate React, Kotlin, Swift, Flutter, React Native, Kotlin Multiplatform or any other implementation technology universally.
 
-Legacy `0.5.0` client architecture documents remain schema-compatible while new iOS examples use `0.5.4-dev` provenance.
+Legacy `0.5.0` client architecture documents remain schema-compatible while new/updated platform-bearing examples may use stable `0.5.4` provenance.
 
 ## Platform namespaces
 
@@ -92,7 +92,7 @@ For the exact slice/platform:
 - idempotency operations must be a subset of bound operations;
 - API revision is explicit for impact/revalidation.
 
-The v0.5.4 iOS architecture increment introduces the iOS namespace and architecture contracts only. iOS executable inventory materialization remains a separate governed increment.
+Blueprint 0.5.4 stabilizes iOS namespace and architecture contracts as part of the governed multiplatform model.
 
 ## Security and business guardrails
 
