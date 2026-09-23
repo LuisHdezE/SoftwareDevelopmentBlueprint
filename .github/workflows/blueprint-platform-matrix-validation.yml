@@ -24,6 +24,7 @@ on:
       - 'templates/functional-interface-slice.example.json'
       - 'scripts/validate-artifact-graph.py'
       - 'scripts/validate-platform-matrix.py'
+      - 'scripts/validate-platform-matrix-v055-dev.py'
       - 'scripts/validate-release-v054.py'
       - 'tests/fixtures/platform-matrix/**'
       - '.github/workflows/blueprint-platform-matrix-validation.yml'
@@ -47,6 +48,7 @@ on:
       - 'templates/functional-interface-slice.example.json'
       - 'scripts/validate-artifact-graph.py'
       - 'scripts/validate-platform-matrix.py'
+      - 'scripts/validate-platform-matrix-v055-dev.py'
       - 'scripts/validate-release-v054.py'
       - 'tests/fixtures/platform-matrix/**'
       - '.github/workflows/blueprint-platform-matrix-validation.yml'
@@ -73,6 +75,8 @@ jobs:
         run: |
           if [[ "$(cat VERSION)" == "0.5.4" && ! -f DEVELOPMENT_VERSION ]]; then
             python scripts/validate-release-v054.py --scope platform-matrix
+          elif [[ -f DEVELOPMENT_VERSION && "$(cat DEVELOPMENT_VERSION)" == "0.5.5-dev" ]]; then
+            python scripts/validate-platform-matrix-v055-dev.py
           else
             python scripts/validate-platform-matrix.py
           fi
