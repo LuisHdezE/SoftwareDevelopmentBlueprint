@@ -2,6 +2,7 @@
 
 > CURRENT CHECKPOINT / DERIVED SUMMARY  
 > Fecha de cierre representada: **2026-09-23 America/Montevideo**.  
+> Release representada: **0.5.4**.  
 > Release estable representada: **0.5.4**.  
 > Release candidate activa: **0.5.5-dev**.
 
@@ -254,6 +255,8 @@ Un `merge_commit_sha` prospectivo de una PR abierta nunca es release evidence.
 
 ## 18. Historia 0.5.4 preservada
 
-El carril 0.5.4 fue construido mediante PR #31 a #38 y promovido estable posteriormente. Sus manifests de Development, Release Candidate, Release y Release Notes permanecen inmutables como historia.
+El carril 0.5.4 fue construido mediante PR #31 a #38. El **PR #38** cerró el release candidate y dejó `main@1f852ad831f6cb16b92c697fa97c46ac0e71049a` listo para la promoción estable posterior.
+
+Sus manifests de Development, Release Candidate, Release y Release Notes permanecen inmutables como historia.
 
 El tag `v0.5.4` sigue apuntando al commit estable `8d29ba4c6caf0a382b80310dc0e88c8f1e7fb3c4`.
