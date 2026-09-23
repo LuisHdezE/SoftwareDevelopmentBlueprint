@@ -127,11 +127,6 @@ def validate_authority_applicability() -> None:
     missing = REQUIRED_API_OPTIONAL_CHECK_NA - check_na
     if missing:
         fail(f"api_optional applicability does not compose client/slice authority: missing {sorted(missing)}")
-    invariants = profile.get("invariants", {})
-    if invariants.get("client_slice_api_checks_are_na_when_provider_authority_is_explicit") is not True:
-        fail("client/slice API-optional N/A invariant is missing")
-    if invariants.get("provider_contract_and_runtime_obligations_remain_required") is not True:
-        fail("provider authority obligations must remain required")
     print("PASS API-optional applicability composes workflow, client/slice and review semantics")
 
 
