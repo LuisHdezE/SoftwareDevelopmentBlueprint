@@ -1,4 +1,4 @@
-blueprint_version: 0.5.3
+blueprint_version: 0.5.4
 updated_at: '2026-09-10T03:49:00-03:00'
 phases:
   api_gate:
