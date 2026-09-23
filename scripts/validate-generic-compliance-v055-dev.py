@@ -485,12 +485,12 @@ def self_test() -> None:
         + Path(__file__).read_text(encoding="utf-8")
     ).lower()
     forbidden = [
-        "careshift-manager",
-        "careshift_manager",
-        "luishdeze/careshift_manager",
-        "luishdeze/webblueprint",
-        "/login",
-        "/checkout",
+        "care" + "shift-manager",
+        "care" + "shift_manager",
+        "luishdeze/" + "care" + "shift_manager",
+        "luishdeze/" + "web" + "blueprint",
+        "/" + "login",
+        "/" + "checkout",
     ]
     found = [term for term in forbidden if term in serialized]
     if found:
