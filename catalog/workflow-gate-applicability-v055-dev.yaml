@@ -1,0 +1,46 @@
+schema_version: 1.0.0
+target_version: 0.5.5-dev
+stable_version: 0.5.4
+authority_source: authority.api.mode
+stable_workflows:
+- greenfield
+- brownfield
+profiles:
+  api_backed:
+    inherit_stable_exactly: true
+    phase_na: []
+    check_na: []
+    gate_na: []
+  api_optional:
+    inherit_stable_by_default: true
+    phase_na:
+    - api_contract_design
+    - api_implementation
+    - openapi_validation
+    - postman_contract
+    - api_qa
+    - api_gate
+    check_na:
+    - api.auth_strategy
+    - api.error_contract
+    - api.versioning_policy
+    check_na_when_database_absent:
+    - data.schema_migrations
+    - data.authoritative_database
+    gate_na:
+    - api_contract_ready
+    - api_implemented
+    - openapi_valid
+    - postman_ready
+    - api_qa_pass
+    - api_gate
+    route:
+      remove_na_phases: true
+      remove_na_gate_bindings: true
+      next_after_architecture_security_data: interface_inventory
+    invariants:
+      authority_manifest_required: true
+      api_gate_cannot_block_client_delivery: true
+      na_checks_cannot_be_required_by_effective_gate: true
+      database_checks_return_when_database_declared: true
+      api_specific_checks_never_return_in_api_optional: true
