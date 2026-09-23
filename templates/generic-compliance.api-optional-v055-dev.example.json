@@ -1,0 +1,105 @@
+{
+  "schema_version": "0.5.5-dev",
+  "consumer": {
+    "id": "generic-api-optional",
+    "repository": "example/api-optional"
+  },
+  "blueprint": {
+    "adopted_version": "0.5.4",
+    "evaluation_version": "0.5.5-dev",
+    "workflow_mode": "greenfield"
+  },
+  "authority": {
+    "api_mode": "api_optional"
+  },
+  "capabilities": {
+    "web": true,
+    "android": false,
+    "ios": false,
+    "database": false,
+    "mobile_licensing": false
+  },
+  "scope": {
+    "mode": "selected",
+    "check_ids": [
+      "discovery.product_vision",
+      "api.auth_strategy",
+      "data.authoritative_database",
+      "qa.real_api_transport",
+      "qa.provider_runtime_transport",
+      "qa.security",
+      "review.human_complete"
+    ]
+  },
+  "evidence": [
+    {
+      "id": "EV-VISION",
+      "path": "docs/product-vision.md",
+      "kind": "evidence",
+      "state": "PRESENT",
+      "blueprint_version": "0.5.4"
+    },
+    {
+      "id": "EV-PROVIDER",
+      "path": "reports/provider-runtime.json",
+      "kind": "runtime",
+      "state": "PRESENT",
+      "blueprint_version": "0.5.5-dev"
+    },
+    {
+      "id": "EV-SEC",
+      "path": "reports/client-security-qa.md",
+      "kind": "report",
+      "state": "PRESENT",
+      "blueprint_version": "0.5.5-dev"
+    },
+    {
+      "id": "EV-HUMAN",
+      "path": "evidence/human-acceptance.md",
+      "kind": "manual",
+      "state": "PRESENT",
+      "blueprint_version": "0.5.4",
+      "grandfathered": true
+    }
+  ],
+  "assessments": [
+    {
+      "check_id": "discovery.product_vision",
+      "declared_status": "PASS",
+      "evidence_refs": ["EV-VISION"]
+    },
+    {
+      "check_id": "api.auth_strategy",
+      "declared_status": "N/A",
+      "reason_code": "NOT_APPLICABLE",
+      "rationale": "No server API authority is declared."
+    },
+    {
+      "check_id": "data.authoritative_database",
+      "declared_status": "N/A",
+      "reason_code": "NOT_APPLICABLE",
+      "rationale": "No authoritative database is declared."
+    },
+    {
+      "check_id": "qa.real_api_transport",
+      "declared_status": "N/A",
+      "reason_code": "NOT_APPLICABLE",
+      "rationale": "Real API transport is not part of this consumer authority model."
+    },
+    {
+      "check_id": "qa.provider_runtime_transport",
+      "declared_status": "PASS",
+      "evidence_refs": ["EV-PROVIDER"]
+    },
+    {
+      "check_id": "qa.security",
+      "declared_status": "PASS",
+      "evidence_refs": ["EV-SEC"]
+    },
+    {
+      "check_id": "review.human_complete",
+      "declared_status": "PASS",
+      "evidence_refs": ["EV-HUMAN"]
+    }
+  ]
+}
