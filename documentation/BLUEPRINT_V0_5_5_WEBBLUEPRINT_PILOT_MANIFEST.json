@@ -1,0 +1,338 @@
+{
+  "schema_version": "0.5.5-dev",
+  "consumer": {
+    "id": "webblueprint",
+    "repository": "LuisHdezE/WebBlueprint",
+    "snapshot": "12cc52dabfe05ec9902f0ea6d73c7da6a19e1a74"
+  },
+  "blueprint": {
+    "adopted_version": "UNMANAGED",
+    "evaluation_version": "0.5.5-dev",
+    "workflow_mode": "greenfield"
+  },
+  "authority": {
+    "api_mode": "api_optional"
+  },
+  "capabilities": {
+    "web": true,
+    "android": false,
+    "ios": false,
+    "database": false,
+    "mobile_licensing": false,
+    "saas": false,
+    "multi_tenant": false,
+    "offline_mobile": false,
+    "redis": false,
+    "docker": false
+  },
+  "scope": {
+    "mode": "selected",
+    "check_ids": [
+      "discovery.product_vision",
+      "discovery.scope_mvp",
+      "requirements.traceability",
+      "ui.web_inventory",
+      "ui.inventory_requirement_links",
+      "architecture.decision_records",
+      "data.authoritative_database",
+      "data.schema_migrations",
+      "api.auth_strategy",
+      "client.architecture_contract",
+      "client.api_client_strategy",
+      "client.api_contract_binding",
+      "functional.inventory_binding",
+      "functional.api_dependencies_resolved",
+      "functional.real_api_integration",
+      "functional.no_hardcoded_business_data",
+      "functional.no_invented_capabilities",
+      "functional.auth_rbac_runtime",
+      "functional.responsive_runtime",
+      "functional.accessibility_runtime",
+      "functional.tests",
+      "functional.traceability",
+      "review.design_system_fidelity",
+      "review.api_permission_fidelity",
+      "review.responsive",
+      "review.accessibility",
+      "review.human_complete",
+      "qa.functional",
+      "qa.real_api_transport",
+      "qa.provider_runtime_transport",
+      "qa.integration",
+      "qa.security",
+      "qa.responsive",
+      "qa.accessibility",
+      "qa.e2e"
+    ]
+  },
+  "evidence": [
+    {
+      "id": "EV-WB-README",
+      "path": "README.md",
+      "kind": "evidence",
+      "state": "PRESENT",
+      "blueprint_version": "pre-adoption",
+      "grandfathered": true,
+      "note": "Product purpose, frontend-only boundary, Style 1, responsive expectations and governance are explicit in the frozen consumer snapshot."
+    },
+    {
+      "id": "EV-WB-ADRS",
+      "path": "docs/decisions/",
+      "kind": "evidence",
+      "state": "PRESENT",
+      "blueprint_version": "pre-adoption",
+      "grandfathered": true,
+      "note": "The frozen snapshot contains ADRs 0001 through 0008."
+    },
+    {
+      "id": "EV-WB-CORK-INVENTORY",
+      "path": "docs/reference/cork-v4-page-inventory.csv",
+      "kind": "evidence",
+      "state": "PRESENT",
+      "blueprint_version": "pre-adoption",
+      "grandfathered": true,
+      "note": "Useful observed/reference inventory exists, but it is not yet projected into the governed Blueprint Interface Inventory contract with WEB-### identifiers."
+    },
+    {
+      "id": "EV-WB-STYLE1",
+      "path": "docs/visual/style-1-baseline.md",
+      "kind": "evidence",
+      "state": "PRESENT",
+      "blueprint_version": "pre-adoption",
+      "grandfathered": true,
+      "note": "Official WebBlueprint visual baseline."
+    },
+    {
+      "id": "EV-WB-SIGNIN",
+      "path": "docs/checkpoints/V1-authentication-sign-in.md",
+      "kind": "report",
+      "state": "PRESENT",
+      "blueprint_version": "pre-adoption",
+      "grandfathered": true,
+      "note": "Production-accepted Sign In checkpoint records feature boundaries, provider/mock authority, functional QA, responsive QA, accessibility QA, browser QA and explicit product-owner acceptance."
+    },
+    {
+      "id": "EV-WB-QA-POLICY",
+      "path": "docs/reference/mandatory-qa-gate.md",
+      "kind": "policy",
+      "state": "PRESENT",
+      "blueprint_version": "pre-adoption",
+      "grandfathered": true,
+      "note": "Mandatory WebBlueprint QA gate and evidence policy."
+    },
+    {
+      "id": "EV-WB-BROWSER-QA",
+      "path": "qa/browser/authentication-sign-in.browser-qa.mjs",
+      "kind": "runtime",
+      "state": "PRESENT",
+      "blueprint_version": "pre-adoption",
+      "grandfathered": true,
+      "note": "Executable browser QA scenario for the accepted Sign In surface."
+    },
+    {
+      "id": "EV-WB-CI",
+      "path": ".github/workflows/ci.yml",
+      "kind": "evidence",
+      "state": "PRESENT",
+      "blueprint_version": "pre-adoption",
+      "grandfathered": true,
+      "note": "Consumer CI contract at the reviewed snapshot."
+    }
+  ],
+  "assessments": [
+    {
+      "check_id": "discovery.product_vision",
+      "declared_status": "PASS",
+      "evidence_refs": ["EV-WB-README"]
+    },
+    {
+      "check_id": "discovery.scope_mvp",
+      "declared_status": "PASS",
+      "evidence_refs": ["EV-WB-README"]
+    },
+    {
+      "check_id": "requirements.traceability",
+      "declared_status": "FAIL",
+      "reason_code": "MISSING_EVIDENCE",
+      "rationale": "The frozen consumer snapshot does not expose a governed requirements-ID and requirements-to-implementation traceability artifact."
+    },
+    {
+      "check_id": "ui.web_inventory",
+      "declared_status": "FAIL",
+      "reason_code": "CONTRACT_VIOLATION",
+      "rationale": "A useful CORK page inventory exists, but it has not been projected into the Blueprint Interface Inventory contract with governed WEB-### identifiers.",
+      "evidence_refs": ["EV-WB-CORK-INVENTORY"]
+    },
+    {
+      "check_id": "ui.inventory_requirement_links",
+      "declared_status": "FAIL",
+      "reason_code": "MISSING_EVIDENCE",
+      "rationale": "The current inventory does not carry governed requirement links because the requirements-ID layer is not yet materialized."
+    },
+    {
+      "check_id": "architecture.decision_records",
+      "declared_status": "PASS",
+      "evidence_refs": ["EV-WB-ADRS"]
+    },
+    {
+      "check_id": "data.authoritative_database",
+      "declared_status": "N/A",
+      "reason_code": "NOT_APPLICABLE",
+      "rationale": "WebBlueprint declares no authoritative database in the reviewed frontend-only authority model."
+    },
+    {
+      "check_id": "data.schema_migrations",
+      "declared_status": "N/A",
+      "reason_code": "NOT_APPLICABLE",
+      "rationale": "No authoritative database is declared for the reviewed consumer snapshot."
+    },
+    {
+      "check_id": "api.auth_strategy",
+      "declared_status": "N/A",
+      "reason_code": "NOT_APPLICABLE",
+      "rationale": "The reviewed consumer has no server API authority."
+    },
+    {
+      "check_id": "client.architecture_contract",
+      "declared_status": "FAIL",
+      "reason_code": "CONTRACT_VIOLATION",
+      "rationale": "The Sign In implementation demonstrates sound feature boundaries, but WebBlueprint has not yet materialized the governed Blueprint Client Architecture contract.",
+      "evidence_refs": ["EV-WB-SIGNIN"]
+    },
+    {
+      "check_id": "client.api_client_strategy",
+      "declared_status": "N/A",
+      "reason_code": "NOT_APPLICABLE",
+      "rationale": "API-client strategy is replaced by explicit provider/application-contract authority for this API-optional consumer."
+    },
+    {
+      "check_id": "client.api_contract_binding",
+      "declared_status": "N/A",
+      "reason_code": "NOT_APPLICABLE",
+      "rationale": "No OpenAPI/API contract binding may be invented for the API-optional consumer."
+    },
+    {
+      "check_id": "functional.inventory_binding",
+      "declared_status": "FAIL",
+      "reason_code": "MISSING_EVIDENCE",
+      "rationale": "The accepted Sign In slice cannot bind to governed WEB-### inventory identifiers until the Interface Inventory migration is materialized."
+    },
+    {
+      "check_id": "functional.api_dependencies_resolved",
+      "declared_status": "N/A",
+      "reason_code": "NOT_APPLICABLE",
+      "rationale": "The reviewed Sign In authority boundary is provider/mock based and declares no API dependency."
+    },
+    {
+      "check_id": "functional.real_api_integration",
+      "declared_status": "N/A",
+      "reason_code": "NOT_APPLICABLE",
+      "rationale": "Real API integration is intentionally absent for the reviewed provider-driven Sign In slice."
+    },
+    {
+      "check_id": "functional.no_hardcoded_business_data",
+      "declared_status": "PASS",
+      "evidence_refs": ["EV-WB-SIGNIN"]
+    },
+    {
+      "check_id": "functional.no_invented_capabilities",
+      "declared_status": "PASS",
+      "evidence_refs": ["EV-WB-SIGNIN"]
+    },
+    {
+      "check_id": "functional.auth_rbac_runtime",
+      "declared_status": "N/A",
+      "reason_code": "NOT_APPLICABLE",
+      "rationale": "The provider-driven catalog slice does not claim server authentication, authorization or permission enforcement."
+    },
+    {
+      "check_id": "functional.responsive_runtime",
+      "declared_status": "PASS",
+      "evidence_refs": ["EV-WB-SIGNIN", "EV-WB-BROWSER-QA"]
+    },
+    {
+      "check_id": "functional.accessibility_runtime",
+      "declared_status": "PASS",
+      "evidence_refs": ["EV-WB-SIGNIN", "EV-WB-BROWSER-QA"]
+    },
+    {
+      "check_id": "functional.tests",
+      "declared_status": "PASS",
+      "evidence_refs": ["EV-WB-SIGNIN", "EV-WB-CI"]
+    },
+    {
+      "check_id": "functional.traceability",
+      "declared_status": "FAIL",
+      "reason_code": "MISSING_EVIDENCE",
+      "rationale": "Implementation evidence exists, but it is not yet connected to governed requirements and Interface Inventory IDs."
+    },
+    {
+      "check_id": "review.design_system_fidelity",
+      "declared_status": "PASS",
+      "evidence_refs": ["EV-WB-SIGNIN", "EV-WB-STYLE1"]
+    },
+    {
+      "check_id": "review.api_permission_fidelity",
+      "declared_status": "N/A",
+      "reason_code": "NOT_APPLICABLE",
+      "rationale": "The reviewed consumer does not claim an API permission authority boundary."
+    },
+    {
+      "check_id": "review.responsive",
+      "declared_status": "PASS",
+      "evidence_refs": ["EV-WB-SIGNIN", "EV-WB-BROWSER-QA"]
+    },
+    {
+      "check_id": "review.accessibility",
+      "declared_status": "PASS",
+      "evidence_refs": ["EV-WB-SIGNIN", "EV-WB-BROWSER-QA"]
+    },
+    {
+      "check_id": "review.human_complete",
+      "declared_status": "PASS",
+      "evidence_refs": ["EV-WB-SIGNIN"]
+    },
+    {
+      "check_id": "qa.functional",
+      "declared_status": "PASS",
+      "evidence_refs": ["EV-WB-SIGNIN", "EV-WB-BROWSER-QA"]
+    },
+    {
+      "check_id": "qa.real_api_transport",
+      "declared_status": "N/A",
+      "reason_code": "NOT_APPLICABLE",
+      "rationale": "The API-optional consumer has no real API transport authority."
+    },
+    {
+      "check_id": "qa.provider_runtime_transport",
+      "declared_status": "PASS",
+      "evidence_refs": ["EV-WB-SIGNIN", "EV-WB-BROWSER-QA"]
+    },
+    {
+      "check_id": "qa.integration",
+      "declared_status": "PASS",
+      "evidence_refs": ["EV-WB-SIGNIN", "EV-WB-BROWSER-QA", "EV-WB-CI"]
+    },
+    {
+      "check_id": "qa.security",
+      "declared_status": "FAIL",
+      "reason_code": "MISSING_EVIDENCE",
+      "rationale": "The frozen Sign In checkpoint does not record a dedicated Integration QA security result. Policy and architecture-boundary evidence are not a substitute for executed security QA."
+    },
+    {
+      "check_id": "qa.responsive",
+      "declared_status": "PASS",
+      "evidence_refs": ["EV-WB-SIGNIN", "EV-WB-BROWSER-QA"]
+    },
+    {
+      "check_id": "qa.accessibility",
+      "declared_status": "PASS",
+      "evidence_refs": ["EV-WB-SIGNIN", "EV-WB-BROWSER-QA"]
+    },
+    {
+      "check_id": "qa.e2e",
+      "declared_status": "PASS",
+      "evidence_refs": ["EV-WB-SIGNIN", "EV-WB-BROWSER-QA"]
+    }
+  ]
+}
