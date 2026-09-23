@@ -1,0 +1,52 @@
+project:
+  name: Frontend Catalog
+  repository: owner/frontend-catalog
+  description: API-optional Web consumer candidate for Blueprint 0.5.5-dev
+blueprint:
+  version: 0.5.4
+  mode: greenfield
+stack:
+  backend: null
+  database: null
+  frontend: react
+  styling: tailwind
+  mobile: null
+capabilities:
+  web: true
+  android: false
+  ios: false
+  saas: false
+  multi_tenant: false
+  offline_mobile: false
+  redis: false
+  docker: false
+authority:
+  api:
+    mode: api_optional
+    revision: 1
+    decision_ref: ADR-API-AUTHORITY-001
+    allowed_sources:
+      - local
+      - static
+      - mock_non_authoritative
+    claims:
+      remote_authoritative_business_data: false
+      server_authentication: false
+      server_authorization: false
+      remote_persistent_mutations: false
+      permission_enforcement: false
+      backend_only_invariants: false
+artifact_locations:
+  status: .blueprint/status.yaml
+  evidence_root: .blueprint/evidence
+  interface_scope_baseline: .blueprint/ui/interface-scope-baseline.json
+  interface_inventory: .blueprint/ui/interface-inventory.json
+  design_system: .blueprint/ui/design-system.json
+  design_tokens: .blueprint/ui/design-tokens.json
+  client_architecture_root: .blueprint/client-architecture
+  functional_slices_root: .blueprint/functional-slices
+  api_impacts_root: .blueprint/api-impacts
+skills:
+  profiles:
+    - core
+    - web
