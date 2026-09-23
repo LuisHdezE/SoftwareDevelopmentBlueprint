@@ -11,7 +11,6 @@ import yaml
 from jsonschema import Draft202012Validator
 
 ROOT = Path(__file__).resolve().parents[1]
-
 TARGET_VERSION = "0.5.5-dev"
 STABLE_VERSION = "0.5.4"
 
@@ -42,14 +41,40 @@ EXPECTED_API_GATE_NA = {
     "api_qa_pass",
     "api_gate",
 }
-EXPECTED_ARCHITECTURE_API_CHECK_NA = {
+EXPECTED_API_OPTIONAL_CHECK_NA = {
     "api.auth_strategy",
     "api.error_contract",
     "api.versioning_policy",
+    "client.api_client_strategy",
+    "client.api_contract_binding",
+    "functional.api_dependencies_resolved",
+    "functional.real_api_integration",
+    "functional.auth_rbac_runtime",
+    "review.api_permission_fidelity",
 }
 EXPECTED_DATABASE_CHECKS = {
     "data.schema_migrations",
     "data.authoritative_database",
+}
+EXPECTED_PROVIDER_PATH_RETAINED = {
+    "client.architecture_contract",
+    "functional.inventory_binding",
+    "functional.no_hardcoded_business_data",
+    "functional.no_invented_capabilities",
+    "functional.responsive_runtime",
+    "functional.accessibility_runtime",
+    "functional.tests",
+    "functional.traceability",
+    "review.design_system_fidelity",
+    "review.responsive",
+    "review.accessibility",
+    "review.human_complete",
+    "qa.functional",
+    "qa.integration",
+    "qa.security",
+    "qa.responsive",
+    "qa.accessibility",
+    "qa.e2e",
 }
 EXPECTED_NEXT_AFTER_ARCHITECTURE = "interface_inventory"
 
@@ -86,32 +111,18 @@ def validate_overlay_schema(overlay: dict[str, Any]) -> None:
         fail(f"workflow applicability overlay schema validation failed: {details}")
 
 
-def index_checks(checks_doc: dict[str, Any]) -> dict[str, dict[str, Any]]:
-    checks = checks_doc.get("checks")
-    if not isinstance(checks, list):
-        fail("catalog/checks.yaml checks must be a list")
-    result: dict[str, dict[str, Any]] = {}
-    for item in checks:
+def index_catalog(doc: dict[str, Any], key: str, label: str) -> dict[str, dict[str, Any]]:
+    items = doc.get(key)
+    if not isinstance(items, list):
+        fail(f"catalog {label} must be a list")
+    indexed: dict[str, dict[str, Any]] = {}
+    for item in items:
         if not isinstance(item, dict) or not isinstance(item.get("id"), str):
-            fail("every check must be an object with string id")
-        if item["id"] in result:
-            fail(f"duplicate check id: {item['id']}")
-        result[item["id"]] = item
-    return result
-
-
-def index_gates(gates_doc: dict[str, Any]) -> dict[str, dict[str, Any]]:
-    gates = gates_doc.get("gates")
-    if not isinstance(gates, list):
-        fail("catalog/gates.yaml gates must be a list")
-    result: dict[str, dict[str, Any]] = {}
-    for item in gates:
-        if not isinstance(item, dict) or not isinstance(item.get("id"), str):
-            fail("every gate must be an object with string id")
-        if item["id"] in result:
-            fail(f"duplicate gate id: {item['id']}")
-        result[item["id"]] = item
-    return result
+            fail(f"every {label} item must be an object with string id")
+        if item["id"] in indexed:
+            fail(f"duplicate {label} id: {item['id']}")
+        indexed[item["id"]] = item
+    return indexed
 
 
 def authority_mode(project: dict[str, Any]) -> str:
@@ -133,7 +144,6 @@ def resolve(
 ) -> dict[str, Any]:
     mode = authority_mode(project)
     profile = overlay["profiles"][mode]
-
     phase_na = set(profile["phase_na"])
     gate_na = set(profile["gate_na"])
     check_na = set(profile["check_na"])
@@ -149,7 +159,7 @@ def resolve(
         check_na.update(profile["check_na_when_database_absent"])
 
     sequence = workflow.get("sequence")
-    if not isinstance(sequence, list) or not all(isinstance(v, str) for v in sequence):
+    if not isinstance(sequence, list) or not all(isinstance(value, str) for value in sequence):
         fail("workflow sequence must be a list of phase ids")
     effective_sequence = [phase for phase in sequence if phase not in phase_na]
 
@@ -157,26 +167,22 @@ def resolve(
     if not isinstance(gate_bindings, dict):
         fail("workflow gates must be an object")
     effective_gate_bindings = {
-        point: gate_id
-        for point, gate_id in gate_bindings.items()
-        if gate_id not in gate_na
+        point: gate_id for point, gate_id in gate_bindings.items() if gate_id not in gate_na
     }
 
     effective_gate_requirements: dict[str, dict[str, list[str]]] = {}
     for gate_id, gate in gates_by_id.items():
         if gate_id in gate_na:
             continue
-        require_all = [
-            check_id for check_id in gate.get("require_all", [])
-            if check_id not in check_na
-        ]
-        require_if = [
-            check_id for check_id in gate.get("require_if_applicable", [])
-            if check_id not in check_na
-        ]
         effective_gate_requirements[gate_id] = {
-            "require_all": require_all,
-            "require_if_applicable": require_if,
+            "require_all": [
+                check_id for check_id in gate.get("require_all", []) if check_id not in check_na
+            ],
+            "require_if_applicable": [
+                check_id
+                for check_id in gate.get("require_if_applicable", [])
+                if check_id not in check_na
+            ],
         }
 
     return {
@@ -201,28 +207,27 @@ def validate_contract_ids(
         fail("workflow applicability target_version drifted")
     if overlay.get("stable_version") != STABLE_VERSION:
         fail("workflow applicability stable_version drifted")
-
-    stable_workflows = overlay.get("stable_workflows")
-    if stable_workflows != ["greenfield", "brownfield"]:
+    if overlay.get("stable_workflows") != ["greenfield", "brownfield"]:
         fail("workflow applicability must govern greenfield then brownfield explicitly")
 
     for workflow_id, workflow in workflows.items():
-        if workflow.get("version") != STABLE_VERSION:
-            fail(f"{workflow_id} stable workflow must remain {STABLE_VERSION}")
-        if workflow.get("mode") != workflow_id:
-            fail(f"{workflow_id} workflow mode drifted")
+        if workflow.get("version") != STABLE_VERSION or workflow.get("mode") != workflow_id:
+            fail(f"{workflow_id} stable workflow identity drifted")
 
     optional = overlay["profiles"]["api_optional"]
     if set(optional["phase_na"]) != EXPECTED_API_PHASE_NA:
         fail("api_optional phase N/A set drifted")
     if set(optional["gate_na"]) != EXPECTED_API_GATE_NA:
         fail("api_optional gate N/A set drifted")
-    if set(optional["check_na"]) != EXPECTED_ARCHITECTURE_API_CHECK_NA:
-        fail("api_optional architecture API-check N/A set drifted")
+    if set(optional["check_na"]) != EXPECTED_API_OPTIONAL_CHECK_NA:
+        fail("api_optional authority-sensitive check N/A set drifted")
     if set(optional["check_na_when_database_absent"]) != EXPECTED_DATABASE_CHECKS:
         fail("api_optional database-absence N/A set drifted")
     if optional["route"]["next_after_architecture_security_data"] != EXPECTED_NEXT_AFTER_ARCHITECTURE:
         fail("api_optional post-architecture route drifted")
+
+    if EXPECTED_PROVIDER_PATH_RETAINED & set(optional["check_na"]):
+        fail("api_optional cannot classify provider-path client/functional/review/QA obligations as N/A")
 
     for check_id in optional["check_na"] + optional["check_na_when_database_absent"]:
         if check_id not in checks_by_id:
@@ -231,7 +236,7 @@ def validate_contract_ids(
         if gate_id not in gates_by_id:
             fail(f"applicability references unknown gate: {gate_id}")
     for phase_id in optional["phase_na"]:
-        if not any(phase_id in wf.get("sequence", []) for wf in workflows.values()):
+        if not any(phase_id in workflow.get("sequence", []) for workflow in workflows.values()):
             fail(f"applicability references unknown workflow phase: {phase_id}")
 
 
@@ -243,12 +248,13 @@ def validate_api_backed_preserves_stable(
     gates_by_id: dict[str, dict[str, Any]],
 ) -> None:
     profile = overlay["profiles"]["api_backed"]
-    if profile != {
+    expected_profile = {
         "inherit_stable_exactly": True,
         "phase_na": [],
         "check_na": [],
         "gate_na": [],
-    }:
+    }
+    if profile != expected_profile:
         fail("api_backed profile must not override stable 0.5.4 applicability")
 
     for workflow_id, workflow in workflows.items():
@@ -278,41 +284,42 @@ def validate_api_optional_route(
 ) -> None:
     for workflow_id, workflow in workflows.items():
         resolved = resolve(overlay, optional_project, workflow, checks_by_id, gates_by_id)
+        check_na = set(resolved["check_na"])
 
         if set(resolved["phase_na"]) != EXPECTED_API_PHASE_NA:
             fail(f"{workflow_id} api_optional phase applicability drifted")
         if set(resolved["gate_na"]) != EXPECTED_API_GATE_NA:
             fail(f"{workflow_id} api_optional gate applicability drifted")
+        if not EXPECTED_API_OPTIONAL_CHECK_NA.issubset(check_na):
+            fail(f"{workflow_id} api_optional lost authority-sensitive N/A checks")
+        if EXPECTED_PROVIDER_PATH_RETAINED & check_na:
+            fail(f"{workflow_id} api_optional incorrectly bypasses provider-path obligations")
         if "api_gate" in resolved["gate_bindings"].values():
             fail(f"{workflow_id} api_gate cannot remain a client-delivery blocker for api_optional")
         if any(phase in resolved["sequence"] for phase in EXPECTED_API_PHASE_NA):
             fail(f"{workflow_id} api_optional effective sequence still contains API-only phase")
 
-        seq = resolved["sequence"]
-        architecture_index = seq.index("architecture_security_data")
-        if architecture_index + 1 >= len(seq) or seq[architecture_index + 1] != EXPECTED_NEXT_AFTER_ARCHITECTURE:
-            fail(
-                f"{workflow_id} api_optional must route architecture_security_data "
-                f"directly to {EXPECTED_NEXT_AFTER_ARCHITECTURE}"
-            )
+        sequence = resolved["sequence"]
+        architecture_index = sequence.index("architecture_security_data")
+        if architecture_index + 1 >= len(sequence) or sequence[architecture_index + 1] != EXPECTED_NEXT_AFTER_ARCHITECTURE:
+            fail(f"{workflow_id} api_optional must route architecture_security_data directly to {EXPECTED_NEXT_AFTER_ARCHITECTURE}")
 
-        architecture_requirements = set(
-            resolved["gate_requirements"]["architecture_ready"]["require_all"]
-        )
-        forbidden_architecture = EXPECTED_ARCHITECTURE_API_CHECK_NA | EXPECTED_DATABASE_CHECKS
+        architecture_requirements = set(resolved["gate_requirements"]["architecture_ready"]["require_all"])
+        forbidden_architecture = {
+            "api.auth_strategy",
+            "api.error_contract",
+            "api.versioning_policy",
+        } | EXPECTED_DATABASE_CHECKS
         if architecture_requirements & forbidden_architecture:
-            fail(
-                f"{workflow_id} api_optional architecture_ready still requires "
-                f"{sorted(architecture_requirements & forbidden_architecture)}"
-            )
+            fail(f"{workflow_id} api_optional architecture_ready still requires {sorted(architecture_requirements & forbidden_architecture)}")
 
         for gate_id, requirements in resolved["gate_requirements"].items():
-            leaked = set(requirements["require_all"]) & set(resolved["check_na"])
-            leaked |= set(requirements["require_if_applicable"]) & set(resolved["check_na"])
+            leaked = set(requirements["require_all"]) & check_na
+            leaked |= set(requirements["require_if_applicable"]) & check_na
             if leaked:
                 fail(f"{workflow_id} effective gate {gate_id} still requires N/A checks: {sorted(leaked)}")
 
-    print("PASS api_optional bypasses only server/data/API obligations and reaches Interface Inventory")
+    print("PASS api_optional composes workflow, client/slice and review applicability without bypassing provider obligations")
 
 
 def validate_database_condition(
@@ -328,15 +335,11 @@ def validate_database_condition(
     for workflow_id, workflow in workflows.items():
         without_db = resolve(overlay, optional_project, workflow, checks_by_id, gates_by_id)
         with_db = resolve(overlay, with_database, workflow, checks_by_id, gates_by_id)
-
         if not EXPECTED_DATABASE_CHECKS.issubset(set(without_db["check_na"])):
             fail(f"{workflow_id} database checks must be N/A when api_optional database is absent")
         if EXPECTED_DATABASE_CHECKS & set(with_db["check_na"]):
             fail(f"{workflow_id} database checks must return when api_optional declares a database")
-
-        architecture_requirements = set(
-            with_db["gate_requirements"]["architecture_ready"]["require_all"]
-        )
+        architecture_requirements = set(with_db["gate_requirements"]["architecture_ready"]["require_all"])
         if not EXPECTED_DATABASE_CHECKS.issubset(architecture_requirements):
             fail(f"{workflow_id} architecture_ready must regain database checks when database exists")
 
@@ -364,41 +367,42 @@ def validate_negative_cases(
 
     missing_authority = copy.deepcopy(optional_project)
     missing_authority.pop("authority", None)
-    expect_failure(
-        "authority declaration omitted",
-        lambda: resolve(overlay, missing_authority, greenfield, checks_by_id, gates_by_id),
-    )
+    expect_failure("authority declaration omitted", lambda: resolve(overlay, missing_authority, greenfield, checks_by_id, gates_by_id))
 
     api_backed_bypass = copy.deepcopy(overlay)
     api_backed_bypass["profiles"]["api_backed"]["phase_na"] = ["api_gate"]
     expect_failure(
         "api_backed attempts to classify API phase N/A",
-        lambda: validate_api_backed_preserves_stable(
-            api_backed_bypass, backed_project, workflows, checks_by_id, gates_by_id
-        ),
+        lambda: validate_api_backed_preserves_stable(api_backed_bypass, backed_project, workflows, checks_by_id, gates_by_id),
     )
 
     optional_gate_leak = copy.deepcopy(overlay)
     optional_gate_leak["profiles"]["api_optional"]["gate_na"].remove("api_gate")
-    expect_failure(
-        "api_optional leaves api_gate active",
-        lambda: validate_contract_ids(optional_gate_leak, checks_by_id, gates_by_id, workflows),
-    )
+    expect_failure("api_optional leaves api_gate active", lambda: validate_contract_ids(optional_gate_leak, checks_by_id, gates_by_id, workflows))
 
     optional_phase_leak = copy.deepcopy(overlay)
     optional_phase_leak["profiles"]["api_optional"]["phase_na"].remove("openapi_validation")
-    expect_failure(
-        "api_optional leaves OpenAPI phase active",
-        lambda: validate_contract_ids(optional_phase_leak, checks_by_id, gates_by_id, workflows),
-    )
+    expect_failure("api_optional leaves OpenAPI phase active", lambda: validate_contract_ids(optional_phase_leak, checks_by_id, gates_by_id, workflows))
 
     optional_db_bypass = copy.deepcopy(overlay)
-    optional_db_bypass["profiles"]["api_optional"]["check_na_when_database_absent"].remove(
-        "data.authoritative_database"
-    )
+    optional_db_bypass["profiles"]["api_optional"]["check_na_when_database_absent"].remove("data.authoritative_database")
     expect_failure(
         "database-absent profile keeps authoritative database requirement inconsistently",
         lambda: validate_contract_ids(optional_db_bypass, checks_by_id, gates_by_id, workflows),
+    )
+
+    slice_api_leak = copy.deepcopy(overlay)
+    slice_api_leak["profiles"]["api_optional"]["check_na"].remove("functional.real_api_integration")
+    expect_failure(
+        "api_optional reintroduces real API requirement into provider-driven functional slice",
+        lambda: validate_contract_ids(slice_api_leak, checks_by_id, gates_by_id, workflows),
+    )
+
+    provider_bypass = copy.deepcopy(overlay)
+    provider_bypass["profiles"]["api_optional"]["check_na"].append("qa.security")
+    expect_failure(
+        "api_optional attempts to bypass provider-path security QA",
+        lambda: validate_contract_ids(provider_bypass, checks_by_id, gates_by_id, workflows),
     )
 
 
@@ -417,32 +421,16 @@ def main() -> int:
     if gates_doc.get("version") != STABLE_VERSION:
         fail("stable gates catalog must remain 0.5.4 during hardening")
 
-    checks_by_id = index_checks(checks_doc)
-    gates_by_id = index_gates(gates_doc)
+    checks_by_id = index_catalog(checks_doc, "checks", "check")
+    gates_by_id = index_catalog(gates_doc, "gates", "gate")
 
     validate_contract_ids(overlay, checks_by_id, gates_by_id, workflows)
-    validate_api_backed_preserves_stable(
-        overlay, backed_project, workflows, checks_by_id, gates_by_id
-    )
-    validate_api_optional_route(
-        overlay, optional_project, workflows, checks_by_id, gates_by_id
-    )
-    validate_database_condition(
-        overlay, optional_project, workflows, checks_by_id, gates_by_id
-    )
-    validate_negative_cases(
-        overlay,
-        optional_project,
-        backed_project,
-        workflows,
-        checks_by_id,
-        gates_by_id,
-    )
+    validate_api_backed_preserves_stable(overlay, backed_project, workflows, checks_by_id, gates_by_id)
+    validate_api_optional_route(overlay, optional_project, workflows, checks_by_id, gates_by_id)
+    validate_database_condition(overlay, optional_project, workflows, checks_by_id, gates_by_id)
+    validate_negative_cases(overlay, optional_project, backed_project, workflows, checks_by_id, gates_by_id)
 
-    print(
-        "\nBlueprint 0.5.5-dev workflow & gate applicability validation: PASS "
-        "(api_backed strict; api_optional server/data/API route explicit)"
-    )
+    print("\nBlueprint 0.5.5-dev workflow & gate applicability validation: PASS (api_backed strict; api_optional authority composition explicit)")
     return 0
 
 
