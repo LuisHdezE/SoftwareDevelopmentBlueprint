@@ -128,7 +128,7 @@ def main() -> int:
             "id": "WEB-001", "platform": "web", "module": "authentication", "name": "Sign In",
             "purpose": "Provider-driven sign-in demonstration surface.", "source_classification": "OBSERVED",
             "roles": [], "permissions": [],
-            "data": [{"name": "Sign-in content", "source": "static", "authoritative": false}],
+            "data": [{"name": "Sign-in content", "source": "static", "authoritative": False}],
             "actions": [{"name": "Submit", "kind": "local", "source_classification": "OBSERVED"}],
             "states": ["default", "loading", "success", "error"],
             "navigation": {"route": "/authentication/sign-in", "entry_points": [], "destinations": []},
