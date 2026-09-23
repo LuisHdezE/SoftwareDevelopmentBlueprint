@@ -23,6 +23,7 @@ on:
       - "scripts/validate-integration-qa-authority-v055-dev.py"
       - "scripts/validate-generic-compliance-v055-dev.py"
       - "scripts/validate-webblueprint-pilot-v055-dev.py"
+      - ".github/workflows/blueprint-release-validation.yml"
       - ".github/workflows/blueprint-release-closure-v055-validation.yml"
   pull_request:
     branches:
@@ -46,6 +47,7 @@ on:
       - "scripts/validate-integration-qa-authority-v055-dev.py"
       - "scripts/validate-generic-compliance-v055-dev.py"
       - "scripts/validate-webblueprint-pilot-v055-dev.py"
+      - ".github/workflows/blueprint-release-validation.yml"
       - ".github/workflows/blueprint-release-closure-v055-validation.yml"
 
 permissions:
