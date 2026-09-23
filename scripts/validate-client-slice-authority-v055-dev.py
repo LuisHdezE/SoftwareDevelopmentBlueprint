@@ -80,16 +80,37 @@ def main() -> int:
     if project_optional["authority"]["api"]["mode"] != optional["api_authority_mode"]:
         raise AssertionError("api-optional overlay disagrees with project authority declaration")
 
-    # API-backed projection must remain anchored to the existing strict 0.5.4 client artifacts.
+    # API-backed projection must remain anchored exactly to the strict 0.5.4 client artifacts.
     stable_baseline = load(STABLE_BASELINE)
     stable_binding = load(STABLE_BINDING)
     stable_slice = load(STABLE_SLICE)
-    if backed["client_platform"]["authority_binding"]["openapi_ref"] != stable_baseline["api_client"]["openapi_path"]:
+    backed_platform = backed["client_platform"]
+    backed_slice = backed["client_slice"]
+    backed_api = backed_slice["authority_binding"]
+    stable_api = stable_binding["api_binding"]
+
+    if backed_platform["baseline_ref"] != "templates/client-platform-architecture.web.example.json":
+        raise AssertionError("api-backed platform baseline ref drifted from stable Web baseline")
+    if backed_platform["authority_binding"]["openapi_ref"] != stable_baseline["api_client"]["openapi_path"]:
         raise AssertionError("api-backed platform overlay drifted from stable OpenAPI baseline")
-    if backed["client_slice"]["authority_binding"]["openapi_ref"] != stable_binding["api_binding"]["openapi_path"]:
+    if backed_slice["architecture_ref"] != "templates/client-architecture.web.example.json":
+        raise AssertionError("api-backed architecture ref drifted from stable Web binding")
+    if backed_slice["functional_slice_ref"] != "templates/functional-interface-slice.example.json":
+        raise AssertionError("api-backed functional slice ref drifted from stable example")
+    if set(backed_slice["inventory_ids"]) != set(stable_binding["inventory_ids"]):
+        raise AssertionError("api-backed inventory IDs drifted from stable client binding")
+    if set(backed_slice["inventory_ids"]) != set(stable_slice["inventory_ids"]):
+        raise AssertionError("api-backed inventory IDs drifted from stable functional slice")
+    if backed_api["openapi_ref"] != stable_api["openapi_path"]:
         raise AssertionError("api-backed slice overlay drifted from stable OpenAPI binding")
-    if set(backed["client_slice"]["authority_binding"]["operation_ids"]) != set(stable_slice["api_binding"]["operation_ids"]):
-        raise AssertionError("api-backed slice overlay drifted from stable functional slice operations")
+    if backed_api["revision"] != stable_api["revision"]:
+        raise AssertionError("api-backed slice API revision drifted from stable client binding")
+    if set(backed_api["operation_ids"]) != set(stable_api["operation_ids"]):
+        raise AssertionError("api-backed slice operation IDs drifted from stable client binding")
+    if set(backed_api["operation_ids"]) != set(stable_slice["api_binding"]["operation_ids"]):
+        raise AssertionError("api-backed slice operation IDs drifted from stable functional slice")
+    if set(backed_api["permissions"]) != set(stable_api["permissions"]):
+        raise AssertionError("api-backed slice permissions drifted from stable client binding")
     if stable_baseline["permissions"]["source"] != "api_contract" or stable_baseline["permissions"]["api_remains_authoritative"] is not True:
         raise AssertionError("stable api-backed permission authority weakened")
     if stable_binding["implementation_guardrails"]["api_authoritative"] is not True:

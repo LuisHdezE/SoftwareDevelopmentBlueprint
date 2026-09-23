@@ -22,7 +22,7 @@
       "openapi_ref": "tests/fixtures/artifact-graph/openapi.yaml",
       "revision": "api-rev-2",
       "operation_ids": ["loginUser", "getDashboard"],
-      "permissions": [],
+      "permissions": ["dashboard.view", "alerts.view"],
       "api_authoritative": true
     }
   },
