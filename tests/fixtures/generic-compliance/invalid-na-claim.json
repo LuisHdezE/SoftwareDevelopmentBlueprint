@@ -1,0 +1,14 @@
+{
+  "schema_version": "0.5.5-dev",
+  "consumer": {"id": "fixture-invalid-na", "repository": "example/invalid-na"},
+  "blueprint": {"adopted_version": "0.5.4", "evaluation_version": "0.5.5-dev", "workflow_mode": "greenfield"},
+  "authority": {"api_mode": "api_optional"},
+  "capabilities": {"web": true, "android": false, "ios": false, "database": false, "mobile_licensing": false},
+  "scope": {"mode": "selected", "check_ids": ["api.auth_strategy"]},
+  "evidence": [
+    {"id": "EV-FAKE-AUTH", "path": "fake/openapi.json", "kind": "file", "state": "PRESENT", "blueprint_version": "0.5.5-dev"}
+  ],
+  "assessments": [
+    {"check_id": "api.auth_strategy", "declared_status": "PASS", "evidence_refs": ["EV-FAKE-AUTH"]}
+  ]
+}
