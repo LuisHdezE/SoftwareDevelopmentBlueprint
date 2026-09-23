@@ -12,6 +12,8 @@ VERSION_PATH = ROOT / "VERSION"
 DEVELOPMENT_VERSION_PATH = ROOT / "DEVELOPMENT_VERSION"
 DEVELOPMENT_MANIFEST_PATH = ROOT / "documentation/BLUEPRINT_V0_5_5_DEVELOPMENT.json"
 STABLE_VALIDATOR_PATH = ROOT / "scripts/validate-release-v054.py"
+RELEASE_CLOSURE_VALIDATOR_PATH = ROOT / "scripts/validate-release-closure-v055.py"
+RELEASE_CANDIDATE_PATH = ROOT / "documentation/BLUEPRINT_V0_5_5_RELEASE_CANDIDATE.json"
 
 STABLE_VERSION = "0.5.4"
 DEVELOPMENT_VERSION = "0.5.5-dev"
@@ -64,13 +66,17 @@ def load_json(path: Path) -> dict:
     return value
 
 
-def load_stable_validator() -> ModuleType:
-    spec = importlib.util.spec_from_file_location("blueprint_stable_v054_validator", STABLE_VALIDATOR_PATH)
+def load_module(path: Path, module_name: str) -> ModuleType:
+    spec = importlib.util.spec_from_file_location(module_name, path)
     if spec is None or spec.loader is None:
-        fail("cannot load stable 0.5.4 release validator")
+        fail(f"cannot load validator: {path.relative_to(ROOT)}")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def load_stable_validator() -> ModuleType:
+    return load_module(STABLE_VALIDATOR_PATH, "blueprint_stable_v054_validator")
 
 
 def validate_development_identity() -> dict:
@@ -92,7 +98,7 @@ def validate_development_identity() -> dict:
     if manifest.get("stable_version") != STABLE_VERSION:
         fail("development manifest stable_version drifted")
     if manifest.get("status") != "hardening":
-        fail("development manifest must remain in hardening status before release closure")
+        fail("development manifest must remain in hardening status before stable promotion")
 
     baseline = manifest.get("baseline", {})
     if baseline != {"branch": "main", "commit": BASELINE_COMMIT, "tag": BASELINE_TAG}:
@@ -127,7 +133,7 @@ def validate_development_identity() -> dict:
         fail("every planned increment requires a non-empty goal")
 
     if (ROOT / "documentation/BLUEPRINT_V0_5_5_RELEASE.json").exists():
-        fail("stable 0.5.5 release manifest must not exist during hardening")
+        fail("stable 0.5.5 release manifest must not exist during hardening/release-candidate closure")
 
     print(f"PASS development identity: stable={STABLE_VERSION}; target={DEVELOPMENT_VERSION}")
     print(f"PASS origin: WebBlueprint@{WEBBLUEPRINT_SNAPSHOT}; issue #{TRACKING_ISSUE}")
@@ -157,10 +163,28 @@ def validate_stable_baseline_preserved(stable: ModuleType) -> None:
     print("PASS stable 0.5.4 contracts, counts, history and inherited validators preserved")
 
 
+def validate_release_candidate_closure(manifest: dict) -> None:
+    closure = manifest.get("closure")
+    if closure is None:
+        if RELEASE_CANDIDATE_PATH.exists():
+            fail("release-candidate manifest exists without governed development closure state")
+        return
+    if not isinstance(closure, dict):
+        fail("development closure must be an object")
+    if not RELEASE_CANDIDATE_PATH.is_file():
+        fail("governed development closure requires 0.5.5 release-candidate manifest")
+    module = load_module(RELEASE_CLOSURE_VALIDATOR_PATH, "blueprint_release_closure_v055_validator")
+    result = module.main()
+    if result != 0:
+        fail(f"0.5.5 release-candidate closure validator returned {result}")
+    print("PASS 0.5.5 release-candidate closure nested validation")
+
+
 def main() -> int:
-    validate_development_identity()
+    manifest = validate_development_identity()
     stable = load_stable_validator()
     validate_stable_baseline_preserved(stable)
+    validate_release_candidate_closure(manifest)
     print(
         "\nBlueprint development validation: PASS "
         f"(stable={STABLE_VERSION}; target={DEVELOPMENT_VERSION})"
