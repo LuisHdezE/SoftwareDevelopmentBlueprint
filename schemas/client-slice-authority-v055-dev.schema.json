@@ -1,0 +1,150 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eliasworks.dev/blueprint/0.5.5-dev/client-slice-authority.schema.json",
+  "title": "Blueprint 0.5.5-dev Client & Slice Authority Overlay",
+  "type": "object",
+  "required": ["schema_version", "project_ref", "platform", "api_authority_mode", "client_platform", "client_slice", "definition_of_done", "integration_qa_scope"],
+  "properties": {
+    "schema_version": {"const": "0.5.5-dev"},
+    "project_ref": {"type": "string", "minLength": 1},
+    "platform": {"enum": ["web", "android", "ios"]},
+    "api_authority_mode": {"enum": ["api_backed", "api_optional"]},
+    "client_platform": {
+      "type": "object",
+      "required": ["baseline_ref", "authority_binding"],
+      "properties": {
+        "baseline_ref": {"type": "string", "minLength": 1},
+        "authority_binding": {
+          "oneOf": [
+            {"$ref": "#/$defs/apiPlatformBinding"},
+            {"$ref": "#/$defs/providerPlatformBinding"}
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "client_slice": {
+      "type": "object",
+      "required": ["architecture_ref", "functional_slice_ref", "inventory_ids", "authority_binding"],
+      "properties": {
+        "architecture_ref": {"type": "string", "minLength": 1},
+        "functional_slice_ref": {"type": "string", "minLength": 1},
+        "inventory_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^(WEB|APP|IOS)-[0-9]{3,}$"}},
+        "authority_binding": {
+          "oneOf": [
+            {"$ref": "#/$defs/apiSliceBinding"},
+            {"$ref": "#/$defs/providerSliceBinding"}
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "definition_of_done": {
+      "type": "object",
+      "required": ["real_api", "server_auth_rbac", "provider_contract_boundary", "no_hardcoded_authoritative_business_data", "no_invented_capabilities"],
+      "properties": {
+        "real_api": {"enum": ["PASS", "N/A"]},
+        "server_auth_rbac": {"enum": ["PASS", "N/A"]},
+        "provider_contract_boundary": {"enum": ["PASS", "N/A"]},
+        "no_hardcoded_authoritative_business_data": {"const": "PASS"},
+        "no_invented_capabilities": {"const": "PASS"}
+      },
+      "additionalProperties": false
+    },
+    "integration_qa_scope": {"const": "DEFERRED_TO_INCREMENT_4"}
+  },
+  "$defs": {
+    "apiPlatformBinding": {
+      "type": "object",
+      "required": ["kind", "openapi_ref", "authorization_boundary", "permissions_source", "remote_authority"],
+      "properties": {
+        "kind": {"const": "api_client"},
+        "openapi_ref": {"type": "string", "minLength": 1},
+        "authorization_boundary": {"const": "api"},
+        "permissions_source": {"const": "api_contract"},
+        "remote_authority": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "providerPlatformBinding": {
+      "type": "object",
+      "required": ["kind", "contract_refs", "adapter_modes", "transport", "remote_authority", "remote_mutations", "server_authentication", "server_authorization", "server_permissions"],
+      "properties": {
+        "kind": {"const": "provider_contracts"},
+        "contract_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "adapter_modes": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["mock", "local_static", "local_persistence", "derived", "custom"]}},
+        "transport": {"const": "local_or_mock"},
+        "remote_authority": {"const": false},
+        "remote_mutations": {"const": false},
+        "server_authentication": {"const": false},
+        "server_authorization": {"const": false},
+        "server_permissions": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "apiSliceBinding": {
+      "type": "object",
+      "required": ["kind", "openapi_ref", "revision", "operation_ids", "permissions", "api_authoritative"],
+      "properties": {
+        "kind": {"const": "api"},
+        "openapi_ref": {"type": "string", "minLength": 1},
+        "revision": {"type": "string", "minLength": 1},
+        "operation_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "permissions": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "api_authoritative": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "providerSliceBinding": {
+      "type": "object",
+      "required": ["kind", "revision", "contract_refs", "use_case_ids", "adapter_mode", "transport", "remote_authority", "remote_mutations", "server_permissions"],
+      "properties": {
+        "kind": {"const": "provider"},
+        "revision": {"type": "string", "minLength": 1},
+        "contract_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "use_case_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "adapter_mode": {"enum": ["mock", "local_static", "local_persistence", "derived", "custom"]},
+        "transport": {"const": "local_or_mock"},
+        "remote_authority": {"const": false},
+        "remote_mutations": {"const": false},
+        "server_permissions": {"const": false}
+      },
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"api_authority_mode": {"const": "api_backed"}}, "required": ["api_authority_mode"]},
+      "then": {
+        "properties": {
+          "client_platform": {"properties": {"authority_binding": {"$ref": "#/$defs/apiPlatformBinding"}}},
+          "client_slice": {"properties": {"authority_binding": {"$ref": "#/$defs/apiSliceBinding"}}},
+          "definition_of_done": {"properties": {"real_api": {"const": "PASS"}, "server_auth_rbac": {"const": "PASS"}, "provider_contract_boundary": {"const": "N/A"}}}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"api_authority_mode": {"const": "api_optional"}}, "required": ["api_authority_mode"]},
+      "then": {
+        "properties": {
+          "client_platform": {"properties": {"authority_binding": {"$ref": "#/$defs/providerPlatformBinding"}}},
+          "client_slice": {"properties": {"authority_binding": {"$ref": "#/$defs/providerSliceBinding"}}},
+          "definition_of_done": {"properties": {"real_api": {"const": "N/A"}, "server_auth_rbac": {"const": "N/A"}, "provider_contract_boundary": {"const": "PASS"}}}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"platform": {"const": "web"}}, "required": ["platform"]},
+      "then": {"properties": {"client_slice": {"properties": {"inventory_ids": {"items": {"pattern": "^WEB-[0-9]{3,}$"}}}}}}
+    },
+    {
+      "if": {"properties": {"platform": {"const": "android"}}, "required": ["platform"]},
+      "then": {"properties": {"client_slice": {"properties": {"inventory_ids": {"items": {"pattern": "^APP-[0-9]{3,}$"}}}}}}
+    },
+    {
+      "if": {"properties": {"platform": {"const": "ios"}}, "required": ["platform"]},
+      "then": {"properties": {"client_slice": {"properties": {"inventory_ids": {"items": {"pattern": "^IOS-[0-9]{3,}$"}}}}}}
+    }
+  ],
+  "additionalProperties": false
+}
