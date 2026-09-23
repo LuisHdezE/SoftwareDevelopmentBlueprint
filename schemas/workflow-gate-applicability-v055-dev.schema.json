@@ -1,0 +1,179 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eliasworks.dev/blueprint/0.5.5-dev/workflow-gate-applicability.schema.json",
+  "title": "Blueprint 0.5.5-dev Workflow & Gate Applicability Overlay",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "target_version",
+    "stable_version",
+    "authority_source",
+    "stable_workflows",
+    "profiles"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "target_version": {
+      "const": "0.5.5-dev"
+    },
+    "stable_version": {
+      "const": "0.5.4"
+    },
+    "authority_source": {
+      "const": "authority.api.mode"
+    },
+    "stable_workflows": {
+      "type": "array",
+      "minItems": 2,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "greenfield",
+          "brownfield"
+        ]
+      }
+    },
+    "profiles": {
+      "type": "object",
+      "required": [
+        "api_backed",
+        "api_optional"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "api_backed": {
+          "type": "object",
+          "required": [
+            "inherit_stable_exactly",
+            "phase_na",
+            "check_na",
+            "gate_na"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "inherit_stable_exactly": {
+              "const": true
+            },
+            "phase_na": {
+              "type": "array",
+              "maxItems": 0
+            },
+            "check_na": {
+              "type": "array",
+              "maxItems": 0
+            },
+            "gate_na": {
+              "type": "array",
+              "maxItems": 0
+            }
+          }
+        },
+        "api_optional": {
+          "type": "object",
+          "required": [
+            "inherit_stable_by_default",
+            "phase_na",
+            "check_na",
+            "check_na_when_database_absent",
+            "gate_na",
+            "route",
+            "invariants"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "inherit_stable_by_default": {
+              "const": true
+            },
+            "phase_na": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "check_na": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "check_na_when_database_absent": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "gate_na": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "route": {
+              "type": "object",
+              "required": [
+                "remove_na_phases",
+                "remove_na_gate_bindings",
+                "next_after_architecture_security_data"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "remove_na_phases": {
+                  "const": true
+                },
+                "remove_na_gate_bindings": {
+                  "const": true
+                },
+                "next_after_architecture_security_data": {
+                  "const": "interface_inventory"
+                }
+              }
+            },
+            "invariants": {
+              "type": "object",
+              "required": [
+                "authority_manifest_required",
+                "api_gate_cannot_block_client_delivery",
+                "na_checks_cannot_be_required_by_effective_gate",
+                "database_checks_return_when_database_declared",
+                "api_specific_checks_never_return_in_api_optional"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "authority_manifest_required": {
+                  "const": true
+                },
+                "api_gate_cannot_block_client_delivery": {
+                  "const": true
+                },
+                "na_checks_cannot_be_required_by_effective_gate": {
+                  "const": true
+                },
+                "database_checks_return_when_database_declared": {
+                  "const": true
+                },
+                "api_specific_checks_never_return_in_api_optional": {
+                  "const": true
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

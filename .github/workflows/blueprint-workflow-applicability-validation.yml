@@ -1,0 +1,76 @@
+name: Blueprint Workflow Applicability Validation
+
+on:
+  push:
+    branches:
+      - main
+      - 'blueprint/**'
+    paths:
+      - VERSION
+      - DEVELOPMENT_VERSION
+      - catalog/checks.yaml
+      - catalog/gates.yaml
+      - catalog/workflow-gate-applicability-v055-dev.yaml
+      - workflows/greenfield.yaml
+      - workflows/brownfield.yaml
+      - schemas/project.schema.json
+      - schemas/project-api-authority-v055-dev.schema.json
+      - schemas/workflow-gate-applicability-v055-dev.schema.json
+      - templates/project-v055-dev.api-optional.example.yaml
+      - templates/project-v055-dev.api-backed.example.yaml
+      - scripts/validate-development.py
+      - scripts/validate-api-authority-v055-dev.py
+      - scripts/validate-workflow-applicability-v055-dev.py
+      - documentation/BLUEPRINT_V0_5_5_DEVELOPMENT.json
+      - documentation/BLUEPRINT_V0_5_5_API_AUTHORITY_MODEL.md
+      - documentation/BLUEPRINT_V0_5_5_WORKFLOW_GATE_APPLICABILITY.md
+      - .github/workflows/blueprint-workflow-applicability-validation.yml
+  pull_request:
+    branches: [main]
+    paths:
+      - VERSION
+      - DEVELOPMENT_VERSION
+      - catalog/checks.yaml
+      - catalog/gates.yaml
+      - catalog/workflow-gate-applicability-v055-dev.yaml
+      - workflows/greenfield.yaml
+      - workflows/brownfield.yaml
+      - schemas/project.schema.json
+      - schemas/project-api-authority-v055-dev.schema.json
+      - schemas/workflow-gate-applicability-v055-dev.schema.json
+      - templates/project-v055-dev.api-optional.example.yaml
+      - templates/project-v055-dev.api-backed.example.yaml
+      - scripts/validate-development.py
+      - scripts/validate-api-authority-v055-dev.py
+      - scripts/validate-workflow-applicability-v055-dev.py
+      - documentation/BLUEPRINT_V0_5_5_DEVELOPMENT.json
+      - documentation/BLUEPRINT_V0_5_5_API_AUTHORITY_MODEL.md
+      - documentation/BLUEPRINT_V0_5_5_WORKFLOW_GATE_APPLICABILITY.md
+      - .github/workflows/blueprint-workflow-applicability-validation.yml
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: [self-hosted, linux, x64, blueprint]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+      - name: Install validator dependencies
+        run: python -m pip install --disable-pip-version-check jsonschema==4.26.0 PyYAML==6.0.2
+      - name: Verify governed development lane
+        shell: bash
+        run: |
+          test "$(cat VERSION)" = "0.5.4"
+          test "$(cat DEVELOPMENT_VERSION)" = "0.5.5-dev"
+      - name: Revalidate development governance and stable baseline
+        run: python scripts/validate-development.py
+      - name: Revalidate API authority model
+        run: python scripts/validate-api-authority-v055-dev.py
+      - name: Validate workflow and gate applicability
+        run: python scripts/validate-workflow-applicability-v055-dev.py
