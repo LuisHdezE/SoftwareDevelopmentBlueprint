@@ -1,0 +1,37 @@
+{
+  "schema_version": "0.5.5-dev",
+  "project_ref": "templates/project-v055-dev.api-backed.example.yaml",
+  "platform": "web",
+  "api_authority_mode": "api_backed",
+  "client_platform": {
+    "baseline_ref": "templates/client-platform-architecture.web.example.json",
+    "authority_binding": {
+      "kind": "api_client",
+      "openapi_ref": "tests/fixtures/artifact-graph/openapi.yaml",
+      "authorization_boundary": "api",
+      "permissions_source": "api_contract",
+      "remote_authority": true
+    }
+  },
+  "client_slice": {
+    "architecture_ref": "templates/client-architecture.web.example.json",
+    "functional_slice_ref": "templates/functional-interface-slice.example.json",
+    "inventory_ids": ["WEB-001", "WEB-004"],
+    "authority_binding": {
+      "kind": "api",
+      "openapi_ref": "tests/fixtures/artifact-graph/openapi.yaml",
+      "revision": "api-rev-2",
+      "operation_ids": ["loginUser", "getDashboard"],
+      "permissions": ["dashboard.view", "alerts.view"],
+      "api_authoritative": true
+    }
+  },
+  "definition_of_done": {
+    "real_api": "PASS",
+    "server_auth_rbac": "PASS",
+    "provider_contract_boundary": "N/A",
+    "no_hardcoded_authoritative_business_data": "PASS",
+    "no_invented_capabilities": "PASS"
+  },
+  "integration_qa_scope": "DEFERRED_TO_INCREMENT_4"
+}

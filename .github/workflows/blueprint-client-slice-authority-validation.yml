@@ -1,0 +1,53 @@
+name: Blueprint Client Slice Authority Validation
+
+on:
+  push:
+    paths:
+      - 'DEVELOPMENT_VERSION'
+      - 'documentation/BLUEPRINT_V0_5_5_DEVELOPMENT.json'
+      - 'documentation/BLUEPRINT_V0_5_5_API_AUTHORITY_MODEL.md'
+      - 'documentation/BLUEPRINT_V0_5_5_WORKFLOW_GATE_APPLICABILITY.md'
+      - 'documentation/BLUEPRINT_V0_5_5_CLIENT_SLICE_AUTHORITY.md'
+      - 'schemas/project-api-authority-v055-dev.schema.json'
+      - 'schemas/workflow-gate-applicability-v055-dev.schema.json'
+      - 'schemas/client-slice-authority-v055-dev.schema.json'
+      - 'schemas/interface-inventory.schema.json'
+      - 'schemas/client-platform-architecture.schema.json'
+      - 'schemas/client-architecture.schema.json'
+      - 'schemas/functional-interface-slice.schema.json'
+      - 'templates/project-v055-dev.*.example.yaml'
+      - 'templates/client-slice-authority.*-v055-dev.example.json'
+      - 'scripts/validate-development.py'
+      - 'scripts/validate-api-authority-v055-dev.py'
+      - 'scripts/validate-workflow-applicability-v055-dev.py'
+      - 'scripts/validate-client-architecture.py'
+      - 'scripts/validate-client-slice-authority-v055-dev.py'
+      - '.github/workflows/blueprint-client-slice-authority-validation.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'DEVELOPMENT_VERSION'
+      - 'documentation/BLUEPRINT_V0_5_5_DEVELOPMENT.json'
+      - 'documentation/BLUEPRINT_V0_5_5_CLIENT_SLICE_AUTHORITY.md'
+      - 'schemas/client-slice-authority-v055-dev.schema.json'
+      - 'templates/client-slice-authority.*-v055-dev.example.json'
+      - 'scripts/validate-client-slice-authority-v055-dev.py'
+      - '.github/workflows/blueprint-client-slice-authority-validation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: [self-hosted, linux, x64, blueprint]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+      - name: Install validator dependencies
+        run: python -m pip install --disable-pip-version-check jsonschema==4.26.0 PyYAML==6.0.2
+      - name: Validate client and slice authority
+        run: python scripts/validate-client-slice-authority-v055-dev.py

@@ -1,0 +1,44 @@
+{
+  "schema_version": "0.5.5-dev",
+  "project_ref": "templates/project-v055-dev.api-optional.example.yaml",
+  "platform": "web",
+  "api_authority_mode": "api_optional",
+  "client_platform": {
+    "baseline_ref": ".blueprint/client-architecture/web-platform.json",
+    "authority_binding": {
+      "kind": "provider_contracts",
+      "contract_refs": ["application/contracts/SignInContentProvider", "application/contracts/SignInGateway"],
+      "adapter_modes": ["mock", "local_static"],
+      "transport": "local_or_mock",
+      "remote_authority": false,
+      "remote_mutations": false,
+      "server_authentication": false,
+      "server_authorization": false,
+      "server_permissions": false
+    }
+  },
+  "client_slice": {
+    "architecture_ref": ".blueprint/client-architecture/authentication-sign-in.json",
+    "functional_slice_ref": ".blueprint/functional-slices/authentication-sign-in.json",
+    "inventory_ids": ["WEB-001"],
+    "authority_binding": {
+      "kind": "provider",
+      "revision": "provider-contract-rev-1",
+      "contract_refs": ["application/contracts/SignInContentProvider", "application/contracts/SignInGateway"],
+      "use_case_ids": ["load-sign-in-content", "sign-in"],
+      "adapter_mode": "mock",
+      "transport": "local_or_mock",
+      "remote_authority": false,
+      "remote_mutations": false,
+      "server_permissions": false
+    }
+  },
+  "definition_of_done": {
+    "real_api": "N/A",
+    "server_auth_rbac": "N/A",
+    "provider_contract_boundary": "PASS",
+    "no_hardcoded_authoritative_business_data": "PASS",
+    "no_invented_capabilities": "PASS"
+  },
+  "integration_qa_scope": "DEFERRED_TO_INCREMENT_4"
+}
