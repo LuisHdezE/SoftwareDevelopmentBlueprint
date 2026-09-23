@@ -1,0 +1,50 @@
+name: Blueprint Generic Compliance Doctor
+
+on:
+  push:
+    branches:
+      - "blueprint/**"
+    paths:
+      - "schemas/generic-compliance-manifest-v055-dev.schema.json"
+      - "schemas/generic-compliance-report-v055-dev.schema.json"
+      - "scripts/validate-generic-compliance-v055-dev.py"
+      - "templates/generic-compliance.*-v055-dev.example.json"
+      - "tests/fixtures/generic-compliance/**"
+      - "catalog/checks.yaml"
+      - "catalog/workflow-gate-applicability-v055-dev.yaml"
+      - "documentation/BLUEPRINT_V0_5_5_GENERIC_COMPLIANCE_DOCTOR.md"
+      - ".github/workflows/blueprint-generic-compliance-validation.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "schemas/generic-compliance-manifest-v055-dev.schema.json"
+      - "schemas/generic-compliance-report-v055-dev.schema.json"
+      - "scripts/validate-generic-compliance-v055-dev.py"
+      - "templates/generic-compliance.*-v055-dev.example.json"
+      - "tests/fixtures/generic-compliance/**"
+      - "catalog/checks.yaml"
+      - "catalog/workflow-gate-applicability-v055-dev.yaml"
+      - "documentation/BLUEPRINT_V0_5_5_GENERIC_COMPLIANCE_DOCTOR.md"
+      - ".github/workflows/blueprint-generic-compliance-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: [self-hosted, linux, x64, blueprint]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+
+      - name: Install validator dependencies
+        run: python -m pip install --disable-pip-version-check jsonschema==4.26.0 PyYAML==6.0.2
+
+      - name: Validate generic Compliance Doctor
+        run: python scripts/validate-generic-compliance-v055-dev.py
