@@ -1,0 +1,18 @@
+{
+  "schema_version": "0.5.5-dev",
+  "consumer": {"id": "fixture-blocked", "repository": "example/blocked"},
+  "blueprint": {"adopted_version": "0.5.4", "evaluation_version": "0.5.5-dev", "workflow_mode": "greenfield"},
+  "authority": {"api_mode": "api_optional"},
+  "capabilities": {"web": true, "android": false, "ios": false, "database": false, "mobile_licensing": false},
+  "scope": {"mode": "selected", "check_ids": ["qa.security"]},
+  "evidence": [],
+  "assessments": [
+    {
+      "check_id": "qa.security",
+      "declared_status": "BLOCKED",
+      "reason_code": "PREREQUISITE_BLOCKED",
+      "rationale": "Human visual/functional acceptance has not completed.",
+      "blocked_by": ["visual_functional_review_pass"]
+    }
+  ]
+}
