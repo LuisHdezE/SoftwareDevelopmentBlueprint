@@ -1,0 +1,52 @@
+name: Blueprint WebBlueprint Pilot Validation
+
+on:
+  push:
+    branches:
+      - "blueprint/**"
+    paths:
+      - "catalog/workflow-gate-applicability-v055-dev.yaml"
+      - "schemas/status.schema.json"
+      - "templates/status.example.yaml"
+      - "documentation/BLUEPRINT_V0_5_5_DEVELOPMENT.json"
+      - "documentation/BLUEPRINT_V0_5_5_WEBBLUEPRINT_PILOT_MANIFEST.json"
+      - "documentation/BLUEPRINT_V0_5_5_WEBBLUEPRINT_PILOT_REPORT.json"
+      - "documentation/BLUEPRINT_V0_5_5_WEBBLUEPRINT_PILOT_REVIEW.md"
+      - "scripts/validate-generic-compliance-v055-dev.py"
+      - "scripts/validate-webblueprint-pilot-v055-dev.py"
+      - ".github/workflows/blueprint-webblueprint-pilot-validation.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "catalog/workflow-gate-applicability-v055-dev.yaml"
+      - "schemas/status.schema.json"
+      - "templates/status.example.yaml"
+      - "documentation/BLUEPRINT_V0_5_5_DEVELOPMENT.json"
+      - "documentation/BLUEPRINT_V0_5_5_WEBBLUEPRINT_PILOT_MANIFEST.json"
+      - "documentation/BLUEPRINT_V0_5_5_WEBBLUEPRINT_PILOT_REPORT.json"
+      - "documentation/BLUEPRINT_V0_5_5_WEBBLUEPRINT_PILOT_REVIEW.md"
+      - "scripts/validate-generic-compliance-v055-dev.py"
+      - "scripts/validate-webblueprint-pilot-v055-dev.py"
+      - ".github/workflows/blueprint-webblueprint-pilot-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: [self-hosted, linux, x64, blueprint]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+
+      - name: Install validator dependencies
+        run: python -m pip install --disable-pip-version-check jsonschema==4.26.0 PyYAML==6.0.2
+
+      - name: Validate WebBlueprint non-normative pilot
+        run: python scripts/validate-webblueprint-pilot-v055-dev.py
