@@ -19,6 +19,7 @@
     "database": false,
     "mobile_licensing": false
   },
+  "conditions": {},
   "scope": {
     "mode": "selected",
     "check_ids": [
