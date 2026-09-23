@@ -1,0 +1,318 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eliasworks.dev/blueprint/0.5.5-dev/project-api-authority.schema.json",
+  "title": "Blueprint 0.5.5-dev Project API Authority Overlay",
+  "description": "Development overlay applied in addition to stable 0.5.4 project.schema.json. It does not promote stable version identity.",
+  "type": "object",
+  "required": [
+    "authority",
+    "stack",
+    "artifact_locations"
+  ],
+  "properties": {
+    "authority": {
+      "type": "object",
+      "required": [
+        "api"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "api": {
+          "type": "object",
+          "required": [
+            "mode",
+            "revision",
+            "decision_ref",
+            "claims"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "mode": {
+              "enum": [
+                "api_backed",
+                "api_optional"
+              ]
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "decision_ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowed_sources": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "enum": [
+                  "local",
+                  "static",
+                  "mock_non_authoritative"
+                ]
+              }
+            },
+            "claims": {
+              "type": "object",
+              "required": [
+                "remote_authoritative_business_data",
+                "server_authentication",
+                "server_authorization",
+                "remote_persistent_mutations",
+                "permission_enforcement",
+                "backend_only_invariants"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "remote_authoritative_business_data": {
+                  "type": "boolean"
+                },
+                "server_authentication": {
+                  "type": "boolean"
+                },
+                "server_authorization": {
+                  "type": "boolean"
+                },
+                "remote_persistent_mutations": {
+                  "type": "boolean"
+                },
+                "permission_enforcement": {
+                  "type": "boolean"
+                },
+                "backend_only_invariants": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "authority": {
+            "properties": {
+              "api": {
+                "properties": {
+                  "mode": {
+                    "const": "api_optional"
+                  }
+                },
+                "required": [
+                  "mode"
+                ]
+              }
+            },
+            "required": [
+              "api"
+            ]
+          }
+        },
+        "required": [
+          "authority"
+        ]
+      },
+      "then": {
+        "properties": {
+          "authority": {
+            "properties": {
+              "api": {
+                "required": [
+                  "allowed_sources"
+                ],
+                "properties": {
+                  "claims": {
+                    "properties": {
+                      "remote_authoritative_business_data": {
+                        "const": false
+                      },
+                      "server_authentication": {
+                        "const": false
+                      },
+                      "server_authorization": {
+                        "const": false
+                      },
+                      "remote_persistent_mutations": {
+                        "const": false
+                      },
+                      "permission_enforcement": {
+                        "const": false
+                      },
+                      "backend_only_invariants": {
+                        "const": false
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "artifact_locations": {
+            "not": {
+              "required": [
+                "openapi"
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "authority": {
+            "properties": {
+              "api": {
+                "properties": {
+                  "mode": {
+                    "const": "api_backed"
+                  }
+                },
+                "required": [
+                  "mode"
+                ]
+              }
+            },
+            "required": [
+              "api"
+            ]
+          }
+        },
+        "required": [
+          "authority"
+        ]
+      },
+      "then": {
+        "properties": {
+          "stack": {
+            "properties": {
+              "backend": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "backend"
+            ]
+          },
+          "artifact_locations": {
+            "required": [
+              "openapi"
+            ]
+          },
+          "authority": {
+            "properties": {
+              "api": {
+                "properties": {
+                  "claims": {
+                    "anyOf": [
+                      {
+                        "properties": {
+                          "remote_authoritative_business_data": {
+                            "const": true
+                          }
+                        },
+                        "required": [
+                          "remote_authoritative_business_data"
+                        ]
+                      },
+                      {
+                        "properties": {
+                          "server_authentication": {
+                            "const": true
+                          }
+                        },
+                        "required": [
+                          "server_authentication"
+                        ]
+                      },
+                      {
+                        "properties": {
+                          "server_authorization": {
+                            "const": true
+                          }
+                        },
+                        "required": [
+                          "server_authorization"
+                        ]
+                      },
+                      {
+                        "properties": {
+                          "remote_persistent_mutations": {
+                            "const": true
+                          }
+                        },
+                        "required": [
+                          "remote_persistent_mutations"
+                        ]
+                      },
+                      {
+                        "properties": {
+                          "permission_enforcement": {
+                            "const": true
+                          }
+                        },
+                        "required": [
+                          "permission_enforcement"
+                        ]
+                      },
+                      {
+                        "properties": {
+                          "backend_only_invariants": {
+                            "const": true
+                          }
+                        },
+                        "required": [
+                          "backend_only_invariants"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "capabilities": {
+            "properties": {
+              "offline_mobile": {
+                "const": true
+              }
+            },
+            "required": [
+              "offline_mobile"
+            ]
+          }
+        },
+        "required": [
+          "capabilities"
+        ]
+      },
+      "then": {
+        "properties": {
+          "authority": {
+            "properties": {
+              "api": {
+                "properties": {
+                  "mode": {
+                    "const": "api_backed"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "additionalProperties": true
+}

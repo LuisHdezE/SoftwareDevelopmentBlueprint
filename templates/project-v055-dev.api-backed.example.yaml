@@ -1,0 +1,50 @@
+project:
+  name: API Backed Application
+  repository: owner/api-backed-application
+  description: Strict API-backed consumer candidate for Blueprint 0.5.5-dev
+blueprint:
+  version: 0.5.4
+  mode: greenfield
+stack:
+  backend: laravel
+  database: mysql
+  frontend: react
+  styling: tailwind
+  mobile: null
+capabilities:
+  web: true
+  android: false
+  ios: false
+  saas: false
+  multi_tenant: false
+  offline_mobile: false
+  redis: false
+  docker: false
+authority:
+  api:
+    mode: api_backed
+    revision: 1
+    decision_ref: ADR-API-AUTHORITY-001
+    claims:
+      remote_authoritative_business_data: true
+      server_authentication: true
+      server_authorization: true
+      remote_persistent_mutations: true
+      permission_enforcement: true
+      backend_only_invariants: true
+artifact_locations:
+  status: .blueprint/status.yaml
+  evidence_root: .blueprint/evidence
+  interface_scope_baseline: .blueprint/ui/interface-scope-baseline.json
+  interface_inventory: .blueprint/ui/interface-inventory.json
+  design_system: .blueprint/ui/design-system.json
+  design_tokens: .blueprint/ui/design-tokens.json
+  client_architecture_root: .blueprint/client-architecture
+  functional_slices_root: .blueprint/functional-slices
+  api_impacts_root: .blueprint/api-impacts
+  openapi: openapi.yaml
+skills:
+  profiles:
+    - core
+    - backend
+    - web

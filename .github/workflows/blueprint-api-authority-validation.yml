@@ -1,0 +1,52 @@
+name: Blueprint API Authority Validation
+
+on:
+  push:
+    branches:
+      - main
+      - 'blueprint/**'
+    paths:
+      - VERSION
+      - DEVELOPMENT_VERSION
+      - schemas/project.schema.json
+      - schemas/project-api-authority-v055-dev.schema.json
+      - templates/project-v055-dev.api-optional.example.yaml
+      - templates/project-v055-dev.api-backed.example.yaml
+      - scripts/validate-api-authority-v055-dev.py
+      - documentation/BLUEPRINT_V0_5_5_API_AUTHORITY_MODEL.md
+      - .github/workflows/blueprint-api-authority-validation.yml
+  pull_request:
+    branches: [main]
+    paths:
+      - VERSION
+      - DEVELOPMENT_VERSION
+      - schemas/project.schema.json
+      - schemas/project-api-authority-v055-dev.schema.json
+      - templates/project-v055-dev.api-optional.example.yaml
+      - templates/project-v055-dev.api-backed.example.yaml
+      - scripts/validate-api-authority-v055-dev.py
+      - documentation/BLUEPRINT_V0_5_5_API_AUTHORITY_MODEL.md
+      - .github/workflows/blueprint-api-authority-validation.yml
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: [self-hosted, linux, x64, blueprint]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+      - name: Install validator dependencies
+        run: python -m pip install --disable-pip-version-check jsonschema==4.26.0 PyYAML==6.0.2
+      - name: Verify governed development lane
+        shell: bash
+        run: |
+          test "$(cat VERSION)" = "0.5.4"
+          test "$(cat DEVELOPMENT_VERSION)" = "0.5.5-dev"
+      - name: Validate API authority capability model
+        run: python scripts/validate-api-authority-v055-dev.py
