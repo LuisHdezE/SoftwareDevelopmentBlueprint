@@ -1,0 +1,12 @@
+{
+  "schema_version": "0.5.5-dev",
+  "consumer": {"id": "fixture-missing-evidence", "repository": "example/missing-evidence"},
+  "blueprint": {"adopted_version": "0.5.4", "evaluation_version": "0.5.5-dev", "workflow_mode": "greenfield"},
+  "authority": {"api_mode": "api_optional"},
+  "capabilities": {"web": true, "android": false, "ios": false, "database": false, "mobile_licensing": false},
+  "scope": {"mode": "selected", "check_ids": ["qa.security"]},
+  "evidence": [],
+  "assessments": [
+    {"check_id": "qa.security", "declared_status": "PASS", "evidence_refs": ["EV-NOT-THERE"]}
+  ]
+}
