@@ -1,0 +1,35 @@
+{
+  "schema_version": "0.5.5-dev",
+  "project_ref": "templates/project-v055-dev.api-optional.example.yaml",
+  "client_slice_authority_ref": "templates/client-slice-authority.api-optional-v055-dev.example.json",
+  "platform": "web",
+  "api_authority_mode": "api_optional",
+  "stable_gate_ref": "catalog/gates.yaml#integration_qa_pass",
+  "effective_gate": {
+    "evaluation_scope": "interface_slice_platform",
+    "prerequisite_gates": ["functional_slice_ready", "visual_functional_review_pass"],
+    "require_all": ["qa.functional", "qa.provider_runtime_transport", "qa.integration", "qa.security", "qa.responsive", "qa.accessibility", "qa.e2e"],
+    "require_if_applicable": ["qa.idempotency", "qa.offline"],
+    "transport_check": "qa.provider_runtime_transport"
+  },
+  "transport_contract": {
+    "kind": "provider_runtime",
+    "contract_refs": ["application/contracts/SignInContentProvider", "application/contracts/SignInGateway"],
+    "adapter_modes": ["mock", "local_static"],
+    "runtime_surfaces": ["browser_preview", "browser_production", "test_harness"],
+    "remote_authority": false,
+    "remote_mutations": false,
+    "server_security_claims": false
+  },
+  "invariants": {
+    "common_quality_checks_required": true,
+    "security_qa_required": true,
+    "responsive_qa_required": true,
+    "accessibility_qa_required": true,
+    "e2e_required": true,
+    "human_review_prerequisite": true,
+    "transport_evidence_required": true,
+    "api_optional_cannot_claim_server_authority": true,
+    "qa_never_becomes_na_because_api_is_optional": true
+  }
+}

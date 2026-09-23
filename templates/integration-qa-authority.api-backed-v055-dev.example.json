@@ -1,0 +1,34 @@
+{
+  "schema_version": "0.5.5-dev",
+  "project_ref": "templates/project-v055-dev.api-backed.example.yaml",
+  "client_slice_authority_ref": "templates/client-slice-authority.api-backed-v055-dev.example.json",
+  "platform": "web",
+  "api_authority_mode": "api_backed",
+  "stable_gate_ref": "catalog/gates.yaml#integration_qa_pass",
+  "effective_gate": {
+    "evaluation_scope": "interface_slice_platform",
+    "prerequisite_gates": ["functional_slice_ready", "visual_functional_review_pass"],
+    "require_all": ["qa.functional", "qa.real_api_transport", "qa.integration", "qa.security", "qa.responsive", "qa.accessibility", "qa.e2e"],
+    "require_if_applicable": ["qa.idempotency", "qa.offline"],
+    "transport_check": "qa.real_api_transport"
+  },
+  "transport_contract": {
+    "kind": "real_api",
+    "openapi_ref": "tests/fixtures/artifact-graph/openapi.yaml",
+    "operation_ids": ["loginUser", "getDashboard"],
+    "remote_authority": true,
+    "server_security_boundary": true,
+    "runtime_evidence": ["api_contract_tests", "integration_environment", "e2e_real_api"]
+  },
+  "invariants": {
+    "common_quality_checks_required": true,
+    "security_qa_required": true,
+    "responsive_qa_required": true,
+    "accessibility_qa_required": true,
+    "e2e_required": true,
+    "human_review_prerequisite": true,
+    "transport_evidence_required": true,
+    "api_optional_cannot_claim_server_authority": true,
+    "qa_never_becomes_na_because_api_is_optional": true
+  }
+}
