@@ -1,0 +1,60 @@
+{
+  "schema_version": "0.5.5-dev",
+  "consumer": {
+    "id": "webblueprint",
+    "repository": "LuisHdezE/WebBlueprint",
+    "snapshot": "12cc52dabfe05ec9902f0ea6d73c7da6a19e1a74"
+  },
+  "evaluation": {
+    "blueprint_version": "0.5.5-dev",
+    "adopted_version": "UNMANAGED",
+    "workflow_mode": "greenfield",
+    "api_authority_mode": "api_optional",
+    "scope_mode": "selected"
+  },
+  "overall_status": "FAIL",
+  "summary": {
+    "PASS": 18,
+    "FAIL": 7,
+    "N/A": 10,
+    "BLOCKED": 0,
+    "TOTAL": 35
+  },
+  "results": [
+    {"check_id":"discovery.product_vision","status":"PASS","reason_code":"PASS","rationale":"Applicable check has present, current and version-compatible evidence.","evidence_refs":["EV-WB-README"],"declared_status":"PASS"},
+    {"check_id":"discovery.scope_mvp","status":"PASS","reason_code":"PASS","rationale":"Applicable check has present, current and version-compatible evidence.","evidence_refs":["EV-WB-README"],"declared_status":"PASS"},
+    {"check_id":"requirements.traceability","status":"FAIL","reason_code":"MISSING_EVIDENCE","rationale":"The frozen consumer snapshot does not expose a governed requirements-ID and requirements-to-implementation traceability artifact.","evidence_refs":[],"declared_status":"FAIL"},
+    {"check_id":"ui.web_inventory","status":"FAIL","reason_code":"CONTRACT_VIOLATION","rationale":"A useful CORK page inventory exists, but it has not been projected into the Blueprint Interface Inventory contract with governed WEB-### identifiers.","evidence_refs":["EV-WB-CORK-INVENTORY"],"declared_status":"FAIL"},
+    {"check_id":"ui.inventory_requirement_links","status":"FAIL","reason_code":"MISSING_EVIDENCE","rationale":"The current inventory does not carry governed requirement links because the requirements-ID layer is not yet materialized.","evidence_refs":[],"declared_status":"FAIL"},
+    {"check_id":"architecture.decision_records","status":"PASS","reason_code":"PASS","rationale":"Applicable check has present, current and version-compatible evidence.","evidence_refs":["EV-WB-ADRS"],"declared_status":"PASS"},
+    {"check_id":"data.authoritative_database","status":"N/A","reason_code":"NOT_APPLICABLE","rationale":"Check is N/A because the consumer declares no authoritative database.","evidence_refs":[],"declared_status":"N/A"},
+    {"check_id":"data.schema_migrations","status":"N/A","reason_code":"NOT_APPLICABLE","rationale":"Check is N/A because the consumer declares no authoritative database.","evidence_refs":[],"declared_status":"N/A"},
+    {"check_id":"api.auth_strategy","status":"N/A","reason_code":"NOT_APPLICABLE","rationale":"Check is explicitly N/A under API-optional authority.","evidence_refs":[],"declared_status":"N/A"},
+    {"check_id":"client.architecture_contract","status":"FAIL","reason_code":"CONTRACT_VIOLATION","rationale":"The Sign In implementation demonstrates sound feature boundaries, but WebBlueprint has not yet materialized the governed Blueprint Client Architecture contract.","evidence_refs":["EV-WB-SIGNIN"],"declared_status":"FAIL"},
+    {"check_id":"client.api_client_strategy","status":"N/A","reason_code":"NOT_APPLICABLE","rationale":"Check is explicitly N/A under API-optional authority.","evidence_refs":[],"declared_status":"N/A"},
+    {"check_id":"client.api_contract_binding","status":"N/A","reason_code":"NOT_APPLICABLE","rationale":"Check is explicitly N/A under API-optional authority.","evidence_refs":[],"declared_status":"N/A"},
+    {"check_id":"functional.inventory_binding","status":"FAIL","reason_code":"MISSING_EVIDENCE","rationale":"The accepted Sign In slice cannot bind to governed WEB-### inventory identifiers until the Interface Inventory migration is materialized.","evidence_refs":[],"declared_status":"FAIL"},
+    {"check_id":"functional.api_dependencies_resolved","status":"N/A","reason_code":"NOT_APPLICABLE","rationale":"Check is explicitly N/A under API-optional authority.","evidence_refs":[],"declared_status":"N/A"},
+    {"check_id":"functional.real_api_integration","status":"N/A","reason_code":"NOT_APPLICABLE","rationale":"Check is explicitly N/A under API-optional authority.","evidence_refs":[],"declared_status":"N/A"},
+    {"check_id":"functional.no_hardcoded_business_data","status":"PASS","reason_code":"PASS","rationale":"Applicable check has present, current and version-compatible evidence.","evidence_refs":["EV-WB-SIGNIN"],"declared_status":"PASS"},
+    {"check_id":"functional.no_invented_capabilities","status":"PASS","reason_code":"PASS","rationale":"Applicable check has present, current and version-compatible evidence.","evidence_refs":["EV-WB-SIGNIN"],"declared_status":"PASS"},
+    {"check_id":"functional.auth_rbac_runtime","status":"N/A","reason_code":"NOT_APPLICABLE","rationale":"Check is explicitly N/A under API-optional authority.","evidence_refs":[],"declared_status":"N/A"},
+    {"check_id":"functional.responsive_runtime","status":"PASS","reason_code":"PASS","rationale":"Applicable check has present, current and version-compatible evidence.","evidence_refs":["EV-WB-SIGNIN","EV-WB-BROWSER-QA"],"declared_status":"PASS"},
+    {"check_id":"functional.accessibility_runtime","status":"PASS","reason_code":"PASS","rationale":"Applicable check has present, current and version-compatible evidence.","evidence_refs":["EV-WB-SIGNIN","EV-WB-BROWSER-QA"],"declared_status":"PASS"},
+    {"check_id":"functional.tests","status":"PASS","reason_code":"PASS","rationale":"Applicable check has present, current and version-compatible evidence.","evidence_refs":["EV-WB-SIGNIN","EV-WB-CI"],"declared_status":"PASS"},
+    {"check_id":"functional.traceability","status":"FAIL","reason_code":"MISSING_EVIDENCE","rationale":"Implementation evidence exists, but it is not yet connected to governed requirements and Interface Inventory IDs.","evidence_refs":[],"declared_status":"FAIL"},
+    {"check_id":"review.design_system_fidelity","status":"PASS","reason_code":"PASS","rationale":"Applicable check has present, current and version-compatible evidence.","evidence_refs":["EV-WB-SIGNIN","EV-WB-STYLE1"],"declared_status":"PASS"},
+    {"check_id":"review.api_permission_fidelity","status":"N/A","reason_code":"NOT_APPLICABLE","rationale":"Check is explicitly N/A under API-optional authority.","evidence_refs":[],"declared_status":"N/A"},
+    {"check_id":"review.responsive","status":"PASS","reason_code":"PASS","rationale":"Applicable check has present, current and version-compatible evidence.","evidence_refs":["EV-WB-SIGNIN","EV-WB-BROWSER-QA"],"declared_status":"PASS"},
+    {"check_id":"review.accessibility","status":"PASS","reason_code":"PASS","rationale":"Applicable check has present, current and version-compatible evidence.","evidence_refs":["EV-WB-SIGNIN","EV-WB-BROWSER-QA"],"declared_status":"PASS"},
+    {"check_id":"review.human_complete","status":"PASS","reason_code":"PASS","rationale":"Applicable check has present, current and version-compatible evidence.","evidence_refs":["EV-WB-SIGNIN"],"declared_status":"PASS"},
+    {"check_id":"qa.functional","status":"PASS","reason_code":"PASS","rationale":"Applicable check has present, current and version-compatible evidence.","evidence_refs":["EV-WB-SIGNIN","EV-WB-BROWSER-QA"],"declared_status":"PASS"},
+    {"check_id":"qa.real_api_transport","status":"N/A","reason_code":"NOT_APPLICABLE","rationale":"Real API transport is N/A for API-optional consumers.","evidence_refs":[],"declared_status":"N/A"},
+    {"check_id":"qa.provider_runtime_transport","status":"PASS","reason_code":"PASS","rationale":"Applicable check has present, current and version-compatible evidence.","evidence_refs":["EV-WB-SIGNIN","EV-WB-BROWSER-QA"],"declared_status":"PASS"},
+    {"check_id":"qa.integration","status":"PASS","reason_code":"PASS","rationale":"Applicable check has present, current and version-compatible evidence.","evidence_refs":["EV-WB-SIGNIN","EV-WB-BROWSER-QA","EV-WB-CI"],"declared_status":"PASS"},
+    {"check_id":"qa.security","status":"FAIL","reason_code":"MISSING_EVIDENCE","rationale":"The frozen Sign In checkpoint does not record a dedicated Integration QA security result. Policy and architecture-boundary evidence are not a substitute for executed security QA.","evidence_refs":[],"declared_status":"FAIL"},
+    {"check_id":"qa.responsive","status":"PASS","reason_code":"PASS","rationale":"Applicable check has present, current and version-compatible evidence.","evidence_refs":["EV-WB-SIGNIN","EV-WB-BROWSER-QA"],"declared_status":"PASS"},
+    {"check_id":"qa.accessibility","status":"PASS","reason_code":"PASS","rationale":"Applicable check has present, current and version-compatible evidence.","evidence_refs":["EV-WB-SIGNIN","EV-WB-BROWSER-QA"],"declared_status":"PASS"},
+    {"check_id":"qa.e2e","status":"PASS","reason_code":"PASS","rationale":"Applicable check has present, current and version-compatible evidence.","evidence_refs":["EV-WB-SIGNIN","EV-WB-BROWSER-QA"],"declared_status":"PASS"}
+  ]
+}
