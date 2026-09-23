@@ -1,0 +1,81 @@
+{
+  "schema_version": "1.0.0",
+  "target_version": "0.5.5-dev",
+  "stable_version": "0.5.4",
+  "status": "hardening",
+  "baseline": {
+    "branch": "main",
+    "commit": "8d29ba4c6caf0a382b80310dc0e88c8f1e7fb3c4",
+    "tag": "v0.5.4"
+  },
+  "origin": {
+    "compliance_review": "CR-WEBBLUEPRINT-SDB-0.5.4",
+    "consumer_repository": "LuisHdezE/WebBlueprint",
+    "consumer_snapshot": "12cc52dabfe05ec9902f0ea6d73c7da6a19e1a74",
+    "tracking_issue": 41
+  },
+  "scope": {
+    "api_authority_models": ["api_backed", "api_optional"],
+    "api_optional_allowed_sources": ["local", "static", "mock_non_authoritative"],
+    "generic_compliance_validation": true,
+    "status_template_provenance_reconciliation": true
+  },
+  "frozen_decisions": {
+    "api_backed_pipeline_preserves_0_5_4_strictness": true,
+    "api_absence_must_be_explicit": true,
+    "api_optional_is_not_a_backend_bypass": true,
+    "no_fake_openapi_database_or_permissions_for_compliance": true,
+    "remote_authoritative_business_semantics_require_api_backed_authority": true,
+    "local_static_or_non_authoritative_mock_behavior_may_be_api_optional": true,
+    "real_api_na_must_be_structurally_representable_when_legitimate": true,
+    "consumer_auto_upgrade_is_forbidden": true,
+    "existing_accepted_consumer_evidence_is_grandfathered": true
+  },
+  "planned_increments": [
+    {
+      "id": 0,
+      "name": "development-governance",
+      "goal": "Open and validate the 0.5.5-dev hardening lane without changing stable 0.5.4 semantics."
+    },
+    {
+      "id": 1,
+      "name": "api-authority-capability-model",
+      "goal": "Define explicit API-backed versus API-optional project applicability and validation semantics."
+    },
+    {
+      "id": 2,
+      "name": "workflow-and-gate-applicability",
+      "goal": "Make server/data/API phases conditional without weakening API-backed consumers."
+    },
+    {
+      "id": 3,
+      "name": "client-architecture-and-slice-authority",
+      "goal": "Represent API-optional client architecture and functional slices without fake OpenAPI bindings."
+    },
+    {
+      "id": 4,
+      "name": "integration-qa-authority-matrix",
+      "goal": "Make real transport QA conditional and add fail-closed positive/negative authority cases."
+    },
+    {
+      "id": 5,
+      "name": "generic-compliance-doctor",
+      "goal": "Generalize Compliance Review validation beyond CareShift-specific constants."
+    },
+    {
+      "id": 6,
+      "name": "template-provenance-and-pilot-review",
+      "goal": "Reconcile status template provenance and re-run the WebBlueprint Compliance Review as a non-normative pilot."
+    }
+  ],
+  "governance": {
+    "consumer_auto_upgrade": false,
+    "root_version_remains_stable_during_hardening": true,
+    "incremental_prs_required": true,
+    "exact_head_ci_required": true,
+    "final_release_closure_required": true,
+    "final_release_pr_required": true,
+    "post_merge_exact_sha_validation_required": true,
+    "tag_requires_explicit_human_approval": true
+  }
+}

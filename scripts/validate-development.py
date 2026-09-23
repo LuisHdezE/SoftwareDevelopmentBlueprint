@@ -10,38 +10,47 @@ from types import ModuleType
 ROOT = Path(__file__).resolve().parents[1]
 VERSION_PATH = ROOT / "VERSION"
 DEVELOPMENT_VERSION_PATH = ROOT / "DEVELOPMENT_VERSION"
-DEVELOPMENT_MANIFEST_PATH = ROOT / "documentation/BLUEPRINT_V0_5_4_DEVELOPMENT.json"
-STABLE_VALIDATOR_PATH = ROOT / "scripts/validate-release.py"
+DEVELOPMENT_MANIFEST_PATH = ROOT / "documentation/BLUEPRINT_V0_5_5_DEVELOPMENT.json"
+STABLE_VALIDATOR_PATH = ROOT / "scripts/validate-release-v054.py"
 
-STABLE_VERSION = "0.5.3"
-DEVELOPMENT_VERSION = "0.5.4-dev"
-BASELINE_COMMIT = "b1df5ca09ad38e39a1b51006aa441786afdb946c"
-BASELINE_TAG = "v0.5.3"
-DEVELOPMENT_VALIDATORS = [
-    "scripts/validate-platform-capabilities.py",
-    "scripts/validate-ios-workflow.py",
-    "scripts/validate-mobile-licensing-boundary.py",
-    "scripts/validate-release-closure.py",
-]
+STABLE_VERSION = "0.5.4"
+DEVELOPMENT_VERSION = "0.5.5-dev"
+BASELINE_COMMIT = "8d29ba4c6caf0a382b80310dc0e88c8f1e7fb3c4"
+BASELINE_TAG = "v0.5.4"
+WEBBLUEPRINT_SNAPSHOT = "12cc52dabfe05ec9902f0ea6d73c7da6a19e1a74"
+TRACKING_ISSUE = 41
+
+EXPECTED_SCOPE = {
+    "api_authority_models": ["api_backed", "api_optional"],
+    "api_optional_allowed_sources": ["local", "static", "mock_non_authoritative"],
+    "generic_compliance_validation": True,
+    "status_template_provenance_reconciliation": True,
+}
 
 EXPECTED_FROZEN_DECISIONS = {
-    "cross_platform_does_not_enable_targets": True,
-    "cross_platform_does_not_share_platform_gates": True,
-    "platform_acceptance_remains_independent": True,
-    "mobile_licensing_android_applicability_preserved": True,
-    "ios_does_not_imply_mobile_licensing": True,
-    "offline_scope_is_api_backed_only": True,
-    "api_less_local_authoritative_is_deferred": True,
+    "api_backed_pipeline_preserves_0_5_4_strictness": True,
+    "api_absence_must_be_explicit": True,
+    "api_optional_is_not_a_backend_bypass": True,
+    "no_fake_openapi_database_or_permissions_for_compliance": True,
+    "remote_authoritative_business_semantics_require_api_backed_authority": True,
+    "local_static_or_non_authoritative_mock_behavior_may_be_api_optional": True,
+    "real_api_na_must_be_structurally_representable_when_legitimate": True,
+    "consumer_auto_upgrade_is_forbidden": True,
+    "existing_accepted_consumer_evidence_is_grandfathered": True,
 }
 
 EXPECTED_GOVERNANCE = {
     "consumer_auto_upgrade": False,
     "root_version_remains_stable_during_hardening": True,
     "incremental_prs_required": True,
+    "exact_head_ci_required": True,
+    "final_release_closure_required": True,
     "final_release_pr_required": True,
     "post_merge_exact_sha_validation_required": True,
     "tag_requires_explicit_human_approval": True,
 }
+
+EXPECTED_INCREMENT_IDS = list(range(7))
 
 
 def fail(message: str) -> None:
@@ -56,9 +65,9 @@ def load_json(path: Path) -> dict:
 
 
 def load_stable_validator() -> ModuleType:
-    spec = importlib.util.spec_from_file_location("blueprint_stable_release_validator", STABLE_VALIDATOR_PATH)
+    spec = importlib.util.spec_from_file_location("blueprint_stable_v054_validator", STABLE_VALIDATOR_PATH)
     if spec is None or spec.loader is None:
-        fail("cannot load stable release validator")
+        fail("cannot load stable 0.5.4 release validator")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -67,9 +76,10 @@ def load_stable_validator() -> ModuleType:
 def validate_development_identity() -> dict:
     stable = VERSION_PATH.read_text(encoding="utf-8").strip()
     if stable != STABLE_VERSION:
-        fail(f"hardening must keep VERSION={STABLE_VERSION}; got {stable}")
+        fail(f"0.5.5 hardening must keep VERSION={STABLE_VERSION}; got {stable}")
+
     if not DEVELOPMENT_VERSION_PATH.is_file():
-        fail("DEVELOPMENT_VERSION is required during 0.5.4 hardening")
+        fail("DEVELOPMENT_VERSION is required during 0.5.5 hardening")
     target = DEVELOPMENT_VERSION_PATH.read_text(encoding="utf-8").strip()
     if target != DEVELOPMENT_VERSION:
         fail(f"DEVELOPMENT_VERSION must be {DEVELOPMENT_VERSION}; got {target}")
@@ -82,59 +92,75 @@ def validate_development_identity() -> dict:
     if manifest.get("stable_version") != STABLE_VERSION:
         fail("development manifest stable_version drifted")
     if manifest.get("status") != "hardening":
-        fail("development manifest must remain in hardening status before release promotion")
+        fail("development manifest must remain in hardening status before release closure")
 
     baseline = manifest.get("baseline", {})
     if baseline != {"branch": "main", "commit": BASELINE_COMMIT, "tag": BASELINE_TAG}:
-        fail("0.5.4 hardening baseline drifted")
+        fail("0.5.5 hardening baseline drifted")
 
-    scope = manifest.get("scope", {})
-    if scope.get("client_platforms") != ["web", "android", "ios"]:
-        fail("development scope must declare web/android/ios client platforms")
-    if scope.get("mobile_strategy_model") != ["native", "cross_platform"]:
-        fail("development scope mobile strategy model drifted")
-    if scope.get("offline_mobile") != "api_backed_only":
-        fail("0.5.4 hardening must remain limited to API-backed offline mobile")
-    if scope.get("api_less_local_authoritative") != "deferred":
-        fail("API-less/local-authoritative hardening must remain deferred")
+    origin = manifest.get("origin", {})
+    if origin.get("compliance_review") != "CR-WEBBLUEPRINT-SDB-0.5.4":
+        fail("0.5.5 hardening must preserve its WebBlueprint compliance-review origin")
+    if origin.get("consumer_repository") != "LuisHdezE/WebBlueprint":
+        fail("0.5.5 hardening consumer origin drifted")
+    if origin.get("consumer_snapshot") != WEBBLUEPRINT_SNAPSHOT:
+        fail("reviewed WebBlueprint snapshot drifted")
+    if origin.get("tracking_issue") != TRACKING_ISSUE:
+        fail("0.5.5 hardening tracking issue drifted")
 
+    if manifest.get("scope") != EXPECTED_SCOPE:
+        fail("0.5.5 development scope drifted")
     if manifest.get("frozen_decisions") != EXPECTED_FROZEN_DECISIONS:
-        fail("0.5.4 frozen decisions drifted")
+        fail("0.5.5 frozen decisions drifted")
     if manifest.get("governance") != EXPECTED_GOVERNANCE:
-        fail("0.5.4 governance contract drifted")
+        fail("0.5.5 governance contract drifted")
 
-    if (ROOT / "documentation/BLUEPRINT_V0_5_4_RELEASE.json").exists():
-        fail("stable 0.5.4 release manifest must not exist during hardening")
+    increments = manifest.get("planned_increments")
+    if not isinstance(increments, list):
+        fail("planned_increments must be a list")
+    increment_ids = [item.get("id") for item in increments if isinstance(item, dict)]
+    if increment_ids != EXPECTED_INCREMENT_IDS:
+        fail(f"planned increment IDs must remain {EXPECTED_INCREMENT_IDS}; got {increment_ids}")
+    if any(not isinstance(item.get("name"), str) or not item.get("name") for item in increments):
+        fail("every planned increment requires a non-empty name")
+    if any(not isinstance(item.get("goal"), str) or not item.get("goal") for item in increments):
+        fail("every planned increment requires a non-empty goal")
+
+    if (ROOT / "documentation/BLUEPRINT_V0_5_5_RELEASE.json").exists():
+        fail("stable 0.5.5 release manifest must not exist during hardening")
 
     print(f"PASS development identity: stable={STABLE_VERSION}; target={DEVELOPMENT_VERSION}")
+    print(f"PASS origin: WebBlueprint@{WEBBLUEPRINT_SNAPSHOT}; issue #{TRACKING_ISSUE}")
+    print("PASS 0.5.5 frozen API-authority and governance decisions")
     return manifest
 
 
 def validate_stable_baseline_preserved(stable: ModuleType) -> None:
-    stable.validate_historical_releases()
-    stable.validate_v53_manifest()
-    stable.validate_reference_pilot_history()
-    stable.validate_ci_runtime_provenance()
-    stable.validate_architecture_conformance_semantics()
-    stable.validate_core_semantics()
-    stable.validate_mobile_licensing_semantics()
-    stable.validate_active_docs()
-    print("PASS stable 0.5.3 baseline and inherited invariants preserved")
+    release = stable.load_json("documentation/BLUEPRINT_V0_5_4_RELEASE.json")
+    expected_identity = {
+        "schema_version": "1.0.0",
+        "version": STABLE_VERSION,
+        "status": "stable",
+        "tag": BASELINE_TAG,
+    }
+    for key, expected in expected_identity.items():
+        if release.get(key) != expected:
+            fail(f"stable 0.5.4 release manifest {key} drifted: expected {expected}, got {release.get(key)}")
 
-
-def run_current_validators(stable: ModuleType) -> None:
-    for validator in stable.VALIDATORS:
-        stable.run_validator(validator)
-    for validator in DEVELOPMENT_VALIDATORS:
-        stable.run_validator(validator)
-    print("PASS current repository validators under 0.5.4 hardening lane")
+    stable.validate_promoted_provenance()
+    stable.validate_counts()
+    stable.validate_platform_matrix()
+    stable.validate_mobile_licensing_boundary()
+    stable.validate_docs_and_history()
+    stable.validate_workflow_wiring()
+    stable.run_generic_validators()
+    print("PASS stable 0.5.4 contracts, counts, history and inherited validators preserved")
 
 
 def main() -> int:
     validate_development_identity()
     stable = load_stable_validator()
     validate_stable_baseline_preserved(stable)
-    run_current_validators(stable)
     print(
         "\nBlueprint development validation: PASS "
         f"(stable={STABLE_VERSION}; target={DEVELOPMENT_VERSION})"

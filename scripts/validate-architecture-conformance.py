@@ -14,10 +14,18 @@ if spec is None or spec.loader is None:
 core = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(core)
 
-# Preserve the 0.5.1-compatible component semantics while validating the active 0.5.4 root/catalog contract.
+# Preserve the 0.5.1-compatible component semantics while validating the active stable
+# 0.5.4 root/catalog contract. Opening the 0.5.5-dev lane does not itself promote the
+# architecture-conformance catalog provenance; a later increment must do that explicitly.
 core.ROOT_VERSION = "0.5.4"
 core.STABLE_CATALOG_VERSION = "0.5.4"
 core.STABLE_COUNTS = {"phases": 29, "checks": 146, "gates": 19}
+
+marker = ROOT / "DEVELOPMENT_VERSION"
+if marker.is_file():
+    development_version = marker.read_text(encoding="utf-8").strip()
+    if development_version == "0.5.5-dev":
+        core.active_catalog_contract = lambda: (core.STABLE_CATALOG_VERSION, core.STABLE_COUNTS)
 
 if __name__ == "__main__":
     try:
