@@ -33,5 +33,5 @@
     "no_hardcoded_authoritative_business_data": "PASS",
     "no_invented_capabilities": "PASS"
   },
-  "integration_qa_scope": "DEFERRED_TO_INCREMENT_4"
+  "integration_qa_ref": "templates/integration-qa-authority.api-backed-v055-dev.example.json"
 }

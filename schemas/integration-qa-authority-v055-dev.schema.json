@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eliasworks.dev/blueprint/0.5.5-dev/integration-qa-authority.schema.json",
+  "title": "Blueprint 0.5.5-dev Integration QA Authority Matrix",
+  "type": "object",
+  "required": ["schema_version", "project_ref", "client_slice_authority_ref", "platform", "api_authority_mode", "stable_gate_ref", "effective_gate", "transport_contract", "invariants"],
+  "properties": {
+    "schema_version": {"const": "0.5.5-dev"},
+    "project_ref": {"type": "string", "minLength": 1},
+    "client_slice_authority_ref": {"type": "string", "minLength": 1},
+    "platform": {"enum": ["web", "android", "ios"]},
+    "api_authority_mode": {"enum": ["api_backed", "api_optional"]},
+    "stable_gate_ref": {"const": "catalog/gates.yaml#integration_qa_pass"},
+    "effective_gate": {
+      "type": "object",
+      "required": ["evaluation_scope", "prerequisite_gates", "require_all", "require_if_applicable", "transport_check"],
+      "properties": {
+        "evaluation_scope": {"const": "interface_slice_platform"},
+        "prerequisite_gates": {"const": ["functional_slice_ready", "visual_functional_review_pass"]},
+        "require_all": {"type": "array", "minItems": 7, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "require_if_applicable": {"const": ["qa.idempotency", "qa.offline"]},
+        "transport_check": {"enum": ["qa.real_api_transport", "qa.provider_runtime_transport"]}
+      },
+      "additionalProperties": false
+    },
+    "transport_contract": {"oneOf": [{"$ref": "#/$defs/apiTransport"}, {"$ref": "#/$defs/providerRuntimeTransport"}]},
+    "invariants": {
+      "type": "object",
+      "required": ["common_quality_checks_required", "security_qa_required", "responsive_qa_required", "accessibility_qa_required", "e2e_required", "human_review_prerequisite", "transport_evidence_required", "api_optional_cannot_claim_server_authority", "qa_never_becomes_na_because_api_is_optional"],
+      "properties": {
+        "common_quality_checks_required": {"const": true},
+        "security_qa_required": {"const": true},
+        "responsive_qa_required": {"const": true},
+        "accessibility_qa_required": {"const": true},
+        "e2e_required": {"const": true},
+        "human_review_prerequisite": {"const": true},
+        "transport_evidence_required": {"const": true},
+        "api_optional_cannot_claim_server_authority": {"const": true},
+        "qa_never_becomes_na_because_api_is_optional": {"const": true}
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "apiTransport": {
+      "type": "object",
+      "required": ["kind", "openapi_ref", "operation_ids", "remote_authority", "server_security_boundary", "runtime_evidence"],
+      "properties": {
+        "kind": {"const": "real_api"},
+        "openapi_ref": {"type": "string", "minLength": 1},
+        "operation_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "remote_authority": {"const": true},
+        "server_security_boundary": {"const": true},
+        "runtime_evidence": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["api_contract_tests", "integration_environment", "e2e_real_api"]}}
+      },
+      "additionalProperties": false
+    },
+    "providerRuntimeTransport": {
+      "type": "object",
+      "required": ["kind", "contract_refs", "adapter_modes", "runtime_surfaces", "remote_authority", "remote_mutations", "server_security_claims"],
+      "properties": {
+        "kind": {"const": "provider_runtime"},
+        "contract_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "adapter_modes": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["mock", "local_static", "local_persistence", "derived", "custom"]}},
+        "runtime_surfaces": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["browser_preview", "browser_production", "local_runtime", "device_runtime", "test_harness"]}},
+        "remote_authority": {"const": false},
+        "remote_mutations": {"const": false},
+        "server_security_claims": {"const": false}
+      },
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"api_authority_mode": {"const": "api_backed"}}, "required": ["api_authority_mode"]},
+      "then": {"properties": {"effective_gate": {"properties": {"require_all": {"const": ["qa.functional", "qa.real_api_transport", "qa.integration", "qa.security", "qa.responsive", "qa.accessibility", "qa.e2e"]}, "transport_check": {"const": "qa.real_api_transport"}}}, "transport_contract": {"$ref": "#/$defs/apiTransport"}}}
+    },
+    {
+      "if": {"properties": {"api_authority_mode": {"const": "api_optional"}}, "required": ["api_authority_mode"]},
+      "then": {"properties": {"effective_gate": {"properties": {"require_all": {"const": ["qa.functional", "qa.provider_runtime_transport", "qa.integration", "qa.security", "qa.responsive", "qa.accessibility", "qa.e2e"]}, "transport_check": {"const": "qa.provider_runtime_transport"}}}, "transport_contract": {"$ref": "#/$defs/providerRuntimeTransport"}}}
+    }
+  ],
+  "additionalProperties": false
+}
