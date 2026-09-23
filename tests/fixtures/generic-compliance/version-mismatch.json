@@ -1,0 +1,14 @@
+{
+  "schema_version": "0.5.5-dev",
+  "consumer": {"id": "fixture-version-mismatch", "repository": "example/version-mismatch"},
+  "blueprint": {"adopted_version": "0.5.4", "evaluation_version": "0.5.5-dev", "workflow_mode": "greenfield"},
+  "authority": {"api_mode": "api_optional"},
+  "capabilities": {"web": true, "android": false, "ios": false, "database": false, "mobile_licensing": false},
+  "scope": {"mode": "selected", "check_ids": ["qa.security"]},
+  "evidence": [
+    {"id": "EV-SEC", "path": "reports/security.md", "kind": "report", "state": "PRESENT", "blueprint_version": "0.4.0"}
+  ],
+  "assessments": [
+    {"check_id": "qa.security", "declared_status": "PASS", "evidence_refs": ["EV-SEC"]}
+  ]
+}
