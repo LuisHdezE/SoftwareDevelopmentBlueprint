@@ -24,6 +24,12 @@ profiles:
     - api.auth_strategy
     - api.error_contract
     - api.versioning_policy
+    - client.api_client_strategy
+    - client.api_contract_binding
+    - functional.api_dependencies_resolved
+    - functional.real_api_integration
+    - functional.auth_rbac_runtime
+    - review.api_permission_fidelity
     check_na_when_database_absent:
     - data.schema_migrations
     - data.authoritative_database
