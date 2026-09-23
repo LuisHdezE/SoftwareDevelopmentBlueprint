@@ -10,9 +10,17 @@ CORE = ROOT / "scripts" / "validate-artifact-graph-core.py"
 
 spec = importlib.util.spec_from_file_location("blueprint_artifact_graph_core", CORE)
 if spec is None or spec.loader is None:
-    raise RuntimeError(f"Unable to load artifact graph validator core: {CORE}")
+    raise RuntimeError(f"Unable to load architecture conformance validator core: {CORE}")
 core = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(core)
+
+# Public compatibility surface consumed by repository validators such as
+# validate-platform-matrix.py. The core extraction must not silently remove the
+# executable validator API used by sibling validation modules.
+load = core.load
+fixture_docs = core.fixture_docs
+validate_schema_instance = core.validate_schema_instance
+validate_graph_documents = core.validate_graph_documents
 
 _original_remap = core.remap_platform_fixture
 
