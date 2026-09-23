@@ -50,5 +50,3 @@ profiles:
       na_checks_cannot_be_required_by_effective_gate: true
       database_checks_return_when_database_declared: true
       api_specific_checks_never_return_in_api_optional: true
-      client_slice_api_checks_are_na_when_provider_authority_is_explicit: true
-      provider_contract_and_runtime_obligations_remain_required: true
