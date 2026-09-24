@@ -1,0 +1,108 @@
+{
+  "schema_version": "1.0.0",
+  "target_version": "0.5.5",
+  "development_version": "0.5.5-dev",
+  "stable_version": "0.5.4",
+  "status": "release_candidate",
+  "candidate_date": "2026-09-23",
+  "baseline": {
+    "branch": "main",
+    "commit": "8d29ba4c6caf0a382b80310dc0e88c8f1e7fb3c4",
+    "tag": "v0.5.4"
+  },
+  "hardening_complete_through_main": "d7ca0ff1cd0615445c3015c9d9b3a18983e573b7",
+  "counts": {
+    "phases": 29,
+    "checks": 146,
+    "gates": 19,
+    "materialized_skills": 16,
+    "planned_skills": 25
+  },
+  "hardening_lineage": [
+    {"increment": 0, "pull_request": 42, "merge_commit": "e316c31a04d7a7f8e7c746a3dd36d0cdb1d24ebe", "scope": "governed_development_lane"},
+    {"increment": 1, "pull_request": 43, "merge_commit": "45ebc94c4ddacac00ebece1fe052400a25c2b060", "scope": "api_authority_capability_model"},
+    {"increment": 2, "pull_request": 44, "merge_commit": "a07cf874a214d300daab5bd8214d708bffafe464", "scope": "workflow_gate_applicability"},
+    {"increment": 3, "pull_request": 45, "merge_commit": "ef8dbde3af3d786cf96b26d9938a27715b8e5f43", "scope": "client_architecture_slice_authority"},
+    {"increment": 4, "pull_request": 46, "merge_commit": "1b2d29ad43d7e6f30bad2b54ac972bb24704d1e4", "scope": "integration_qa_authority_matrix"},
+    {"increment": 5, "pull_request": 47, "merge_commit": "828e182659975da325093e06afa84de238aef2a8", "scope": "generic_compliance_doctor"},
+    {"increment": 6, "pull_request": 48, "merge_commit": "d7ca0ff1cd0615445c3015c9d9b3a18983e573b7", "scope": "template_provenance_webblueprint_pilot"}
+  ],
+  "release_highlights": [
+    "explicit_api_authority_modes",
+    "api_optional_without_fake_server_contracts",
+    "authority_aware_workflow_gate_applicability",
+    "authority_aware_client_slice_contracts",
+    "provider_runtime_integration_qa_transport",
+    "integration_qa_remains_mandatory",
+    "generic_compliance_doctor",
+    "status_template_provenance_reconciled",
+    "non_normative_webblueprint_pilot",
+    "api_backed_0_5_4_strictness_preserved"
+  ],
+  "frozen_decisions": {
+    "api_backed_pipeline_preserves_0_5_4_strictness": true,
+    "api_absence_must_be_explicit": true,
+    "api_optional_is_not_a_backend_bypass": true,
+    "no_fake_openapi_database_or_permissions_for_compliance": true,
+    "remote_authoritative_business_semantics_require_api_backed_authority": true,
+    "local_static_or_non_authoritative_mock_behavior_may_be_api_optional": true,
+    "real_api_na_must_be_structurally_representable_when_legitimate": true,
+    "consumer_auto_upgrade_is_forbidden": true,
+    "existing_accepted_consumer_evidence_is_grandfathered": true
+  },
+  "component_provenance": {
+    "root_release": "0.5.4-stable-until-promotion",
+    "development_lane": "0.5.5-dev",
+    "stable_core_catalogs_and_workflows": "0.5.4-compatible",
+    "api_authority_overlay": "0.5.5-dev",
+    "workflow_gate_applicability_overlay": "0.5.5-dev",
+    "client_slice_authority_overlay": "0.5.5-dev",
+    "integration_qa_authority_overlay": "0.5.5-dev",
+    "generic_compliance_doctor": "0.5.5-dev",
+    "webblueprint_pilot": "0.5.5-dev-non-normative",
+    "status_template": "0.5.4-active-provenance",
+    "mobile_licensing_contract": "0.5.3-compatible",
+    "ci_runtime_contract": "0.5.2-compatible",
+    "architecture_implementation_conformance": "0.5.1-compatible",
+    "unchanged_historical_contracts": "retain_prior_compatible_provenance"
+  },
+  "webblueprint_pilot": {
+    "repository": "LuisHdezE/WebBlueprint",
+    "snapshot": "12cc52dabfe05ec9902f0ea6d73c7da6a19e1a74",
+    "adopted_version": "UNMANAGED",
+    "evaluation_version": "0.5.5-dev",
+    "overall_status": "FAIL",
+    "summary": {
+      "PASS": 18,
+      "FAIL": 7,
+      "N/A": 10,
+      "BLOCKED": 0,
+      "TOTAL": 35
+    },
+    "consumer_mutated": false
+  },
+  "consumer_policy": {
+    "automatic_adoption": false,
+    "compliance_review_required": true,
+    "explicit_consumer_change_required": true,
+    "impact_appropriate_revalidation_required": true
+  },
+  "deferred_scope": {
+    "consumer_specific_governance_materialization": true,
+    "automatic_consumer_adoption": true,
+    "remote_authoritative_semantics_under_api_optional": true,
+    "webblueprint_adoption_until_stable_0_5_5": true
+  },
+  "final_release_requirements": {
+    "final_release_pr_required": true,
+    "promote_development_contracts_to_0_5_5": true,
+    "set_root_version_to_0_5_5": true,
+    "remove_development_version_marker": true,
+    "create_stable_release_manifest_and_notes": true,
+    "update_normative_and_active_docs_to_stable_0_5_5": true,
+    "post_merge_stable_validation_on_exact_sha": true,
+    "tag_requires_separate_explicit_human_approval": true,
+    "prospective_merge_sha_is_not_release_evidence": true,
+    "webblueprint_adoption_requires_separate_explicit_pr": true
+  }
+}
