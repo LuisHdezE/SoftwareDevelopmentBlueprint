@@ -1,0 +1,15 @@
+schema_version: specialist-agent-registry-proposal-1
+
+specialists:
+  - id: specialist:search-ai-discoverability
+    display_name: Search & AI Discoverability
+    capability: public_discoverability
+    contract: agents/specialists/search-ai-discoverability.md
+    activation:
+      mode: conditional
+      condition: public_indexable_surfaces_exist
+    completion_statuses:
+      - SPECIALIST_PASS
+      - SPECIALIST_FAIL
+      - BLOCKED
+    core_agent: false
