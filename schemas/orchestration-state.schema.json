@@ -21,7 +21,11 @@
     },
     "task": {
       "type": "object",
-      "required": ["id", "title", "classification"],
+      "required": [
+        "id",
+        "title",
+        "classification"
+      ],
       "properties": {
         "id": {
           "type": "string",
@@ -53,7 +57,11 @@
     },
     "baseline": {
       "type": "object",
-      "required": ["repository", "base_branch", "base_sha"],
+      "required": [
+        "repository",
+        "base_branch",
+        "base_sha"
+      ],
       "properties": {
         "repository": {
           "type": "string",
@@ -68,15 +76,24 @@
           "pattern": "^[a-fA-F0-9]{7,40}$"
         },
         "working_branch": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "minLength": 1
         },
         "head_sha": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "pattern": "^[a-fA-F0-9]{7,40}$"
         },
         "pull_request": {
-          "type": ["integer", "null"],
+          "type": [
+            "integer",
+            "null"
+          ],
           "minimum": 1
         }
       },
@@ -98,17 +115,39 @@
         "auditor"
       ],
       "properties": {
-        "orchestrator": {"$ref": "#/$defs/applicability"},
-        "analyst": {"$ref": "#/$defs/applicability"},
-        "planner": {"$ref": "#/$defs/applicability"},
-        "architect": {"$ref": "#/$defs/applicability"},
-        "database": {"$ref": "#/$defs/applicability"},
-        "backend": {"$ref": "#/$defs/applicability"},
-        "frontend": {"$ref": "#/$defs/applicability"},
-        "qa": {"$ref": "#/$defs/applicability"},
-        "security": {"$ref": "#/$defs/applicability"},
-        "documentation": {"$ref": "#/$defs/applicability"},
-        "auditor": {"$ref": "#/$defs/applicability"}
+        "orchestrator": {
+          "$ref": "#/$defs/applicability"
+        },
+        "analyst": {
+          "$ref": "#/$defs/applicability"
+        },
+        "planner": {
+          "$ref": "#/$defs/applicability"
+        },
+        "architect": {
+          "$ref": "#/$defs/applicability"
+        },
+        "database": {
+          "$ref": "#/$defs/applicability"
+        },
+        "backend": {
+          "$ref": "#/$defs/applicability"
+        },
+        "frontend": {
+          "$ref": "#/$defs/applicability"
+        },
+        "qa": {
+          "$ref": "#/$defs/applicability"
+        },
+        "security": {
+          "$ref": "#/$defs/applicability"
+        },
+        "documentation": {
+          "$ref": "#/$defs/applicability"
+        },
+        "auditor": {
+          "$ref": "#/$defs/applicability"
+        }
       },
       "additionalProperties": false
     },
@@ -122,8 +161,12 @@
     },
     "current_agent": {
       "oneOf": [
-        {"$ref": "#/$defs/agent_id"},
-        {"type": "null"}
+        {
+          "$ref": "#/$defs/agent_id"
+        },
+        {
+          "type": "null"
+        }
       ]
     },
     "current_state": {
@@ -152,8 +195,16 @@
       "uniqueItems": true,
       "items": {
         "oneOf": [
-          {"$ref": "#/$defs/agent_id"},
-          {"enum": ["human", "infrastructure", "external_dependency"]}
+          {
+            "$ref": "#/$defs/agent_id"
+          },
+          {
+            "enum": [
+              "human",
+              "infrastructure",
+              "external_dependency"
+            ]
+          }
         ]
       }
     },
@@ -185,22 +236,40 @@
         "type": "string",
         "minLength": 1
       }
+    },
+    "specialists": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^specialist:[a-z][a-z0-9-]*$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/applicability"
+      },
+      "description": "Conditional specialist applicability for this task. Core agents remain in the fixed agents object."
     }
   },
   "$defs": {
     "agent_id": {
-      "enum": [
-        "orchestrator",
-        "analyst",
-        "planner",
-        "architect",
-        "database",
-        "backend",
-        "frontend",
-        "qa",
-        "security",
-        "documentation",
-        "auditor"
+      "oneOf": [
+        {
+          "enum": [
+            "orchestrator",
+            "analyst",
+            "planner",
+            "architect",
+            "database",
+            "backend",
+            "frontend",
+            "qa",
+            "security",
+            "documentation",
+            "auditor"
+          ]
+        },
+        {
+          "type": "string",
+          "pattern": "^specialist:[a-z][a-z0-9-]*$"
+        }
       ]
     },
     "applicability": {
