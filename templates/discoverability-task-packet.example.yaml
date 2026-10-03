@@ -1,0 +1,63 @@
+schema_version: agent-protocol-proposal-1
+task_id: DISC-STORE-001
+title: Validate storefront product discoverability
+objective: Validate one public product surface for traditional search and AI-assisted discovery.
+baseline:
+  repository: owner/repository
+  base_branch: main
+  base_sha: abcdef1
+  working_branch: feat/storefront-product-discoverability
+  head_sha: null
+  pull_request: null
+source:
+  feature: Public product discoverability
+  requirements:
+    - FR-DISC-001
+  business_rules:
+    - BR-DISC-001
+  acceptance_criteria:
+    - AC-DISC-001
+    - AC-DISC-002
+scope:
+  in:
+    - public product page
+    - product metadata
+    - structured data
+    - crawler policy
+  out:
+    - admin product editor
+    - private account surfaces
+owner_agent: specialist:search-ai-discoverability
+required_agents:
+  - specialist:search-ai-discoverability
+  - qa
+  - auditor
+optional_agents:
+  - frontend
+  - backend
+  - documentation
+not_applicable_agents:
+  - database
+dependencies: []
+implementation_constraints:
+  - private and administrative routes remain outside discoverability scope
+  - visible product facts and structured data must agree
+expected_outputs:
+  - discoverability report
+  - specialist handoff
+  - QA evidence
+validation:
+  build: conditional
+  tests: required
+  visual: conditional
+  security: conditional
+  notes:
+    - Crawl/index behavior must be checked independently from private-route access control.
+risks:
+  - id: R-DISC-CRAWLER
+    description: A crawler policy may accidentally block intended public discovery or expose an unintended route.
+    probability: MEDIUM
+    impact: HIGH
+    mitigation: Validate surface classification and effective crawler policy together.
+checkpoint: Public product surface has independent discoverability evidence.
+exit_gate: DISCOVERABILITY_READY
