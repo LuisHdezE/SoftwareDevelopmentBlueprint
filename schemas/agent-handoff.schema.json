@@ -48,14 +48,20 @@
     },
     "baseline": {
       "type": "object",
-      "required": ["repository", "head_sha"],
+      "required": [
+        "repository",
+        "head_sha"
+      ],
       "properties": {
         "repository": {
           "type": "string",
           "pattern": "^[^/\\s]+/[^/\\s]+$"
         },
         "branch": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "minLength": 1
         },
         "head_sha": {
@@ -63,7 +69,10 @@
           "pattern": "^[a-fA-F0-9]{7,40}$"
         },
         "pull_request": {
-          "type": ["integer", "null"],
+          "type": [
+            "integer",
+            "null"
+          ],
           "minimum": 1
         }
       },
@@ -93,7 +102,12 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "description", "owner", "blocking"],
+        "required": [
+          "id",
+          "description",
+          "owner",
+          "blocking"
+        ],
         "properties": {
           "id": {
             "type": "string",
@@ -105,8 +119,12 @@
           },
           "owner": {
             "oneOf": [
-              {"$ref": "#/$defs/agent_id"},
-              {"const": "human"}
+              {
+                "$ref": "#/$defs/agent_id"
+              },
+              {
+                "const": "human"
+              }
             ]
           },
           "blocking": {
@@ -120,14 +138,22 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "priority", "question"],
+        "required": [
+          "id",
+          "priority",
+          "question"
+        ],
         "properties": {
           "id": {
             "type": "string",
             "pattern": "^Q-[A-Z0-9][A-Z0-9._-]*$"
           },
           "priority": {
-            "enum": ["BLOCKING", "NON_BLOCKING", "DEFERRED"]
+            "enum": [
+              "BLOCKING",
+              "NON_BLOCKING",
+              "DEFERRED"
+            ]
           },
           "question": {
             "type": "string",
@@ -141,7 +167,10 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "summary"],
+        "required": [
+          "id",
+          "summary"
+        ],
         "properties": {
           "id": {
             "type": "string",
@@ -152,7 +181,10 @@
             "minLength": 1
           },
           "decision_ref": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "minLength": 1
           }
         },
@@ -166,18 +198,26 @@
   },
   "$defs": {
     "agent_id": {
-      "enum": [
-        "orchestrator",
-        "analyst",
-        "planner",
-        "architect",
-        "database",
-        "backend",
-        "frontend",
-        "qa",
-        "security",
-        "documentation",
-        "auditor"
+      "oneOf": [
+        {
+          "enum": [
+            "orchestrator",
+            "analyst",
+            "planner",
+            "architect",
+            "database",
+            "backend",
+            "frontend",
+            "qa",
+            "security",
+            "documentation",
+            "auditor"
+          ]
+        },
+        {
+          "type": "string",
+          "pattern": "^specialist:[a-z][a-z0-9-]*$"
+        }
       ]
     },
     "role_status": {
@@ -197,7 +237,9 @@
         "READY_FOR_MERGE",
         "READY_FOR_HUMAN_DECISION",
         "BLOCKED",
-        "REJECTED"
+        "REJECTED",
+        "SPECIALIST_PASS",
+        "SPECIALIST_FAIL"
       ]
     }
   },
