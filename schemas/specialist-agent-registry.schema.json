@@ -28,7 +28,7 @@
           },
           "display_name": {"type": "string", "minLength": 1},
           "capability": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
-          "contract": {"type": "string", "pattern": "^agents/specialists/.+\.md$"},
+          "contract": {"type": "string", "pattern": "^agents/specialists/.+\\.md$"},
           "activation": {
             "type": "object",
             "required": ["mode", "condition"],
