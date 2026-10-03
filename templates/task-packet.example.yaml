@@ -1,0 +1,65 @@
+schema_version: agent-protocol-proposal-1
+task_id: BP-CART-001
+title: Implement cart quantity controls
+objective: Allow the customer to change line quantities while preserving approved cart rules.
+baseline:
+  repository: owner/repository
+  base_branch: main
+  base_sha: abcdef1
+  working_branch: feat/cart-quantity
+  head_sha: null
+  pull_request: null
+source:
+  feature: Cart Quantity Management
+  requirements:
+    - FR-CART-001
+  business_rules:
+    - BR-CART-001
+    - BR-CART-002
+  acceptance_criteria:
+    - AC-CART-001
+    - AC-CART-002
+scope:
+  in:
+    - quantity increment control
+    - quantity decrement control
+    - line subtotal recalculation
+    - cart total recalculation
+  out:
+    - inventory reservation
+    - checkout
+    - payment
+owner_agent: frontend
+required_agents:
+  - frontend
+  - qa
+  - auditor
+optional_agents:
+  - architect
+  - security
+not_applicable_agents:
+  - database
+  - backend
+dependencies: []
+implementation_constraints:
+  - consume the approved cart state contract
+  - do not invent server-authoritative inventory semantics
+expected_outputs:
+  - quantity controls
+  - recalculation behavior
+  - frontend tests
+validation:
+  build: required
+  tests: required
+  visual: required
+  security: conditional
+  notes:
+    - Security review becomes required if the change introduces authorization or sensitive-state behavior.
+risks:
+  - id: R-CART-CONTRACT
+    description: Client assumptions may drift from the approved cart contract.
+    probability: MEDIUM
+    impact: MEDIUM
+    mitigation: Bind implementation and tests to the approved contract and acceptance criteria.
+checkpoint: Cart quantity behavior implemented and independently verified.
+exit_gate: READY_FOR_AUDIT
