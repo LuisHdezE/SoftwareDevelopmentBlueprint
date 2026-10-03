@@ -181,11 +181,10 @@ gate_bindings:
   interface_scope_ready:
     required_role_evidence:
       - {agent: analyst, status: ANALYZED}
-    conditional_role_evidence:
-      - {agent: frontend, status: FRONTEND_IMPLEMENTED}
+    conditional_role_evidence: []
     substitutes_stable_checks: false
     human_decision_preserved: true
-    note: Frontend evidence is conditional and may represent reviewed scope artifacts rather than executable delivery.
+    note: Frontend participation is captured by task handoffs; no implementation-completion status is required before this planning gate.
 
   architecture_ready:
     required_role_evidence:
@@ -200,11 +199,10 @@ gate_bindings:
     required_role_evidence:
       - {agent: architect, status: ARCHITECTURE_READY}
     conditional_role_evidence:
-      - {agent: backend, status: BACKEND_IMPLEMENTED}
       - {agent: security, status: SECURITY_PASS}
     substitutes_stable_checks: false
     human_decision_preserved: true
-    note: Backend status is required only when a bounded implementation Task Packet is part of the same review boundary.
+    note: Backend participation is captured through contract-design handoffs; backend implementation completion is not required before the contract gate.
 
   api_implemented:
     required_role_evidence:
@@ -258,11 +256,10 @@ gate_bindings:
   design_system_ready:
     required_role_evidence: []
     conditional_role_evidence:
-      - {agent: frontend, status: FRONTEND_IMPLEMENTED}
       - {agent: qa, status: QA_PASS}
     substitutes_stable_checks: false
     human_decision_preserved: true
-    note: Role status does not imply that executable client delivery has started.
+    note: Frontend participation is represented by design-system task handoffs; this gate does not require executable client implementation.
 
   mockup_review_pass:
     required_role_evidence:
@@ -276,7 +273,6 @@ gate_bindings:
     required_role_evidence:
       - {agent: architect, status: ARCHITECTURE_READY}
     conditional_role_evidence:
-      - {agent: frontend, status: FRONTEND_IMPLEMENTED}
       - {agent: security, status: SECURITY_PASS}
     substitutes_stable_checks: false
     human_decision_preserved: true
@@ -328,7 +324,7 @@ gate_bindings:
     human_decision_preserved: true
 
 state_model:
-  blueprint_status_authority: .blueprint/status.yaml
+  blueprint_status_authority: project.artifact_locations.status
   orchestration_state_authority: task_coordination_only
   task_packet_authority: bounded_delivery_definition
   handoff_authority: role_transition_evidence
