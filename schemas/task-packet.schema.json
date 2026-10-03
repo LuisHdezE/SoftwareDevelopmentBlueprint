@@ -42,7 +42,11 @@
     },
     "source": {
       "type": "object",
-      "required": ["feature", "requirements", "acceptance_criteria"],
+      "required": [
+        "feature",
+        "requirements",
+        "acceptance_criteria"
+      ],
       "properties": {
         "feature": {
           "type": "string",
@@ -79,7 +83,10 @@
     },
     "scope": {
       "type": "object",
-      "required": ["in", "out"],
+      "required": [
+        "in",
+        "out"
+      ],
       "properties": {
         "in": {
           "type": "array",
@@ -153,7 +160,12 @@
     },
     "validation": {
       "type": "object",
-      "required": ["build", "tests", "visual", "security"],
+      "required": [
+        "build",
+        "tests",
+        "visual",
+        "security"
+      ],
       "properties": {
         "build": {
           "$ref": "#/$defs/validation_requirement"
@@ -184,7 +196,10 @@
       }
     },
     "checkpoint": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "minLength": 1
     },
     "exit_gate": {
@@ -194,23 +209,35 @@
   },
   "$defs": {
     "agent_id": {
-      "enum": [
-        "orchestrator",
-        "analyst",
-        "planner",
-        "architect",
-        "database",
-        "backend",
-        "frontend",
-        "qa",
-        "security",
-        "documentation",
-        "auditor"
+      "oneOf": [
+        {
+          "enum": [
+            "orchestrator",
+            "analyst",
+            "planner",
+            "architect",
+            "database",
+            "backend",
+            "frontend",
+            "qa",
+            "security",
+            "documentation",
+            "auditor"
+          ]
+        },
+        {
+          "type": "string",
+          "pattern": "^specialist:[a-z][a-z0-9-]*$"
+        }
       ]
     },
     "baseline": {
       "type": "object",
-      "required": ["repository", "base_branch", "base_sha"],
+      "required": [
+        "repository",
+        "base_branch",
+        "base_sha"
+      ],
       "properties": {
         "repository": {
           "type": "string",
@@ -225,15 +252,24 @@
           "pattern": "^[a-fA-F0-9]{7,40}$"
         },
         "working_branch": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "minLength": 1
         },
         "head_sha": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "pattern": "^[a-fA-F0-9]{7,40}$"
         },
         "pull_request": {
-          "type": ["integer", "null"],
+          "type": [
+            "integer",
+            "null"
+          ],
           "minimum": 1
         }
       },
@@ -248,7 +284,13 @@
     },
     "risk": {
       "type": "object",
-      "required": ["id", "description", "probability", "impact", "mitigation"],
+      "required": [
+        "id",
+        "description",
+        "probability",
+        "impact",
+        "mitigation"
+      ],
       "properties": {
         "id": {
           "type": "string",
@@ -259,10 +301,19 @@
           "minLength": 1
         },
         "probability": {
-          "enum": ["LOW", "MEDIUM", "HIGH"]
+          "enum": [
+            "LOW",
+            "MEDIUM",
+            "HIGH"
+          ]
         },
         "impact": {
-          "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+          "enum": [
+            "LOW",
+            "MEDIUM",
+            "HIGH",
+            "CRITICAL"
+          ]
         },
         "mitigation": {
           "type": "string",
