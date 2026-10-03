@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eliasworks.dev/blueprint/proposals/public-discoverability.schema.json",
+  "title": "Blueprint Public Discoverability Capability Proposal",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "capability",
+    "applicability",
+    "surface_classes",
+    "search",
+    "ai_search",
+    "ecommerce",
+    "gate",
+    "invariants"
+  ],
+  "properties": {
+    "schema_version": {"const": "public-discoverability-proposal-1"},
+    "capability": {"const": "public_discoverability"},
+    "applicability": {
+      "type": "object",
+      "required": ["mode", "activate_when"],
+      "properties": {
+        "mode": {"const": "conditional"},
+        "activate_when": {"const": "public_indexable_surfaces_exist"}
+      },
+      "additionalProperties": false
+    },
+    "surface_classes": {
+      "type": "object",
+      "required": ["PUBLIC_INDEXABLE", "PUBLIC_NO_INDEX", "PRIVATE"],
+      "properties": {
+        "PUBLIC_INDEXABLE": {"$ref": "#/$defs/surface_class"},
+        "PUBLIC_NO_INDEX": {"$ref": "#/$defs/surface_class"},
+        "PRIVATE": {"$ref": "#/$defs/surface_class"}
+      },
+      "additionalProperties": false
+    },
+    "search": {
+      "type": "object",
+      "required": [
+        "crawlability",
+        "indexability",
+        "canonical",
+        "sitemap",
+        "metadata",
+        "semantic_html",
+        "internal_linking",
+        "structured_data",
+        "performance"
+      ],
+      "properties": {
+        "crawlability": {"const": true},
+        "indexability": {"const": true},
+        "canonical": {"const": true},
+        "sitemap": {"const": true},
+        "metadata": {"const": true},
+        "semantic_html": {"const": true},
+        "internal_linking": {"const": true},
+        "structured_data": {"const": true},
+        "performance": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "ai_search": {
+      "type": "object",
+      "required": [
+        "oai_searchbot_policy",
+        "gptbot_policy_independent",
+        "entity_clarity",
+        "factual_content_clarity",
+        "citation_friendly_content",
+        "referral_measurement"
+      ],
+      "properties": {
+        "oai_searchbot_policy": {"enum": ["allow", "disallow", "explicit_decision_required"]},
+        "gptbot_policy_independent": {"const": true},
+        "entity_clarity": {"const": true},
+        "factual_content_clarity": {"const": true},
+        "citation_friendly_content": {"const": true},
+        "referral_measurement": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "ecommerce": {
+      "type": "object",
+      "required": [
+        "applicability",
+        "product_structured_data",
+        "variant_modeling",
+        "price_availability_consistency",
+        "ai_product_feed"
+      ],
+      "properties": {
+        "applicability": {"enum": ["conditional", "not_applicable"]},
+        "product_structured_data": {"enum": ["required_when_ecommerce", "not_applicable"]},
+        "variant_modeling": {"enum": ["required_when_variants_exist", "not_applicable"]},
+        "price_availability_consistency": {"enum": ["required_when_ecommerce", "not_applicable"]},
+        "ai_product_feed": {
+          "type": "object",
+          "required": ["applicability", "provider", "access_model"],
+          "properties": {
+            "applicability": {"enum": ["optional", "not_applicable"]},
+            "provider": {"enum": ["openai_agentic_commerce", "none"]},
+            "access_model": {"enum": ["current_provider_eligibility_applies", "not_applicable"]}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "gate": {
+      "type": "object",
+      "required": ["id", "scope", "result_values", "stable_gate"],
+      "properties": {
+        "id": {"const": "discoverability_ready"},
+        "scope": {"const": "public_indexable_surface"},
+        "result_values": {
+          "type": "array",
+          "const": ["READY_FOR_REVIEW", "PASS", "FAIL", "BLOCKED", "NOT_APPLICABLE"]
+        },
+        "stable_gate": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "invariants": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    }
+  },
+  "$defs": {
+    "surface_class": {
+      "type": "object",
+      "required": ["public", "index_policy", "requires_auth"],
+      "properties": {
+        "public": {"type": "boolean"},
+        "index_policy": {"enum": ["index", "noindex", "not_applicable"]},
+        "requires_auth": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
