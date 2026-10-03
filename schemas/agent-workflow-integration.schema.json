@@ -83,7 +83,7 @@
         "no_state_substitution"
       ],
       "properties": {
-        "blueprint_status_authority": {"const": ".blueprint/status.yaml"},
+        "blueprint_status_authority": {"const": "project.artifact_locations.status"},
         "orchestration_state_authority": {"const": "task_coordination_only"},
         "task_packet_authority": {"const": "bounded_delivery_definition"},
         "handoff_authority": {"const": "role_transition_evidence"},
