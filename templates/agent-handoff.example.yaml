@@ -8,7 +8,7 @@ status: FRONTEND_IMPLEMENTED
 baseline:
   repository: owner/repository
   branch: feat/cart-quantity
-  head_sha: 1234567
+  head_sha: "1234567"
   pull_request: 101
 summary: Cart quantity controls and recalculation behavior are implemented against the approved client contract.
 outputs:
