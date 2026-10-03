@@ -38,31 +38,61 @@
         "orchestration_is_overlay"
       ],
       "properties": {
-        "mode": {"const": "opt_in"},
-        "automatic_consumer_upgrade": {"const": false},
-        "stable_workflows_unchanged": {"const": true},
-        "stable_gates_unchanged": {"const": true},
-        "orchestration_is_overlay": {"const": true}
+        "mode": {
+          "const": "opt_in"
+        },
+        "automatic_consumer_upgrade": {
+          "const": false
+        },
+        "stable_workflows_unchanged": {
+          "const": true
+        },
+        "stable_gates_unchanged": {
+          "const": true
+        },
+        "orchestration_is_overlay": {
+          "const": true
+        }
       },
       "additionalProperties": false
     },
     "workflow_bindings": {
       "type": "object",
-      "required": ["greenfield", "brownfield"],
+      "required": [
+        "greenfield",
+        "brownfield"
+      ],
       "properties": {
-        "greenfield": {"$ref": "#/$defs/workflow_binding"},
-        "brownfield": {"$ref": "#/$defs/workflow_binding"}
+        "greenfield": {
+          "$ref": "#/$defs/workflow_binding"
+        },
+        "brownfield": {
+          "$ref": "#/$defs/workflow_binding"
+        }
       },
       "additionalProperties": false
     },
     "cross_cutting_roles": {
       "type": "object",
-      "required": ["orchestrator", "planner", "documentation", "auditor"],
+      "required": [
+        "orchestrator",
+        "planner",
+        "documentation",
+        "auditor"
+      ],
       "properties": {
-        "orchestrator": {"$ref": "#/$defs/cross_cutting_role"},
-        "planner": {"$ref": "#/$defs/cross_cutting_role"},
-        "documentation": {"$ref": "#/$defs/cross_cutting_role"},
-        "auditor": {"$ref": "#/$defs/cross_cutting_role"}
+        "orchestrator": {
+          "$ref": "#/$defs/cross_cutting_role"
+        },
+        "planner": {
+          "$ref": "#/$defs/cross_cutting_role"
+        },
+        "documentation": {
+          "$ref": "#/$defs/cross_cutting_role"
+        },
+        "auditor": {
+          "$ref": "#/$defs/cross_cutting_role"
+        }
       },
       "additionalProperties": false
     },
@@ -83,11 +113,21 @@
         "no_state_substitution"
       ],
       "properties": {
-        "blueprint_status_authority": {"const": "project.artifact_locations.status"},
-        "orchestration_state_authority": {"const": "task_coordination_only"},
-        "task_packet_authority": {"const": "bounded_delivery_definition"},
-        "handoff_authority": {"const": "role_transition_evidence"},
-        "no_state_substitution": {"const": true}
+        "blueprint_status_authority": {
+          "const": "project.artifact_locations.status"
+        },
+        "orchestration_state_authority": {
+          "const": "task_coordination_only"
+        },
+        "task_packet_authority": {
+          "const": "bounded_delivery_definition"
+        },
+        "handoff_authority": {
+          "const": "role_transition_evidence"
+        },
+        "no_state_substitution": {
+          "const": true
+        }
       },
       "additionalProperties": false
     },
@@ -103,33 +143,48 @@
   },
   "$defs": {
     "agent_id": {
-      "enum": [
-        "orchestrator",
-        "analyst",
-        "planner",
-        "architect",
-        "database",
-        "backend",
-        "frontend",
-        "qa",
-        "security",
-        "documentation",
-        "auditor"
+      "oneOf": [
+        {
+          "enum": [
+            "orchestrator",
+            "analyst",
+            "planner",
+            "architect",
+            "database",
+            "backend",
+            "frontend",
+            "qa",
+            "security",
+            "documentation",
+            "auditor"
+          ]
+        },
+        {
+          "type": "string",
+          "pattern": "^specialist:[a-z][a-z0-9-]*$"
+        }
       ]
     },
     "phase_binding": {
       "type": "object",
-      "required": ["required_agents", "optional_agents"],
+      "required": [
+        "required_agents",
+        "optional_agents"
+      ],
       "properties": {
         "required_agents": {
           "type": "array",
           "uniqueItems": true,
-          "items": {"$ref": "#/$defs/agent_id"}
+          "items": {
+            "$ref": "#/$defs/agent_id"
+          }
         },
         "optional_agents": {
           "type": "array",
           "uniqueItems": true,
-          "items": {"$ref": "#/$defs/agent_id"}
+          "items": {
+            "$ref": "#/$defs/agent_id"
+          }
         },
         "note": {
           "type": "string",
@@ -140,9 +195,14 @@
     },
     "workflow_binding": {
       "type": "object",
-      "required": ["inherit_stable_sequence", "phase_agents"],
+      "required": [
+        "inherit_stable_sequence",
+        "phase_agents"
+      ],
       "properties": {
-        "inherit_stable_sequence": {"const": true},
+        "inherit_stable_sequence": {
+          "const": true
+        },
         "phase_agents": {
           "type": "object",
           "minProperties": 1,
@@ -155,14 +215,22 @@
     },
     "cross_cutting_role": {
       "type": "object",
-      "required": ["agent", "trigger", "substitutes_stable_phase"],
+      "required": [
+        "agent",
+        "trigger",
+        "substitutes_stable_phase"
+      ],
       "properties": {
-        "agent": {"$ref": "#/$defs/agent_id"},
+        "agent": {
+          "$ref": "#/$defs/agent_id"
+        },
         "trigger": {
           "type": "string",
           "minLength": 1
         },
-        "substitutes_stable_phase": {"const": false},
+        "substitutes_stable_phase": {
+          "const": false
+        },
         "note": {
           "type": "string",
           "minLength": 1
@@ -172,9 +240,14 @@
     },
     "status_requirement": {
       "type": "object",
-      "required": ["agent", "status"],
+      "required": [
+        "agent",
+        "status"
+      ],
       "properties": {
-        "agent": {"$ref": "#/$defs/agent_id"},
+        "agent": {
+          "$ref": "#/$defs/agent_id"
+        },
         "status": {
           "enum": [
             "ANALYZED",
@@ -186,7 +259,8 @@
             "QA_PASS",
             "SECURITY_PASS",
             "DOCUMENTED",
-            "READY_FOR_MERGE"
+            "READY_FOR_MERGE",
+            "SPECIALIST_PASS"
           ]
         }
       },
@@ -204,15 +278,23 @@
         "required_role_evidence": {
           "type": "array",
           "uniqueItems": true,
-          "items": {"$ref": "#/$defs/status_requirement"}
+          "items": {
+            "$ref": "#/$defs/status_requirement"
+          }
         },
         "conditional_role_evidence": {
           "type": "array",
           "uniqueItems": true,
-          "items": {"$ref": "#/$defs/status_requirement"}
+          "items": {
+            "$ref": "#/$defs/status_requirement"
+          }
         },
-        "substitutes_stable_checks": {"const": false},
-        "human_decision_preserved": {"const": true},
+        "substitutes_stable_checks": {
+          "const": false
+        },
+        "human_decision_preserved": {
+          "const": true
+        },
         "note": {
           "type": "string",
           "minLength": 1
