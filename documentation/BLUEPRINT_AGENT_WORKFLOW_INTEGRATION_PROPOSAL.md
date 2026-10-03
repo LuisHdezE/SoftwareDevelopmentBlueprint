@@ -41,10 +41,12 @@ This proposal forbids both.
 ## Core state rule
 
 ```text
-.blueprint/status.yaml
+project.artifact_locations.status
         =
 authoritative Blueprint phase/check/gate state
 ```
+
+The common path is `.blueprint/status.yaml`, but the project manifest remains authoritative for the actual location.
 
 while:
 
