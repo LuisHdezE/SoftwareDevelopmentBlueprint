@@ -1,0 +1,45 @@
+schema_version: agent-protocol-proposal-1
+task:
+  id: DISC-STORE-001
+  title: Validate storefront product discoverability
+  classification: FRONTEND_ONLY
+baseline:
+  repository: owner/repository
+  base_branch: main
+  base_sha: abcdef1
+  working_branch: feat/storefront-product-discoverability
+  head_sha: "1234567"
+  pull_request: 102
+agents:
+  orchestrator: COMPLETED
+  analyst: COMPLETED
+  planner: COMPLETED
+  architect: OPTIONAL
+  database: NOT_APPLICABLE
+  backend: OPTIONAL
+  frontend: COMPLETED
+  qa: REQUIRED
+  security: OPTIONAL
+  documentation: OPTIONAL
+  auditor: REQUIRED
+specialists:
+  specialist:search-ai-discoverability: COMPLETED
+execution_order:
+  - analyst
+  - planner
+  - frontend
+  - specialist:search-ai-discoverability
+  - qa
+  - auditor
+current_agent: qa
+current_state: VALIDATING
+blocked_by: []
+required_human_decisions:
+  - merge_approval
+handoffs:
+  - HO-DISC-STORE-001-ANALYST-PLANNER
+  - HO-DISC-STORE-001-PLANNER-FRONTEND
+  - HO-DISC-STORE-001-FRONTEND-SPECIALIST
+  - HO-DISC-STORE-001-SPECIALIST-QA
+notes:
+  - The specialist is conditional and does not become part of the eleven-agent core.
