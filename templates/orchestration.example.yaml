@@ -1,0 +1,42 @@
+schema_version: agent-protocol-proposal-1
+task:
+  id: BP-CART-001
+  title: Implement cart quantity controls
+  classification: FRONTEND_ONLY
+baseline:
+  repository: owner/repository
+  base_branch: main
+  base_sha: abcdef1
+  working_branch: feat/cart-quantity
+  head_sha: 1234567
+  pull_request: 101
+agents:
+  orchestrator: COMPLETED
+  analyst: COMPLETED
+  planner: COMPLETED
+  architect: OPTIONAL
+  database: NOT_APPLICABLE
+  backend: NOT_APPLICABLE
+  frontend: COMPLETED
+  qa: REQUIRED
+  security: OPTIONAL
+  documentation: OPTIONAL
+  auditor: REQUIRED
+execution_order:
+  - analyst
+  - planner
+  - frontend
+  - qa
+  - auditor
+current_agent: qa
+current_state: VALIDATING
+blocked_by: []
+required_human_decisions:
+  - merge_approval
+handoffs:
+  - HO-BP-CART-001-ANALYST-PLANNER
+  - HO-BP-CART-001-PLANNER-FRONTEND
+  - HO-BP-CART-001-FRONTEND-QA
+notes:
+  - Backend and database are intentionally not applicable to this bounded frontend-only task.
+  - READY_FOR_MERGE will still require Auditor evidence and explicit human merge approval.
