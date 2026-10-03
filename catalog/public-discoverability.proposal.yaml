@@ -9,15 +9,15 @@ surface_classes:
   PUBLIC_INDEXABLE:
     public: true
     index_policy: index
-    requires_auth: false
+    access_control_required: false
   PUBLIC_NO_INDEX:
     public: true
     index_policy: noindex
-    requires_auth: false
+    access_control_required: false
   PRIVATE:
     public: false
     index_policy: not_applicable
-    requires_auth: true
+    access_control_required: true
 
 search:
   crawlability: true
