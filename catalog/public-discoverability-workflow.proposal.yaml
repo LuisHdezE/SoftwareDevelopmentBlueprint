@@ -1,0 +1,107 @@
+schema_version: public-discoverability-workflow-proposal-1
+capability: public_discoverability
+specialist: specialist:search-ai-discoverability
+
+activation:
+  surface_class: PUBLIC_INDEXABLE
+  consumer_opt_in: true
+
+workflow:
+  mode: conditional_overlay
+  stable_sequence_mutated: false
+  entry_after_gate: interface_scope_ready
+  sequence:
+    - discoverability_surface_classification
+    - discoverability_contract
+    - discoverability_implementation
+    - discoverability_validation
+  before_release_gate: discoverability_ready
+
+phase_bindings:
+  discoverability_surface_classification:
+    required:
+      - analyst
+      - specialist:search-ai-discoverability
+    optional:
+      - frontend
+
+  discoverability_contract:
+    required:
+      - specialist:search-ai-discoverability
+      - architect
+    optional:
+      - frontend
+      - backend
+      - documentation
+
+  discoverability_implementation:
+    required:
+      - frontend
+    optional:
+      - backend
+      - specialist:search-ai-discoverability
+      - documentation
+
+  discoverability_validation:
+    required:
+      - specialist:search-ai-discoverability
+      - qa
+    optional:
+      - frontend
+      - backend
+      - security
+      - documentation
+
+gate:
+  id: discoverability_ready
+  evaluation_scope: public_indexable_surface
+  required_role_evidence:
+    - participant: specialist:search-ai-discoverability
+      status: SPECIALIST_PASS
+    - participant: qa
+      status: QA_PASS
+  required_checks:
+    - discoverability.surface_classification
+    - discoverability.crawlability
+    - discoverability.indexability
+    - discoverability.canonical
+    - discoverability.sitemap
+    - discoverability.metadata
+    - discoverability.semantic_content
+    - discoverability.internal_linking
+    - discoverability.structured_data
+    - discoverability.ai_crawler_policy
+    - discoverability.entity_clarity
+    - discoverability.factual_consistency
+    - discoverability.measurement
+  conditional_checks:
+    - discoverability.ecommerce_product_structured_data
+    - discoverability.ecommerce_variant_modeling
+    - discoverability.ecommerce_price_availability_consistency
+    - discoverability.ai_product_feed_decision
+  result_values:
+    - READY_FOR_REVIEW
+    - PASS
+    - FAIL
+    - BLOCKED
+    - NOT_APPLICABLE
+  stable_gate: false
+
+provider_references:
+  openai_crawlers: https://developers.openai.com/api/docs/bots
+  openai_commerce: https://developers.openai.com/commerce
+  google_product: https://developers.google.com/search/docs/appearance/structured-data/merchant-listing
+
+invariants:
+  - only PUBLIC_INDEXABLE surfaces enter this capability
+  - PUBLIC_NO_INDEX surfaces do not require discoverability_ready
+  - PRIVATE surfaces never enter discoverability flow
+  - private access control is never weakened for crawler access
+  - robots and noindex never substitute authentication authorization or other private access controls
+  - OAI-SearchBot policy is independent from GPTBot training policy
+  - specialist completion does not make the capability gate PASS by itself
+  - QA evidence remains independently required
+  - structured data must match visible authoritative facts
+  - AI product feed integration is optional and subject to current provider eligibility
+  - llms.txt is not a mandatory Blueprint requirement unless a future governed provider requirement establishes it
+  - ranking citation rich results and shopping inclusion are never guaranteed
