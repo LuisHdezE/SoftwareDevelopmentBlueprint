@@ -133,11 +133,11 @@
   "$defs": {
     "surface_class": {
       "type": "object",
-      "required": ["public", "index_policy", "requires_auth"],
+      "required": ["public", "index_policy", "access_control_required"],
       "properties": {
         "public": {"type": "boolean"},
         "index_policy": {"enum": ["index", "noindex", "not_applicable"]},
-        "requires_auth": {"type": "boolean"}
+        "access_control_required": {"type": "boolean"}
       },
       "additionalProperties": false
     }
