@@ -1,0 +1,58 @@
+name: Blueprint Agent Protocol Validation
+
+on:
+  push:
+    branches:
+      - main
+      - 'blueprint/**'
+    paths:
+      - 'agents/**'
+      - 'schemas/agent-contract.schema.json'
+      - 'schemas/task-packet.schema.json'
+      - 'schemas/agent-handoff.schema.json'
+      - 'schemas/orchestration-state.schema.json'
+      - 'templates/agent-contract.example.yaml'
+      - 'templates/task-packet.example.yaml'
+      - 'templates/agent-handoff.example.yaml'
+      - 'templates/orchestration.example.yaml'
+      - 'scripts/validate-agent-protocol.py'
+      - '.github/workflows/blueprint-agent-protocol-validation.yml'
+
+  pull_request:
+    branches:
+      - main
+      - 'blueprint/**'
+    paths:
+      - 'agents/**'
+      - 'schemas/agent-contract.schema.json'
+      - 'schemas/task-packet.schema.json'
+      - 'schemas/agent-handoff.schema.json'
+      - 'schemas/orchestration-state.schema.json'
+      - 'templates/agent-contract.example.yaml'
+      - 'templates/task-packet.example.yaml'
+      - 'templates/agent-handoff.example.yaml'
+      - 'templates/orchestration.example.yaml'
+      - 'scripts/validate-agent-protocol.py'
+      - '.github/workflows/blueprint-agent-protocol-validation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: [self-hosted, linux, x64, blueprint]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+
+      - name: Install validator dependencies
+        run: python -m pip install --disable-pip-version-check jsonschema==4.26.0 PyYAML==6.0.2
+
+      - name: Validate agent protocol proposal
+        run: python scripts/validate-agent-protocol.py
