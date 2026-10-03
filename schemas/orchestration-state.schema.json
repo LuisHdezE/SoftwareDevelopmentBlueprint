@@ -1,0 +1,217 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eliasworks.dev/blueprint/proposals/orchestration-state.schema.json",
+  "title": "Blueprint Orchestration State Proposal",
+  "description": "Proposal-stage machine-readable state for routing one Blueprint task through specialized agents.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "task",
+    "baseline",
+    "agents",
+    "execution_order",
+    "current_state",
+    "blocked_by",
+    "required_human_decisions",
+    "handoffs"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "agent-protocol-proposal-1"
+    },
+    "task": {
+      "type": "object",
+      "required": ["id", "title", "classification"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9._-]*-[0-9]{3,}$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "classification": {
+          "enum": [
+            "NEW_FEATURE",
+            "FUNCTIONAL_CHANGE",
+            "BUGFIX",
+            "FRONTEND_ONLY",
+            "BACKEND_ONLY",
+            "DATABASE_CHANGE",
+            "SECURITY_FIX",
+            "DOCUMENTATION_ONLY",
+            "ARCHITECTURE_CHANGE",
+            "RELEASE",
+            "INCIDENT",
+            "REFACTOR",
+            "COMPLIANCE_REVIEW"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "baseline": {
+      "type": "object",
+      "required": ["repository", "base_branch", "base_sha"],
+      "properties": {
+        "repository": {
+          "type": "string",
+          "pattern": "^[^/\\s]+/[^/\\s]+$"
+        },
+        "base_branch": {
+          "type": "string",
+          "minLength": 1
+        },
+        "base_sha": {
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{7,40}$"
+        },
+        "working_branch": {
+          "type": ["string", "null"],
+          "minLength": 1
+        },
+        "head_sha": {
+          "type": ["string", "null"],
+          "pattern": "^[a-fA-F0-9]{7,40}$"
+        },
+        "pull_request": {
+          "type": ["integer", "null"],
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "agents": {
+      "type": "object",
+      "required": [
+        "orchestrator",
+        "analyst",
+        "planner",
+        "architect",
+        "database",
+        "backend",
+        "frontend",
+        "qa",
+        "security",
+        "documentation",
+        "auditor"
+      ],
+      "properties": {
+        "orchestrator": {"$ref": "#/$defs/applicability"},
+        "analyst": {"$ref": "#/$defs/applicability"},
+        "planner": {"$ref": "#/$defs/applicability"},
+        "architect": {"$ref": "#/$defs/applicability"},
+        "database": {"$ref": "#/$defs/applicability"},
+        "backend": {"$ref": "#/$defs/applicability"},
+        "frontend": {"$ref": "#/$defs/applicability"},
+        "qa": {"$ref": "#/$defs/applicability"},
+        "security": {"$ref": "#/$defs/applicability"},
+        "documentation": {"$ref": "#/$defs/applicability"},
+        "auditor": {"$ref": "#/$defs/applicability"}
+      },
+      "additionalProperties": false
+    },
+    "execution_order": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/agent_id"
+      }
+    },
+    "current_agent": {
+      "oneOf": [
+        {"$ref": "#/$defs/agent_id"},
+        {"type": "null"}
+      ]
+    },
+    "current_state": {
+      "enum": [
+        "RECEIVED",
+        "ROUTED",
+        "ANALYZING",
+        "ANALYZED",
+        "PLANNING",
+        "PLANNED",
+        "DESIGNING",
+        "READY_FOR_IMPLEMENTATION",
+        "IMPLEMENTING",
+        "READY_FOR_QA",
+        "VALIDATING",
+        "READY_FOR_AUDIT",
+        "AUDITING",
+        "READY_FOR_HUMAN_DECISION",
+        "BLOCKED",
+        "REJECTED",
+        "CLOSED"
+      ]
+    },
+    "blocked_by": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "oneOf": [
+          {"$ref": "#/$defs/agent_id"},
+          {"enum": ["human", "infrastructure", "external_dependency"]}
+        ]
+      }
+    },
+    "required_human_decisions": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "requirement_decision",
+          "scope_change",
+          "risk_acceptance",
+          "merge_approval",
+          "release_approval",
+          "tag_approval"
+        ]
+      }
+    },
+    "handoffs": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^HO-[A-Z0-9][A-Z0-9._-]*$"
+      }
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "$defs": {
+    "agent_id": {
+      "enum": [
+        "orchestrator",
+        "analyst",
+        "planner",
+        "architect",
+        "database",
+        "backend",
+        "frontend",
+        "qa",
+        "security",
+        "documentation",
+        "auditor"
+      ]
+    },
+    "applicability": {
+      "enum": [
+        "REQUIRED",
+        "OPTIONAL",
+        "NOT_APPLICABLE",
+        "BLOCKED",
+        "COMPLETED"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

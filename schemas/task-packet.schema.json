@@ -1,0 +1,276 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eliasworks.dev/blueprint/proposals/task-packet.schema.json",
+  "title": "Blueprint Task Packet Proposal",
+  "description": "Proposal-stage machine-readable task packet connecting approved requirements to one bounded unit of delivery.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "task_id",
+    "title",
+    "baseline",
+    "source",
+    "scope",
+    "owner_agent",
+    "required_agents",
+    "optional_agents",
+    "not_applicable_agents",
+    "dependencies",
+    "expected_outputs",
+    "validation",
+    "risks",
+    "exit_gate"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "agent-protocol-proposal-1"
+    },
+    "task_id": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9._-]*-[0-9]{3,}$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "objective": {
+      "type": "string",
+      "minLength": 1
+    },
+    "baseline": {
+      "$ref": "#/$defs/baseline"
+    },
+    "source": {
+      "type": "object",
+      "required": ["feature", "requirements", "acceptance_criteria"],
+      "properties": {
+        "feature": {
+          "type": "string",
+          "minLength": 1
+        },
+        "requirements": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "business_rules": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "acceptance_criteria": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "scope": {
+      "type": "object",
+      "required": ["in", "out"],
+      "properties": {
+        "in": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "out": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "owner_agent": {
+      "$ref": "#/$defs/agent_id"
+    },
+    "required_agents": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/agent_id"
+      }
+    },
+    "optional_agents": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/agent_id"
+      }
+    },
+    "not_applicable_agents": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/agent_id"
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z][A-Z0-9._-]*-[0-9]{3,}$"
+      }
+    },
+    "implementation_constraints": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "expected_outputs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "validation": {
+      "type": "object",
+      "required": ["build", "tests", "visual", "security"],
+      "properties": {
+        "build": {
+          "$ref": "#/$defs/validation_requirement"
+        },
+        "tests": {
+          "$ref": "#/$defs/validation_requirement"
+        },
+        "visual": {
+          "$ref": "#/$defs/validation_requirement"
+        },
+        "security": {
+          "$ref": "#/$defs/validation_requirement"
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/risk"
+      }
+    },
+    "checkpoint": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "exit_gate": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "$defs": {
+    "agent_id": {
+      "enum": [
+        "orchestrator",
+        "analyst",
+        "planner",
+        "architect",
+        "database",
+        "backend",
+        "frontend",
+        "qa",
+        "security",
+        "documentation",
+        "auditor"
+      ]
+    },
+    "baseline": {
+      "type": "object",
+      "required": ["repository", "base_branch", "base_sha"],
+      "properties": {
+        "repository": {
+          "type": "string",
+          "pattern": "^[^/\\s]+/[^/\\s]+$"
+        },
+        "base_branch": {
+          "type": "string",
+          "minLength": 1
+        },
+        "base_sha": {
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{7,40}$"
+        },
+        "working_branch": {
+          "type": ["string", "null"],
+          "minLength": 1
+        },
+        "head_sha": {
+          "type": ["string", "null"],
+          "pattern": "^[a-fA-F0-9]{7,40}$"
+        },
+        "pull_request": {
+          "type": ["integer", "null"],
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "validation_requirement": {
+      "enum": [
+        "required",
+        "not_required",
+        "conditional"
+      ]
+    },
+    "risk": {
+      "type": "object",
+      "required": ["id", "description", "probability", "impact", "mitigation"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^R-[A-Z0-9][A-Z0-9._-]*$"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "probability": {
+          "enum": ["LOW", "MEDIUM", "HIGH"]
+        },
+        "impact": {
+          "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+        },
+        "mitigation": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

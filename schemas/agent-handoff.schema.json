@@ -1,0 +1,205 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eliasworks.dev/blueprint/proposals/agent-handoff.schema.json",
+  "title": "Blueprint Agent Handoff Proposal",
+  "description": "Proposal-stage machine-readable handoff between specialized Blueprint roles.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "handoff_id",
+    "task_id",
+    "from_agent",
+    "to_agents",
+    "status",
+    "baseline",
+    "summary",
+    "outputs",
+    "evidence_ids",
+    "blockers",
+    "open_questions",
+    "decisions",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "agent-protocol-proposal-1"
+    },
+    "handoff_id": {
+      "type": "string",
+      "pattern": "^HO-[A-Z0-9][A-Z0-9._-]*$"
+    },
+    "task_id": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9._-]*-[0-9]{3,}$"
+    },
+    "from_agent": {
+      "$ref": "#/$defs/agent_id"
+    },
+    "to_agents": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/agent_id"
+      }
+    },
+    "status": {
+      "$ref": "#/$defs/role_status"
+    },
+    "baseline": {
+      "type": "object",
+      "required": ["repository", "head_sha"],
+      "properties": {
+        "repository": {
+          "type": "string",
+          "pattern": "^[^/\\s]+/[^/\\s]+$"
+        },
+        "branch": {
+          "type": ["string", "null"],
+          "minLength": 1
+        },
+        "head_sha": {
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{7,40}$"
+        },
+        "pull_request": {
+          "type": ["integer", "null"],
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "outputs": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "evidence_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^EVD-[A-Z0-9][A-Z0-9._-]*$"
+      }
+    },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "description", "owner", "blocking"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^BLK-[A-Z0-9][A-Z0-9._-]*$"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "owner": {
+            "oneOf": [
+              {"$ref": "#/$defs/agent_id"},
+              {"const": "human"}
+            ]
+          },
+          "blocking": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "open_questions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "priority", "question"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^Q-[A-Z0-9][A-Z0-9._-]*$"
+          },
+          "priority": {
+            "enum": ["BLOCKING", "NON_BLOCKING", "DEFERRED"]
+          },
+          "question": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "summary"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "summary": {
+            "type": "string",
+            "minLength": 1
+          },
+          "decision_ref": {
+            "type": ["string", "null"],
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "$defs": {
+    "agent_id": {
+      "enum": [
+        "orchestrator",
+        "analyst",
+        "planner",
+        "architect",
+        "database",
+        "backend",
+        "frontend",
+        "qa",
+        "security",
+        "documentation",
+        "auditor"
+      ]
+    },
+    "role_status": {
+      "enum": [
+        "ROUTED",
+        "ANALYZED",
+        "PLANNED",
+        "ARCHITECTURE_READY",
+        "DATA_READY",
+        "BACKEND_IMPLEMENTED",
+        "FRONTEND_IMPLEMENTED",
+        "QA_PASS",
+        "QA_FAIL",
+        "SECURITY_PASS",
+        "SECURITY_FAIL",
+        "DOCUMENTED",
+        "READY_FOR_MERGE",
+        "READY_FOR_HUMAN_DECISION",
+        "BLOCKED",
+        "REJECTED"
+      ]
+    }
+  },
+  "additionalProperties": false
+}
