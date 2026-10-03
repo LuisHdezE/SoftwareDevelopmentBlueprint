@@ -1,0 +1,225 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eliasworks.dev/blueprint/proposals/agent-workflow-integration.schema.json",
+  "title": "Blueprint Agent Workflow Integration Proposal",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "protocol_version",
+    "stable_blueprint_version",
+    "frozen_release_candidate",
+    "adoption",
+    "workflow_bindings",
+    "cross_cutting_roles",
+    "gate_bindings",
+    "state_model",
+    "invariants"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "agent-workflow-integration-proposal-1"
+    },
+    "protocol_version": {
+      "const": "agent-protocol-proposal-1"
+    },
+    "stable_blueprint_version": {
+      "const": "0.5.4"
+    },
+    "frozen_release_candidate": {
+      "const": "0.5.5-dev"
+    },
+    "adoption": {
+      "type": "object",
+      "required": [
+        "mode",
+        "automatic_consumer_upgrade",
+        "stable_workflows_unchanged",
+        "stable_gates_unchanged",
+        "orchestration_is_overlay"
+      ],
+      "properties": {
+        "mode": {"const": "opt_in"},
+        "automatic_consumer_upgrade": {"const": false},
+        "stable_workflows_unchanged": {"const": true},
+        "stable_gates_unchanged": {"const": true},
+        "orchestration_is_overlay": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "workflow_bindings": {
+      "type": "object",
+      "required": ["greenfield", "brownfield"],
+      "properties": {
+        "greenfield": {"$ref": "#/$defs/workflow_binding"},
+        "brownfield": {"$ref": "#/$defs/workflow_binding"}
+      },
+      "additionalProperties": false
+    },
+    "cross_cutting_roles": {
+      "type": "object",
+      "required": ["orchestrator", "planner", "documentation", "auditor"],
+      "properties": {
+        "orchestrator": {"$ref": "#/$defs/cross_cutting_role"},
+        "planner": {"$ref": "#/$defs/cross_cutting_role"},
+        "documentation": {"$ref": "#/$defs/cross_cutting_role"},
+        "auditor": {"$ref": "#/$defs/cross_cutting_role"}
+      },
+      "additionalProperties": false
+    },
+    "gate_bindings": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "$ref": "#/$defs/gate_binding"
+      }
+    },
+    "state_model": {
+      "type": "object",
+      "required": [
+        "blueprint_status_authority",
+        "orchestration_state_authority",
+        "task_packet_authority",
+        "handoff_authority",
+        "no_state_substitution"
+      ],
+      "properties": {
+        "blueprint_status_authority": {"const": "project.artifact_locations.status"},
+        "orchestration_state_authority": {"const": "task_coordination_only"},
+        "task_packet_authority": {"const": "bounded_delivery_definition"},
+        "handoff_authority": {"const": "role_transition_evidence"},
+        "no_state_substitution": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "invariants": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "$defs": {
+    "agent_id": {
+      "enum": [
+        "orchestrator",
+        "analyst",
+        "planner",
+        "architect",
+        "database",
+        "backend",
+        "frontend",
+        "qa",
+        "security",
+        "documentation",
+        "auditor"
+      ]
+    },
+    "phase_binding": {
+      "type": "object",
+      "required": ["required_agents", "optional_agents"],
+      "properties": {
+        "required_agents": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/agent_id"}
+        },
+        "optional_agents": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/agent_id"}
+        },
+        "note": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "workflow_binding": {
+      "type": "object",
+      "required": ["inherit_stable_sequence", "phase_agents"],
+      "properties": {
+        "inherit_stable_sequence": {"const": true},
+        "phase_agents": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "$ref": "#/$defs/phase_binding"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "cross_cutting_role": {
+      "type": "object",
+      "required": ["agent", "trigger", "substitutes_stable_phase"],
+      "properties": {
+        "agent": {"$ref": "#/$defs/agent_id"},
+        "trigger": {
+          "type": "string",
+          "minLength": 1
+        },
+        "substitutes_stable_phase": {"const": false},
+        "note": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "status_requirement": {
+      "type": "object",
+      "required": ["agent", "status"],
+      "properties": {
+        "agent": {"$ref": "#/$defs/agent_id"},
+        "status": {
+          "enum": [
+            "ANALYZED",
+            "PLANNED",
+            "ARCHITECTURE_READY",
+            "DATA_READY",
+            "BACKEND_IMPLEMENTED",
+            "FRONTEND_IMPLEMENTED",
+            "QA_PASS",
+            "SECURITY_PASS",
+            "DOCUMENTED",
+            "READY_FOR_MERGE"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "gate_binding": {
+      "type": "object",
+      "required": [
+        "required_role_evidence",
+        "conditional_role_evidence",
+        "substitutes_stable_checks",
+        "human_decision_preserved"
+      ],
+      "properties": {
+        "required_role_evidence": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/status_requirement"}
+        },
+        "conditional_role_evidence": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/status_requirement"}
+        },
+        "substitutes_stable_checks": {"const": false},
+        "human_decision_preserved": {"const": true},
+        "note": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eliasworks.dev/blueprint/proposals/project-agent-protocol-adoption.schema.json",
+  "title": "Blueprint Project Agent Protocol Adoption Proposal",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "project",
+    "blueprint",
+    "agent_protocol",
+    "artifact_locations",
+    "policies"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "agent-protocol-adoption-proposal-1"
+    },
+    "project": {
+      "type": "object",
+      "required": ["name", "repository"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "repository": {"type": "string", "pattern": "^[^/\\s]+/[^/\\s]+$"}
+      },
+      "additionalProperties": false
+    },
+    "blueprint": {
+      "type": "object",
+      "required": ["stable_version", "frozen_release_candidate"],
+      "properties": {
+        "stable_version": {"const": "0.5.4"},
+        "frozen_release_candidate": {"const": "0.5.5-dev"}
+      },
+      "additionalProperties": false
+    },
+    "agent_protocol": {
+      "type": "object",
+      "required": [
+        "enabled",
+        "version",
+        "mode",
+        "decision_ref",
+        "orchestrator_required"
+      ],
+      "properties": {
+        "enabled": {"const": true},
+        "version": {"const": "agent-protocol-proposal-1"},
+        "mode": {"const": "opt_in"},
+        "decision_ref": {"type": "string", "minLength": 1},
+        "orchestrator_required": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "artifact_locations": {
+      "type": "object",
+      "required": [
+        "task_packets_root",
+        "handoffs_root",
+        "orchestration_state",
+        "agent_evidence_root"
+      ],
+      "properties": {
+        "task_packets_root": {"type": "string", "minLength": 1},
+        "handoffs_root": {"type": "string", "minLength": 1},
+        "orchestration_state": {"type": "string", "minLength": 1},
+        "agent_evidence_root": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "policies": {
+      "type": "object",
+      "required": [
+        "automatic_consumer_upgrade",
+        "implementer_self_certification",
+        "auditor_merge_authority",
+        "agent_state_substitutes_blueprint_status",
+        "human_merge_approval"
+      ],
+      "properties": {
+        "automatic_consumer_upgrade": {"const": false},
+        "implementer_self_certification": {"const": false},
+        "auditor_merge_authority": {"const": false},
+        "agent_state_substitutes_blueprint_status": {"const": false},
+        "human_merge_approval": {"const": true}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
