@@ -4,6 +4,7 @@ from __future__ import annotations
 import copy
 import json
 import pathlib
+import re
 import sys
 from typing import Any, Callable
 
@@ -12,7 +13,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
-AGENTS = {
+CORE_AGENTS = {
     "orchestrator",
     "analyst",
     "planner",
@@ -25,6 +26,8 @@ AGENTS = {
     "documentation",
     "auditor",
 }
+
+SPECIALIST_ID = re.compile(r"^specialist:[a-z][a-z0-9-]*$")
 
 ROLE_STATUSES = {
     "orchestrator": {"ROUTED", "READY_FOR_HUMAN_DECISION", "BLOCKED", "REJECTED"},
@@ -39,6 +42,21 @@ ROLE_STATUSES = {
     "documentation": {"DOCUMENTED", "BLOCKED"},
     "auditor": {"READY_FOR_MERGE", "BLOCKED", "REJECTED"},
 }
+
+SPECIALIST_STATUSES = {"SPECIALIST_PASS", "SPECIALIST_FAIL", "BLOCKED"}
+
+
+def is_participant(value: str) -> bool:
+    return value in CORE_AGENTS or bool(SPECIALIST_ID.fullmatch(value))
+
+
+def allowed_statuses(agent: str) -> set[str]:
+    if agent in ROLE_STATUSES:
+        return ROLE_STATUSES[agent]
+    if SPECIALIST_ID.fullmatch(agent):
+        return SPECIALIST_STATUSES
+    raise AssertionError(f"Unknown participant id: {agent}")
+
 
 PRE_IMPLEMENTATION_GATES = {
     "brownfield_baseline",
@@ -123,7 +141,11 @@ def validate_phase_bindings(overlay: dict[str, Any]) -> None:
                 raise AssertionError(
                     f"{mode}:{phase} agent sets overlap: {sorted(overlap)}"
                 )
-            unknown = (required | optional) - AGENTS
+            unknown = {
+                participant
+                for participant in (required | optional)
+                if not is_participant(participant)
+            }
             if unknown:
                 raise AssertionError(
                     f"{mode}:{phase} references unknown agents: {sorted(unknown)}"
@@ -176,7 +198,7 @@ def validate_gate_bindings(overlay: dict[str, Any]) -> None:
         ):
             agent = item["agent"]
             status = item["status"]
-            if status not in ROLE_STATUSES[agent]:
+            if status not in allowed_statuses(agent):
                 raise AssertionError(
                     f"Gate {gate_id} assigns status {status} to wrong role {agent}"
                 )
