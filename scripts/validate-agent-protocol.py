@@ -4,6 +4,7 @@ from __future__ import annotations
 import copy
 import json
 import pathlib
+import re
 import sys
 from typing import Any, Callable
 
@@ -12,7 +13,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
-AGENTS = (
+CORE_AGENTS = (
     "orchestrator",
     "analyst",
     "planner",
@@ -25,6 +26,8 @@ AGENTS = (
     "documentation",
     "auditor",
 )
+
+SPECIALIST_ID = re.compile(r"^specialist:[a-z][a-z0-9-]*$")
 
 ROLE_STATUSES = {
     "orchestrator": {"ROUTED", "READY_FOR_HUMAN_DECISION", "BLOCKED", "REJECTED"},
@@ -39,6 +42,21 @@ ROLE_STATUSES = {
     "documentation": {"DOCUMENTED", "BLOCKED"},
     "auditor": {"READY_FOR_MERGE", "BLOCKED", "REJECTED"},
 }
+
+SPECIALIST_STATUSES = {"SPECIALIST_PASS", "SPECIALIST_FAIL", "BLOCKED"}
+
+
+def is_specialist(agent: str) -> bool:
+    return bool(SPECIALIST_ID.fullmatch(agent))
+
+
+def allowed_statuses(agent: str) -> set[str]:
+    if agent in ROLE_STATUSES:
+        return ROLE_STATUSES[agent]
+    if is_specialist(agent):
+        return SPECIALIST_STATUSES
+    raise AssertionError(f"Unknown agent or specialist id: {agent}")
+
 
 
 def load(path: str) -> Any:
@@ -67,7 +85,7 @@ def validate_schema(schema_path: str, instance_path: str) -> Any:
 
 def validate_agent_contract(doc: dict[str, Any]) -> None:
     agent = doc["agent"]
-    allowed = ROLE_STATUSES[agent]
+    allowed = allowed_statuses(agent)
     statuses = set(doc["completion_statuses"])
     invalid = statuses - allowed
     if invalid:
@@ -107,7 +125,7 @@ def validate_handoff(doc: dict[str, Any]) -> None:
         raise AssertionError("Agent handoff cannot target the producing agent itself")
 
     status = doc["status"]
-    if status not in ROLE_STATUSES[from_agent]:
+    if status not in allowed_statuses(from_agent):
         raise AssertionError(
             f"Handoff status {status} is not owned by agent {from_agent}"
         )
@@ -127,10 +145,20 @@ def validate_handoff(doc: dict[str, Any]) -> None:
 
 def validate_orchestration(doc: dict[str, Any]) -> None:
     agents = doc["agents"]
+    specialists = doc.get("specialists", {})
+    participants = {**agents, **specialists}
     order = set(doc["execution_order"])
 
+    unknown = {participant for participant in order if participant not in participants}
+    if unknown:
+        raise AssertionError(
+            f"Execution order contains undeclared participants: {sorted(unknown)}"
+        )
+
     not_applicable_in_order = {
-        agent for agent in order if agents[agent] == "NOT_APPLICABLE"
+        participant
+        for participant in order
+        if participants[participant] == "NOT_APPLICABLE"
     }
     if not_applicable_in_order:
         raise AssertionError(
@@ -138,7 +166,11 @@ def validate_orchestration(doc: dict[str, Any]) -> None:
             f"{sorted(not_applicable_in_order)}"
         )
 
-    required = {agent for agent, state in agents.items() if state == "REQUIRED"}
+    required = {
+        participant
+        for participant, state in participants.items()
+        if state == "REQUIRED"
+    }
     missing_required = required - order
     if missing_required:
         raise AssertionError(
@@ -149,9 +181,9 @@ def validate_orchestration(doc: dict[str, Any]) -> None:
     if current_agent is not None:
         if current_agent not in order:
             raise AssertionError("current_agent must exist in execution_order")
-        if agents[current_agent] in {"NOT_APPLICABLE", "COMPLETED"}:
+        if participants[current_agent] in {"NOT_APPLICABLE", "COMPLETED"}:
             raise AssertionError(
-                f"current_agent cannot be {agents[current_agent]}"
+                f"current_agent cannot be {participants[current_agent]}"
             )
 
     blocked_by = doc["blocked_by"]
@@ -164,8 +196,8 @@ def validate_orchestration(doc: dict[str, Any]) -> None:
 
     if doc["current_state"] == "READY_FOR_HUMAN_DECISION":
         unresolved = {
-            agent
-            for agent, state in agents.items()
+            participant
+            for participant, state in participants.items()
             if state in {"REQUIRED", "BLOCKED"}
         }
         if unresolved:
@@ -227,6 +259,35 @@ def main() -> int:
     task = docs["templates/task-packet.example.yaml"]
     handoff = docs["templates/agent-handoff.example.yaml"]
     orchestration = docs["templates/orchestration.example.yaml"]
+
+    specialist_agent = validate_schema(
+        "schemas/agent-contract.schema.json",
+        "templates/search-ai-discoverability-agent.example.yaml",
+    )
+    validate_agent_contract(specialist_agent)
+    print("PASS specialist contract: search-ai-discoverability")
+
+    specialist_task = validate_schema(
+        "schemas/task-packet.schema.json",
+        "templates/discoverability-task-packet.example.yaml",
+    )
+    validate_task_packet(specialist_task)
+    print("PASS specialist task packet")
+
+    specialist_handoff = validate_schema(
+        "schemas/agent-handoff.schema.json",
+        "templates/discoverability-handoff.example.yaml",
+    )
+    validate_handoff(specialist_handoff)
+    print("PASS specialist handoff")
+
+    specialist_orchestration = validate_schema(
+        "schemas/orchestration-state.schema.json",
+        "templates/discoverability-orchestration.example.yaml",
+    )
+    validate_orchestration(specialist_orchestration)
+    print("PASS specialist orchestration")
+
 
     mutated = copy.deepcopy(agent)
     mutated["handoff_targets"].append(mutated["agent"])
@@ -311,6 +372,27 @@ def main() -> int:
     mutated["agents"]["auditor"] = "REQUIRED"
     expect_failure(
         "human decision requires completed Auditor",
+        lambda: validate_orchestration(mutated),
+    )
+
+    mutated = copy.deepcopy(specialist_agent)
+    mutated["completion_statuses"] = ["QA_PASS"]
+    expect_failure(
+        "specialist cannot claim QA status",
+        lambda: validate_agent_contract(mutated),
+    )
+
+    mutated = copy.deepcopy(specialist_handoff)
+    mutated["status"] = "READY_FOR_MERGE"
+    expect_failure(
+        "specialist cannot claim Auditor status",
+        lambda: validate_handoff(mutated),
+    )
+
+    mutated = copy.deepcopy(specialist_orchestration)
+    mutated["execution_order"].append("specialist:not-declared")
+    expect_failure(
+        "undeclared specialist cannot execute",
         lambda: validate_orchestration(mutated),
     )
 
