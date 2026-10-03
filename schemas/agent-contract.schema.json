@@ -64,7 +64,11 @@
     },
     "permissions": {
       "type": "object",
-      "required": ["read", "write", "actions"],
+      "required": [
+        "read",
+        "write",
+        "actions"
+      ],
       "properties": {
         "read": {
           "type": "array",
@@ -141,18 +145,26 @@
   },
   "$defs": {
     "agent_id": {
-      "enum": [
-        "orchestrator",
-        "analyst",
-        "planner",
-        "architect",
-        "database",
-        "backend",
-        "frontend",
-        "qa",
-        "security",
-        "documentation",
-        "auditor"
+      "oneOf": [
+        {
+          "enum": [
+            "orchestrator",
+            "analyst",
+            "planner",
+            "architect",
+            "database",
+            "backend",
+            "frontend",
+            "qa",
+            "security",
+            "documentation",
+            "auditor"
+          ]
+        },
+        {
+          "type": "string",
+          "pattern": "^specialist:[a-z][a-z0-9-]*$"
+        }
       ]
     },
     "role_status": {
@@ -172,7 +184,9 @@
         "READY_FOR_MERGE",
         "READY_FOR_HUMAN_DECISION",
         "BLOCKED",
-        "REJECTED"
+        "REJECTED",
+        "SPECIALIST_PASS",
+        "SPECIALIST_FAIL"
       ]
     }
   },
