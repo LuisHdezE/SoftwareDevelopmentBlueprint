@@ -93,12 +93,12 @@
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,
-          "items": {"type": "string", "pattern": "^discoverability\.[a-z0-9_]+$"}
+          "items": {"type": "string", "pattern": "^discoverability\\.[a-z0-9_]+$"}
         },
         "conditional_checks": {
           "type": "array",
           "uniqueItems": true,
-          "items": {"type": "string", "pattern": "^discoverability\.[a-z0-9_]+$"}
+          "items": {"type": "string", "pattern": "^discoverability\\.[a-z0-9_]+$"}
         },
         "result_values": {
           "type": "array",
