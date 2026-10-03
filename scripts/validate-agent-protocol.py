@@ -215,6 +215,35 @@ def validate_orchestration(doc: dict[str, Any]) -> None:
             )
 
 
+def validate_specialist_registry(doc: dict[str, Any]) -> None:
+    seen: set[str] = set()
+    for item in doc["specialists"]:
+        specialist_id = item["id"]
+        if not is_specialist(specialist_id):
+            raise AssertionError(f"Invalid specialist id: {specialist_id}")
+        if specialist_id in seen:
+            raise AssertionError(f"Duplicate specialist id: {specialist_id}")
+        seen.add(specialist_id)
+
+        if item["core_agent"] is not False:
+            raise AssertionError(f"Specialist {specialist_id} cannot be a core agent")
+
+        if item["completion_statuses"] != [
+            "SPECIALIST_PASS",
+            "SPECIALIST_FAIL",
+            "BLOCKED",
+        ]:
+            raise AssertionError(
+                f"Specialist {specialist_id} must use canonical specialist statuses"
+            )
+
+        contract_path = ROOT / item["contract"]
+        if not contract_path.is_file():
+            raise AssertionError(
+                f"Specialist contract does not exist: {item['contract']}"
+            )
+
+
 def expect_failure(label: str, action: Callable[[], None]) -> None:
     try:
         action()
@@ -225,6 +254,13 @@ def expect_failure(label: str, action: Callable[[], None]) -> None:
 
 
 def main() -> int:
+    registry = validate_schema(
+        "schemas/specialist-agent-registry.schema.json",
+        "catalog/specialist-agents.proposal.yaml",
+    )
+    validate_specialist_registry(registry)
+    print("PASS specialist registry")
+
     pairs = [
         (
             "schemas/agent-contract.schema.json",
