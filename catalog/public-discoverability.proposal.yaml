@@ -4,6 +4,9 @@ capability: public_discoverability
 applicability:
   mode: conditional
   activate_when: public_indexable_surfaces_exist
+  when_applicable: REQUIRED
+  when_not_applicable: NOT_APPLICABLE
+  release_effect_when_applicable: BLOCKS_RELEASE
 
 surface_classes:
   PUBLIC_INDEXABLE:
@@ -58,8 +61,12 @@ gate:
     - BLOCKED
     - NOT_APPLICABLE
   stable_gate: false
+  blocks_release_when_applicable: true
 
 invariants:
+  - conditional means REQUIRED when PUBLIC_INDEXABLE surfaces exist and NOT_APPLICABLE otherwise
+  - discoverability_ready blocks release whenever the capability is applicable
+  - social presence organic social and paid acquisition are outside this mandatory capability and remain separately adoptable
   - discoverability applies only to explicitly classified public surfaces
   - private surfaces are never made crawlable for discoverability
   - robots directives never substitute authentication or authorization
