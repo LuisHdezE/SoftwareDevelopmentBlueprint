@@ -12,7 +12,17 @@ Primary question:
 
 > Can the intended public audience discover this page, understand what it offers, and reach it through both traditional search and AI-assisted discovery without exposing private or administrative surfaces?
 
-This specialist is conditional. It is not part of the eleven-agent core.
+This specialist is conditional by applicability. It is not optional when applicable and it is not part of the eleven-agent core.
+
+```text
+No PUBLIC_INDEXABLE surface
+  -> NOT_APPLICABLE
+
+At least one PUBLIC_INDEXABLE surface
+  -> REQUIRED before release
+```
+
+"Conditional" therefore means that the capability may be N/A for a project, not that an applicable public landing/storefront may skip discoverability work.
 
 ## 2. Applicability
 
@@ -31,6 +41,24 @@ Typical examples:
 - public brand/model compatibility pages.
 
 Do not activate merely because a project has a frontend.
+
+When one or more committed release surfaces are `PUBLIC_INDEXABLE`, the specialist review is required and the applicable `discoverability_ready` evidence must be complete before Release can pass.
+
+## 2.1 Growth boundary
+
+This mandatory capability does **not** make social or paid-growth operations mandatory.
+
+The following remain separately adoptable/optional unless another governed product decision requires them:
+
+- Facebook/Instagram/social presence;
+- organic social publishing;
+- content calendars;
+- Meta Ads;
+- Google Ads;
+- paid acquisition;
+- campaign operations.
+
+A public landing may be release-complete without adopting those Growth capabilities, but it may not be release-complete without applicable Public Discoverability evidence.
 
 ## 3. Surface classification
 
