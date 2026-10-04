@@ -4,7 +4,9 @@ specialist: specialist:search-ai-discoverability
 
 activation:
   surface_class: PUBLIC_INDEXABLE
-  consumer_opt_in: true
+  when_applicable: REQUIRED
+  when_not_applicable: NOT_APPLICABLE
+  opt_out_when_applicable: false
 
 workflow:
   mode: conditional_overlay
@@ -16,6 +18,7 @@ workflow:
     - discoverability_implementation
     - discoverability_validation
   before_release_gate: discoverability_ready
+  release_blocking_when_applicable: true
 
 phase_bindings:
   discoverability_surface_classification:
@@ -86,6 +89,7 @@ gate:
     - BLOCKED
     - NOT_APPLICABLE
   stable_gate: false
+  blocks_release_when_applicable: true
 
 provider_references:
   openai_crawlers: https://developers.openai.com/api/docs/bots
@@ -93,6 +97,9 @@ provider_references:
   google_product: https://developers.google.com/search/docs/appearance/structured-data/merchant-listing
 
 invariants:
+  - conditional means mandatory when PUBLIC_INDEXABLE surfaces exist and NOT_APPLICABLE otherwise
+  - discoverability_ready blocks release whenever Public Discoverability is applicable
+  - social presence organic social content calendars and paid acquisition remain separate optional capabilities
   - only PUBLIC_INDEXABLE surfaces enter this capability
   - PUBLIC_NO_INDEX surfaces do not require discoverability_ready
   - PRIVATE surfaces never enter discoverability flow
