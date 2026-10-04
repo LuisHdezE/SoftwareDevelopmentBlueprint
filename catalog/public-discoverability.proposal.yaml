@@ -1,0 +1,78 @@
+schema_version: public-discoverability-proposal-1
+capability: public_discoverability
+
+applicability:
+  mode: conditional
+  activate_when: public_indexable_surfaces_exist
+  when_applicable: REQUIRED
+  when_not_applicable: NOT_APPLICABLE
+  release_effect_when_applicable: BLOCKS_RELEASE
+
+surface_classes:
+  PUBLIC_INDEXABLE:
+    public: true
+    index_policy: index
+    access_control_required: false
+  PUBLIC_NO_INDEX:
+    public: true
+    index_policy: noindex
+    access_control_required: false
+  PRIVATE:
+    public: false
+    index_policy: not_applicable
+    access_control_required: true
+
+search:
+  crawlability: true
+  indexability: true
+  canonical: true
+  sitemap: true
+  metadata: true
+  semantic_html: true
+  internal_linking: true
+  structured_data: true
+  performance: true
+
+ai_search:
+  oai_searchbot_policy: explicit_decision_required
+  gptbot_policy_independent: true
+  entity_clarity: true
+  factual_content_clarity: true
+  citation_friendly_content: true
+  referral_measurement: true
+
+ecommerce:
+  applicability: conditional
+  product_structured_data: required_when_ecommerce
+  variant_modeling: required_when_variants_exist
+  price_availability_consistency: required_when_ecommerce
+  ai_product_feed:
+    applicability: optional
+    provider: openai_agentic_commerce
+    access_model: current_provider_eligibility_applies
+
+gate:
+  id: discoverability_ready
+  scope: public_indexable_surface
+  result_values:
+    - READY_FOR_REVIEW
+    - PASS
+    - FAIL
+    - BLOCKED
+    - NOT_APPLICABLE
+  stable_gate: false
+  blocks_release_when_applicable: true
+
+invariants:
+  - conditional means REQUIRED when PUBLIC_INDEXABLE surfaces exist and NOT_APPLICABLE otherwise
+  - discoverability_ready blocks release whenever the capability is applicable
+  - social presence organic social and paid acquisition are outside this mandatory capability and remain separately adoptable
+  - discoverability applies only to explicitly classified public surfaces
+  - private surfaces are never made crawlable for discoverability
+  - robots directives never substitute authentication or authorization
+  - OAI-SearchBot search policy is independent from GPTBot training policy
+  - structured data must agree with visible authoritative content
+  - ranking or citation is never guaranteed
+  - ecommerce price availability and condition must match authoritative product state
+  - AI product feeds are optional integrations subject to current provider eligibility
+  - consumer adoption is explicit and never automatic
