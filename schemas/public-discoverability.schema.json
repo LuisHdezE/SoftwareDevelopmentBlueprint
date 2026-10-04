@@ -15,24 +15,57 @@
     "invariants"
   ],
   "properties": {
-    "schema_version": {"const": "public-discoverability-proposal-1"},
-    "capability": {"const": "public_discoverability"},
+    "schema_version": {
+      "const": "public-discoverability-proposal-1"
+    },
+    "capability": {
+      "const": "public_discoverability"
+    },
     "applicability": {
       "type": "object",
-      "required": ["mode", "activate_when"],
+      "required": [
+        "mode",
+        "activate_when",
+        "when_applicable",
+        "when_not_applicable",
+        "release_effect_when_applicable"
+      ],
       "properties": {
-        "mode": {"const": "conditional"},
-        "activate_when": {"const": "public_indexable_surfaces_exist"}
+        "mode": {
+          "const": "conditional"
+        },
+        "activate_when": {
+          "const": "public_indexable_surfaces_exist"
+        },
+        "when_applicable": {
+          "const": "REQUIRED"
+        },
+        "when_not_applicable": {
+          "const": "NOT_APPLICABLE"
+        },
+        "release_effect_when_applicable": {
+          "const": "BLOCKS_RELEASE"
+        }
       },
       "additionalProperties": false
     },
     "surface_classes": {
       "type": "object",
-      "required": ["PUBLIC_INDEXABLE", "PUBLIC_NO_INDEX", "PRIVATE"],
+      "required": [
+        "PUBLIC_INDEXABLE",
+        "PUBLIC_NO_INDEX",
+        "PRIVATE"
+      ],
       "properties": {
-        "PUBLIC_INDEXABLE": {"$ref": "#/$defs/surface_class"},
-        "PUBLIC_NO_INDEX": {"$ref": "#/$defs/surface_class"},
-        "PRIVATE": {"$ref": "#/$defs/surface_class"}
+        "PUBLIC_INDEXABLE": {
+          "$ref": "#/$defs/surface_class"
+        },
+        "PUBLIC_NO_INDEX": {
+          "$ref": "#/$defs/surface_class"
+        },
+        "PRIVATE": {
+          "$ref": "#/$defs/surface_class"
+        }
       },
       "additionalProperties": false
     },
@@ -50,15 +83,33 @@
         "performance"
       ],
       "properties": {
-        "crawlability": {"const": true},
-        "indexability": {"const": true},
-        "canonical": {"const": true},
-        "sitemap": {"const": true},
-        "metadata": {"const": true},
-        "semantic_html": {"const": true},
-        "internal_linking": {"const": true},
-        "structured_data": {"const": true},
-        "performance": {"const": true}
+        "crawlability": {
+          "const": true
+        },
+        "indexability": {
+          "const": true
+        },
+        "canonical": {
+          "const": true
+        },
+        "sitemap": {
+          "const": true
+        },
+        "metadata": {
+          "const": true
+        },
+        "semantic_html": {
+          "const": true
+        },
+        "internal_linking": {
+          "const": true
+        },
+        "structured_data": {
+          "const": true
+        },
+        "performance": {
+          "const": true
+        }
       },
       "additionalProperties": false
     },
@@ -73,12 +124,28 @@
         "referral_measurement"
       ],
       "properties": {
-        "oai_searchbot_policy": {"enum": ["allow", "disallow", "explicit_decision_required"]},
-        "gptbot_policy_independent": {"const": true},
-        "entity_clarity": {"const": true},
-        "factual_content_clarity": {"const": true},
-        "citation_friendly_content": {"const": true},
-        "referral_measurement": {"const": true}
+        "oai_searchbot_policy": {
+          "enum": [
+            "allow",
+            "disallow",
+            "explicit_decision_required"
+          ]
+        },
+        "gptbot_policy_independent": {
+          "const": true
+        },
+        "entity_clarity": {
+          "const": true
+        },
+        "factual_content_clarity": {
+          "const": true
+        },
+        "citation_friendly_content": {
+          "const": true
+        },
+        "referral_measurement": {
+          "const": true
+        }
       },
       "additionalProperties": false
     },
@@ -92,17 +159,56 @@
         "ai_product_feed"
       ],
       "properties": {
-        "applicability": {"enum": ["conditional", "not_applicable"]},
-        "product_structured_data": {"enum": ["required_when_ecommerce", "not_applicable"]},
-        "variant_modeling": {"enum": ["required_when_variants_exist", "not_applicable"]},
-        "price_availability_consistency": {"enum": ["required_when_ecommerce", "not_applicable"]},
+        "applicability": {
+          "enum": [
+            "conditional",
+            "not_applicable"
+          ]
+        },
+        "product_structured_data": {
+          "enum": [
+            "required_when_ecommerce",
+            "not_applicable"
+          ]
+        },
+        "variant_modeling": {
+          "enum": [
+            "required_when_variants_exist",
+            "not_applicable"
+          ]
+        },
+        "price_availability_consistency": {
+          "enum": [
+            "required_when_ecommerce",
+            "not_applicable"
+          ]
+        },
         "ai_product_feed": {
           "type": "object",
-          "required": ["applicability", "provider", "access_model"],
+          "required": [
+            "applicability",
+            "provider",
+            "access_model"
+          ],
           "properties": {
-            "applicability": {"enum": ["optional", "not_applicable"]},
-            "provider": {"enum": ["openai_agentic_commerce", "none"]},
-            "access_model": {"enum": ["current_provider_eligibility_applies", "not_applicable"]}
+            "applicability": {
+              "enum": [
+                "optional",
+                "not_applicable"
+              ]
+            },
+            "provider": {
+              "enum": [
+                "openai_agentic_commerce",
+                "none"
+              ]
+            },
+            "access_model": {
+              "enum": [
+                "current_provider_eligibility_applies",
+                "not_applicable"
+              ]
+            }
           },
           "additionalProperties": false
         }
@@ -111,15 +217,36 @@
     },
     "gate": {
       "type": "object",
-      "required": ["id", "scope", "result_values", "stable_gate"],
+      "required": [
+        "id",
+        "scope",
+        "result_values",
+        "stable_gate",
+        "blocks_release_when_applicable"
+      ],
       "properties": {
-        "id": {"const": "discoverability_ready"},
-        "scope": {"const": "public_indexable_surface"},
+        "id": {
+          "const": "discoverability_ready"
+        },
+        "scope": {
+          "const": "public_indexable_surface"
+        },
         "result_values": {
           "type": "array",
-          "const": ["READY_FOR_REVIEW", "PASS", "FAIL", "BLOCKED", "NOT_APPLICABLE"]
+          "const": [
+            "READY_FOR_REVIEW",
+            "PASS",
+            "FAIL",
+            "BLOCKED",
+            "NOT_APPLICABLE"
+          ]
         },
-        "stable_gate": {"const": false}
+        "stable_gate": {
+          "const": false
+        },
+        "blocks_release_when_applicable": {
+          "const": true
+        }
       },
       "additionalProperties": false
     },
@@ -127,17 +254,34 @@
       "type": "array",
       "minItems": 1,
       "uniqueItems": true,
-      "items": {"type": "string", "minLength": 1}
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
     }
   },
   "$defs": {
     "surface_class": {
       "type": "object",
-      "required": ["public", "index_policy", "access_control_required"],
+      "required": [
+        "public",
+        "index_policy",
+        "access_control_required"
+      ],
       "properties": {
-        "public": {"type": "boolean"},
-        "index_policy": {"enum": ["index", "noindex", "not_applicable"]},
-        "access_control_required": {"type": "boolean"}
+        "public": {
+          "type": "boolean"
+        },
+        "index_policy": {
+          "enum": [
+            "index",
+            "noindex",
+            "not_applicable"
+          ]
+        },
+        "access_control_required": {
+          "type": "boolean"
+        }
       },
       "additionalProperties": false
     }
