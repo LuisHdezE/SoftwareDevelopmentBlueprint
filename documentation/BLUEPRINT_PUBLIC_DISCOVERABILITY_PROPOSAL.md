@@ -18,6 +18,39 @@ Public Discoverability closes that gap for:
 
 The capability is intentionally excluded from private/admin surfaces.
 
+## Applicability semantics
+
+Public Discoverability uses Blueprint's conditional applicability semantics:
+
+```text
+No PUBLIC_INDEXABLE surface
+  -> Public Discoverability = NOT_APPLICABLE
+
+One or more PUBLIC_INDEXABLE surfaces
+  -> Public Discoverability = REQUIRED
+  -> discoverability_ready must PASS before Release
+```
+
+Therefore `CONDITIONAL` does **not** mean optional when applicable.
+
+A public marketing landing, storefront, public product/category page or equivalent surface intentionally classified as `PUBLIC_INDEXABLE` cannot be considered release-complete while its required discoverability evidence is missing.
+
+### Growth is a separate adoption decision
+
+This proposal intentionally does not make social or paid acquisition mandatory.
+
+The following remain optional/opt-in capabilities unless separately adopted:
+
+- Facebook or Instagram presence;
+- organic social publishing;
+- content calendars;
+- paid acquisition;
+- Meta Ads;
+- Google Ads;
+- campaign operations.
+
+A consumer may complete and release its public product without adopting those Growth operations. That does not waive mandatory Discoverability for its `PUBLIC_INDEXABLE` surfaces.
+
 ## Capability name
 
 `Public Discoverability`
@@ -193,6 +226,8 @@ Scope:
 `public_indexable_surface`
 
 It is NOT a stable gate in this proposal.
+
+Within this proposal lane, however, it is release-blocking whenever Public Discoverability is applicable. If there are no `PUBLIC_INDEXABLE` surfaces, the capability and gate are `NOT_APPLICABLE` rather than FAIL.
 
 Suggested evidence:
 
