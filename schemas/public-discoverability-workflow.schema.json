@@ -15,15 +15,36 @@
     "invariants"
   ],
   "properties": {
-    "schema_version": {"const": "public-discoverability-workflow-proposal-1"},
-    "capability": {"const": "public_discoverability"},
-    "specialist": {"const": "specialist:search-ai-discoverability"},
+    "schema_version": {
+      "const": "public-discoverability-workflow-proposal-1"
+    },
+    "capability": {
+      "const": "public_discoverability"
+    },
+    "specialist": {
+      "const": "specialist:search-ai-discoverability"
+    },
     "activation": {
       "type": "object",
-      "required": ["surface_class", "consumer_opt_in"],
+      "required": [
+        "surface_class",
+        "when_applicable",
+        "when_not_applicable",
+        "opt_out_when_applicable"
+      ],
       "properties": {
-        "surface_class": {"const": "PUBLIC_INDEXABLE"},
-        "consumer_opt_in": {"const": true}
+        "surface_class": {
+          "const": "PUBLIC_INDEXABLE"
+        },
+        "when_applicable": {
+          "const": "REQUIRED"
+        },
+        "when_not_applicable": {
+          "const": "NOT_APPLICABLE"
+        },
+        "opt_out_when_applicable": {
+          "const": false
+        }
       },
       "additionalProperties": false
     },
@@ -34,12 +55,19 @@
         "stable_sequence_mutated",
         "entry_after_gate",
         "sequence",
-        "before_release_gate"
+        "before_release_gate",
+        "release_blocking_when_applicable"
       ],
       "properties": {
-        "mode": {"const": "conditional_overlay"},
-        "stable_sequence_mutated": {"const": false},
-        "entry_after_gate": {"const": "interface_scope_ready"},
+        "mode": {
+          "const": "conditional_overlay"
+        },
+        "stable_sequence_mutated": {
+          "const": false
+        },
+        "entry_after_gate": {
+          "const": "interface_scope_ready"
+        },
         "sequence": {
           "type": "array",
           "const": [
@@ -49,7 +77,12 @@
             "discoverability_validation"
           ]
         },
-        "before_release_gate": {"const": "discoverability_ready"}
+        "before_release_gate": {
+          "const": "discoverability_ready"
+        },
+        "release_blocking_when_applicable": {
+          "const": true
+        }
       },
       "additionalProperties": false
     },
@@ -62,10 +95,18 @@
         "discoverability_validation"
       ],
       "properties": {
-        "discoverability_surface_classification": {"$ref": "#/$defs/phase"},
-        "discoverability_contract": {"$ref": "#/$defs/phase"},
-        "discoverability_implementation": {"$ref": "#/$defs/phase"},
-        "discoverability_validation": {"$ref": "#/$defs/phase"}
+        "discoverability_surface_classification": {
+          "$ref": "#/$defs/phase"
+        },
+        "discoverability_contract": {
+          "$ref": "#/$defs/phase"
+        },
+        "discoverability_implementation": {
+          "$ref": "#/$defs/phase"
+        },
+        "discoverability_validation": {
+          "$ref": "#/$defs/phase"
+        }
       },
       "additionalProperties": false
     },
@@ -78,43 +119,80 @@
         "required_checks",
         "conditional_checks",
         "result_values",
-        "stable_gate"
+        "stable_gate",
+        "blocks_release_when_applicable"
       ],
       "properties": {
-        "id": {"const": "discoverability_ready"},
-        "evaluation_scope": {"const": "public_indexable_surface"},
+        "id": {
+          "const": "discoverability_ready"
+        },
+        "evaluation_scope": {
+          "const": "public_indexable_surface"
+        },
         "required_role_evidence": {
           "type": "array",
           "minItems": 2,
           "uniqueItems": true,
-          "items": {"$ref": "#/$defs/role_evidence"}
+          "items": {
+            "$ref": "#/$defs/role_evidence"
+          }
         },
         "required_checks": {
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,
-          "items": {"type": "string", "pattern": "^discoverability\\.[a-z0-9_]+$"}
+          "items": {
+            "type": "string",
+            "pattern": "^discoverability\\.[a-z0-9_]+$"
+          }
         },
         "conditional_checks": {
           "type": "array",
           "uniqueItems": true,
-          "items": {"type": "string", "pattern": "^discoverability\\.[a-z0-9_]+$"}
+          "items": {
+            "type": "string",
+            "pattern": "^discoverability\\.[a-z0-9_]+$"
+          }
         },
         "result_values": {
           "type": "array",
-          "const": ["READY_FOR_REVIEW", "PASS", "FAIL", "BLOCKED", "NOT_APPLICABLE"]
+          "const": [
+            "READY_FOR_REVIEW",
+            "PASS",
+            "FAIL",
+            "BLOCKED",
+            "NOT_APPLICABLE"
+          ]
         },
-        "stable_gate": {"const": false}
+        "stable_gate": {
+          "const": false
+        },
+        "blocks_release_when_applicable": {
+          "const": true
+        }
       },
       "additionalProperties": false
     },
     "provider_references": {
       "type": "object",
-      "required": ["openai_crawlers", "openai_commerce", "google_product"],
+      "required": [
+        "openai_crawlers",
+        "openai_commerce",
+        "google_product"
+      ],
       "properties": {
-        "openai_crawlers": {"type": "string", "format": "uri"},
-        "openai_commerce": {"type": "string", "format": "uri"},
-        "google_product": {"type": "string", "format": "uri"}
+        "openai_crawlers": {
+          "type": "string",
+          "format": "uri"
+        },
+        "openai_commerce": {
+          "type": "string",
+          "format": "uri"
+        },
+        "google_product": {
+          "type": "string",
+          "format": "uri"
+        }
       },
       "additionalProperties": false
     },
@@ -122,7 +200,10 @@
       "type": "array",
       "minItems": 1,
       "uniqueItems": true,
-      "items": {"type": "string", "minLength": 1}
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
     }
   },
   "$defs": {
@@ -143,34 +224,52 @@
             "auditor"
           ]
         },
-        {"type": "string", "pattern": "^specialist:[a-z][a-z0-9-]*$"}
+        {
+          "type": "string",
+          "pattern": "^specialist:[a-z][a-z0-9-]*$"
+        }
       ]
     },
     "phase": {
       "type": "object",
-      "required": ["required", "optional"],
+      "required": [
+        "required",
+        "optional"
+      ],
       "properties": {
         "required": {
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,
-          "items": {"$ref": "#/$defs/participant"}
+          "items": {
+            "$ref": "#/$defs/participant"
+          }
         },
         "optional": {
           "type": "array",
           "uniqueItems": true,
-          "items": {"$ref": "#/$defs/participant"}
+          "items": {
+            "$ref": "#/$defs/participant"
+          }
         }
       },
       "additionalProperties": false
     },
     "role_evidence": {
       "type": "object",
-      "required": ["participant", "status"],
+      "required": [
+        "participant",
+        "status"
+      ],
       "properties": {
-        "participant": {"$ref": "#/$defs/participant"},
+        "participant": {
+          "$ref": "#/$defs/participant"
+        },
         "status": {
-          "enum": ["SPECIALIST_PASS", "QA_PASS"]
+          "enum": [
+            "SPECIALIST_PASS",
+            "QA_PASS"
+          ]
         }
       },
       "additionalProperties": false
