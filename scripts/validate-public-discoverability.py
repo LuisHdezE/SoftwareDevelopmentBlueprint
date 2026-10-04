@@ -91,6 +91,19 @@ def registered_specialists() -> set[str]:
 
 
 def validate_capability(doc: dict[str, Any]) -> None:
+    applicability = doc["applicability"]
+    expected_applicability = {
+        "mode": "conditional",
+        "activate_when": "public_indexable_surfaces_exist",
+        "when_applicable": "REQUIRED",
+        "when_not_applicable": "NOT_APPLICABLE",
+        "release_effect_when_applicable": "BLOCKS_RELEASE",
+    }
+    if applicability != expected_applicability:
+        raise AssertionError(
+            "Public Discoverability must be REQUIRED when PUBLIC_INDEXABLE surfaces exist and N/A otherwise"
+        )
+
     classes = doc["surface_classes"]
 
     expected = {
@@ -138,6 +151,10 @@ def validate_capability(doc: dict[str, Any]) -> None:
         raise AssertionError(
             "Discoverability gate must remain proposal-only in this increment"
         )
+    if gate["blocks_release_when_applicable"] is not True:
+        raise AssertionError(
+            "discoverability_ready must block release whenever Public Discoverability is applicable"
+        )
 
 
 def validate_workflow(doc: dict[str, Any], registered: set[str]) -> None:
@@ -147,12 +164,16 @@ def validate_workflow(doc: dict[str, Any], registered: set[str]) -> None:
         raise AssertionError("Discoverability specialist is not registered")
 
     activation = doc["activation"]
-    if activation["surface_class"] != "PUBLIC_INDEXABLE":
+    expected_activation = {
+        "surface_class": "PUBLIC_INDEXABLE",
+        "when_applicable": "REQUIRED",
+        "when_not_applicable": "NOT_APPLICABLE",
+        "opt_out_when_applicable": False,
+    }
+    if activation != expected_activation:
         raise AssertionError(
-            "Discoverability workflow may only activate for PUBLIC_INDEXABLE surfaces"
+            "Discoverability workflow must be mandatory for PUBLIC_INDEXABLE surfaces and N/A otherwise"
         )
-    if activation["consumer_opt_in"] is not True:
-        raise AssertionError("Discoverability consumer adoption must remain opt-in")
 
     workflow = doc["workflow"]
     if workflow["mode"] != "conditional_overlay":
@@ -162,6 +183,10 @@ def validate_workflow(doc: dict[str, Any], registered: set[str]) -> None:
     if workflow["entry_after_gate"] != "interface_scope_ready":
         raise AssertionError(
             "Discoverability overlay must not begin before interface scope is ready"
+        )
+    if workflow["release_blocking_when_applicable"] is not True:
+        raise AssertionError(
+            "Applicable Discoverability workflow must remain release-blocking"
         )
 
     sequence = workflow["sequence"]
@@ -217,6 +242,10 @@ def validate_workflow(doc: dict[str, Any], registered: set[str]) -> None:
 
     if gate["stable_gate"] is not False:
         raise AssertionError("discoverability_ready is not yet a stable Blueprint gate")
+    if gate["blocks_release_when_applicable"] is not True:
+        raise AssertionError(
+            "discoverability_ready must block release whenever the capability applies"
+        )
 
     invariants = set(doc["invariants"])
     required_invariant_fragments = (
@@ -225,6 +254,8 @@ def validate_workflow(doc: dict[str, Any], registered: set[str]) -> None:
         "AI product feed integration is optional",
         "llms.txt is not a mandatory Blueprint requirement",
         "ranking citation rich results and shopping inclusion are never guaranteed",
+        "conditional means mandatory when PUBLIC_INDEXABLE surfaces exist",
+        "social presence organic social content calendars and paid acquisition remain separate optional capabilities",
     )
     for invariant in required_invariant_fragments:
         if not any(invariant in item for item in invariants):
@@ -261,6 +292,13 @@ def main() -> int:
     print("PASS public discoverability workflow overlay")
 
     mutated = copy.deepcopy(capability)
+    mutated["applicability"]["when_applicable"] = "OPTIONAL"
+    expect_failure(
+        "applicable Public Discoverability cannot become optional",
+        lambda: validate_capability(mutated),
+    )
+
+    mutated = copy.deepcopy(capability)
     mutated["surface_classes"]["PRIVATE"]["access_control_required"] = False
     expect_failure(
         "private surface must retain access control",
@@ -282,6 +320,13 @@ def main() -> int:
     )
 
     mutated = copy.deepcopy(workflow)
+    mutated["activation"]["opt_out_when_applicable"] = True
+    expect_failure(
+        "PUBLIC_INDEXABLE cannot opt out of Discoverability",
+        lambda: validate_workflow(mutated, registered),
+    )
+
+    mutated = copy.deepcopy(workflow)
     mutated["activation"]["surface_class"] = "PRIVATE"
     expect_failure(
         "private surfaces cannot activate discoverability workflow",
@@ -294,6 +339,13 @@ def main() -> int:
     ]
     expect_failure(
         "specialist cannot self-certify discoverability gate",
+        lambda: validate_workflow(mutated, registered),
+    )
+
+    mutated = copy.deepcopy(workflow)
+    mutated["gate"]["blocks_release_when_applicable"] = False
+    expect_failure(
+        "applicable discoverability gate must block release",
         lambda: validate_workflow(mutated, registered),
     )
 
