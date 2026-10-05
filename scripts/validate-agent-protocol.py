@@ -257,6 +257,38 @@ DEPENDENCY_STATE_RANK = {
 }
 
 
+def validate_task_dependency_graph(tasks: list[dict[str, Any]]) -> None:
+    graph = {
+        task["task_id"]: [item["task_id"] for item in task["dependencies"]]
+        for task in tasks
+    }
+    known = set(graph)
+
+    for task_id, dependencies in graph.items():
+        missing = [dependency for dependency in dependencies if dependency not in known]
+        if missing:
+            raise AssertionError(
+                f"Task dependency graph references unknown tasks from {task_id}: {sorted(missing)}"
+            )
+
+    visiting: set[str] = set()
+    visited: set[str] = set()
+
+    def visit(task_id: str) -> None:
+        if task_id in visiting:
+            raise AssertionError(f"Task dependency cycle detected at {task_id}")
+        if task_id in visited:
+            return
+        visiting.add(task_id)
+        for dependency in graph[task_id]:
+            visit(dependency)
+        visiting.remove(task_id)
+        visited.add(task_id)
+
+    for task_id in graph:
+        visit(task_id)
+
+
 def validate_task_dependencies(
     task: dict[str, Any],
     predecessor_orchestrations: list[dict[str, Any]],
@@ -567,6 +599,35 @@ def main() -> int:
     expect_failure(
         "task owner must be required",
         lambda: validate_task_packet(mutated),
+    )
+
+    graph_a = copy.deepcopy(task)
+    graph_a["task_id"] = "BP-GRAPH-001"
+    graph_a["dependencies"] = []
+    graph_b = copy.deepcopy(task)
+    graph_b["task_id"] = "BP-GRAPH-002"
+    graph_b["dependencies"] = [
+        {"task_id": "BP-GRAPH-001", "required_state": "READY_FOR_IMPLEMENTATION"}
+    ]
+    validate_task_dependency_graph([graph_a, graph_b])
+    print("PASS task dependency graph is acyclic and closed")
+
+    cyclic_a = copy.deepcopy(graph_a)
+    cyclic_a["dependencies"] = [
+        {"task_id": "BP-GRAPH-002", "required_state": "READY_FOR_IMPLEMENTATION"}
+    ]
+    expect_failure(
+        "task dependency graph cannot contain cycles",
+        lambda: validate_task_dependency_graph([cyclic_a, graph_b]),
+    )
+
+    unknown_dependency = copy.deepcopy(graph_b)
+    unknown_dependency["dependencies"] = [
+        {"task_id": "BP-MISSING-999", "required_state": "READY_FOR_IMPLEMENTATION"}
+    ]
+    expect_failure(
+        "task dependency graph cannot reference unknown predecessor tasks",
+        lambda: validate_task_dependency_graph([graph_a, unknown_dependency]),
     )
 
     predecessor = copy.deepcopy(orchestration)
