@@ -156,6 +156,15 @@ def validate_orchestration(doc: dict[str, Any]) -> None:
         raise AssertionError(
             "Orchestrator must be REQUIRED or COMPLETED for every adopted multi-agent orchestration"
         )
+    terminal_states = {"READY_FOR_HUMAN_DECISION", "CLOSED"}
+    if doc["current_state"] not in terminal_states and agents["orchestrator"] != "REQUIRED":
+        raise AssertionError(
+            "Orchestrator must remain REQUIRED until human-decision handoff or closure"
+        )
+    if doc["current_state"] == "READY_FOR_HUMAN_DECISION" and agents["orchestrator"] != "COMPLETED":
+        raise AssertionError(
+            "Orchestrator completes only when coordination reaches the human-decision boundary"
+        )
     if "orchestrator" not in order:
         raise AssertionError(
             "Orchestrator must participate in execution_order for every adopted multi-agent orchestration"
@@ -536,6 +545,13 @@ def main() -> int:
     expect_failure(
         "successful handoff cannot carry blocking question",
         lambda: validate_handoff(mutated),
+    )
+
+    mutated = copy.deepcopy(orchestration)
+    mutated["agents"]["orchestrator"] = "COMPLETED"
+    expect_failure(
+        "Orchestrator cannot complete while downstream work remains active",
+        lambda: validate_orchestration(mutated),
     )
 
     mutated = copy.deepcopy(orchestration)
