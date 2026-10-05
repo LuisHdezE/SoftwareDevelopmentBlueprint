@@ -198,7 +198,7 @@
     },
     "replanning": {
       "type": ["object", "null"],
-      "required": ["reason", "invalidates", "previous_revision", "previous_baseline", "evidence_freshness"],
+      "required": ["reason", "invalidates", "previous_revision", "previous_baseline", "evidence_freshness", "preservation_rationale"],
       "properties": {
         "reason": {
           "enum": [
@@ -224,6 +224,20 @@
         },
         "previous_baseline": {
           "$ref": "#/$defs/baseline"
+        },
+        "preservation_rationale": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "required": ["evidence_class", "from_revision", "reason"],
+            "properties": {
+              "evidence_class": {"$ref": "#/$defs/evidence_class"},
+              "from_revision": {"type": "integer", "minimum": 1},
+              "reason": {"type": "string", "minLength": 1}
+            },
+            "additionalProperties": false
+          }
         },
         "evidence_freshness": {
           "type": "object",
