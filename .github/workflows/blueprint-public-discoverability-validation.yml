@@ -1,0 +1,60 @@
+name: Blueprint Public Discoverability Validation
+
+on:
+  push:
+    branches:
+      - main
+      - 'blueprint/**'
+    paths:
+      - 'agents/specialists/search-ai-discoverability.md'
+      - 'catalog/public-discoverability.proposal.yaml'
+      - 'catalog/public-discoverability-workflow.proposal.yaml'
+      - 'catalog/specialist-agents.proposal.yaml'
+      - 'schemas/public-discoverability.schema.json'
+      - 'schemas/public-discoverability-workflow.schema.json'
+      - 'schemas/specialist-agent-registry.schema.json'
+      - 'scripts/validate-public-discoverability.py'
+      - '.github/workflows/blueprint-public-discoverability-validation.yml'
+
+  pull_request:
+    branches:
+      - main
+      - 'blueprint/**'
+    paths:
+      - 'agents/specialists/search-ai-discoverability.md'
+      - 'catalog/public-discoverability.proposal.yaml'
+      - 'catalog/public-discoverability-workflow.proposal.yaml'
+      - 'catalog/specialist-agents.proposal.yaml'
+      - 'schemas/public-discoverability.schema.json'
+      - 'schemas/public-discoverability-workflow.schema.json'
+      - 'schemas/specialist-agent-registry.schema.json'
+      - 'scripts/validate-public-discoverability.py'
+      - '.github/workflows/blueprint-public-discoverability-validation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: [self-hosted, linux, x64, blueprint]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+
+      - name: Install validator dependencies
+        run: python -m pip install --disable-pip-version-check jsonschema==4.26.0 PyYAML==6.0.2
+
+      - name: Validate agent protocol
+        run: python scripts/validate-agent-protocol.py
+
+      - name: Validate workflow integration
+        run: python scripts/validate-agent-workflow-integration.py
+
+      - name: Validate public discoverability
+        run: python scripts/validate-public-discoverability.py
