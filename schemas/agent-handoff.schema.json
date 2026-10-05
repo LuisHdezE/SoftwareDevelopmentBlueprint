@@ -196,6 +196,25 @@
         "additionalProperties": false
       }
     },
+    "revalidates": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": ["evidence_id", "from_revision"],
+        "properties": {
+          "evidence_id": {
+            "type": "string",
+            "pattern": "^EVD-[A-Z0-9][A-Z0-9._-]*$"
+          },
+          "from_revision": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    },
     "created_at": {
       "type": "string",
       "format": "date-time"
