@@ -214,6 +214,23 @@ def validate_orchestration(doc: dict[str, Any]) -> None:
                 f"current_agent cannot be {participants[current_agent]}"
             )
 
+    replanning = doc.get("replanning")
+    if doc["current_state"] == "REPLANNING_REQUIRED":
+        if not replanning:
+            raise AssertionError("REPLANNING_REQUIRED requires replanning metadata")
+        if agents["orchestrator"] != "REQUIRED":
+            raise AssertionError("Replanning keeps Orchestrator active")
+        if doc.get("current_agent") != "planner":
+            raise AssertionError("REPLANNING_REQUIRED routes control to Planner")
+        if "AUDIT_EVIDENCE" in replanning["invalidates"] and agents["auditor"] == "COMPLETED":
+            raise AssertionError("Invalidated audit evidence cannot leave Auditor completed")
+        if "QA_EVIDENCE" in replanning["invalidates"] and agents["qa"] == "COMPLETED":
+            raise AssertionError("Invalidated QA evidence cannot leave QA completed")
+        if "SECURITY_EVIDENCE" in replanning["invalidates"] and agents["security"] == "COMPLETED":
+            raise AssertionError("Invalidated Security evidence cannot leave Security completed")
+    elif replanning is not None:
+        raise AssertionError("replanning metadata is only valid in REPLANNING_REQUIRED")
+
     blocked_by = doc["blocked_by"]
     if blocked_by and doc["current_state"] != "BLOCKED":
         raise AssertionError(
@@ -716,6 +733,39 @@ def main() -> int:
     expect_failure(
         "successful handoff cannot carry blocking question",
         lambda: validate_handoff(mutated),
+    )
+
+    replanning = copy.deepcopy(orchestration)
+    replanning["current_state"] = "REPLANNING_REQUIRED"
+    replanning["current_agent"] = "planner"
+    replanning["replanning"] = {
+        "reason": "BASELINE_CHANGED",
+        "invalidates": ["PLAN", "QA_EVIDENCE"],
+        "previous_baseline": copy.deepcopy(orchestration["baseline"]),
+    }
+    replanning["agents"]["qa"] = "REQUIRED"
+    validate_orchestration(replanning)
+    print("PASS governed replanning invalidates stale evidence")
+
+    mutated = copy.deepcopy(replanning)
+    mutated["replanning"] = None
+    expect_failure(
+        "replanning state requires explicit invalidation metadata",
+        lambda: validate_orchestration(mutated),
+    )
+
+    mutated = copy.deepcopy(replanning)
+    mutated["current_agent"] = "qa"
+    expect_failure(
+        "replanning routes control back to Planner",
+        lambda: validate_orchestration(mutated),
+    )
+
+    mutated = copy.deepcopy(replanning)
+    mutated["agents"]["qa"] = "COMPLETED"
+    expect_failure(
+        "invalidated QA evidence cannot remain completed",
+        lambda: validate_orchestration(mutated),
     )
 
     mutated = copy.deepcopy(orchestration)
