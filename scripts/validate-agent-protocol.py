@@ -234,6 +234,52 @@ def validate_orchestration(doc: dict[str, Any]) -> None:
             )
 
 
+def validate_orchestration_handoffs(
+    orchestration: dict[str, Any],
+    handoff_docs: list[dict[str, Any]],
+) -> None:
+    declared_ids = set(orchestration["handoffs"])
+    actual_by_id = {item["handoff_id"]: item for item in handoff_docs}
+
+    missing = declared_ids - set(actual_by_id)
+    if missing:
+        raise AssertionError(
+            f"Orchestration references handoffs without evidence documents: {sorted(missing)}"
+        )
+
+    task_id = orchestration["task"]["id"]
+    repository = orchestration["baseline"]["repository"]
+    head_sha = orchestration["baseline"].get("head_sha")
+
+    for handoff_id in declared_ids:
+        item = actual_by_id[handoff_id]
+        if item["task_id"] != task_id:
+            raise AssertionError(
+                f"Handoff {handoff_id} belongs to task {item['task_id']}, expected {task_id}"
+            )
+        if item["baseline"]["repository"] != repository:
+            raise AssertionError(
+                f"Handoff {handoff_id} repository does not match orchestration baseline"
+            )
+        if head_sha is not None and item["baseline"]["head_sha"] != head_sha:
+            raise AssertionError(
+                f"Handoff {handoff_id} HEAD does not match orchestration candidate HEAD"
+            )
+
+    if orchestration["current_state"] == "READY_FOR_HUMAN_DECISION":
+        auditor_docs = [
+            item
+            for item in actual_by_id.values()
+            if item["handoff_id"] in declared_ids
+            and item["from_agent"] == "auditor"
+            and item["status"] == "READY_FOR_MERGE"
+        ]
+        if not auditor_docs:
+            raise AssertionError(
+                "READY_FOR_HUMAN_DECISION requires Auditor READY_FOR_MERGE handoff evidence"
+            )
+
+
 def validate_specialist_registry(doc: dict[str, Any]) -> None:
     seen: set[str] = set()
     for item in doc["specialists"]:
@@ -342,6 +388,11 @@ def main() -> int:
     )
     validate_orchestration(specialist_orchestration)
     print("PASS specialist orchestration")
+
+    evidence_orchestration = copy.deepcopy(orchestration)
+    evidence_orchestration["handoffs"] = [handoff["handoff_id"]]
+    validate_orchestration_handoffs(evidence_orchestration, [handoff])
+    print("PASS orchestration handoff evidence linkage")
 
 
     mutated = copy.deepcopy(agent)
@@ -464,6 +515,27 @@ def main() -> int:
     expect_failure(
         "human decision requires recorded Auditor handoff",
         lambda: validate_orchestration(mutated),
+    )
+
+    mutated = copy.deepcopy(evidence_orchestration)
+    mutated["handoffs"].append("HO-BP-CART-001-FAKE")
+    expect_failure(
+        "orchestration cannot reference nonexistent handoff evidence",
+        lambda: validate_orchestration_handoffs(mutated, [handoff]),
+    )
+
+    mutated_handoff = copy.deepcopy(handoff)
+    mutated_handoff["task_id"] = "BP-OTHER-999"
+    expect_failure(
+        "handoff evidence must belong to orchestration task",
+        lambda: validate_orchestration_handoffs(evidence_orchestration, [mutated_handoff]),
+    )
+
+    mutated_handoff = copy.deepcopy(handoff)
+    mutated_handoff["baseline"]["head_sha"] = "7654321"
+    expect_failure(
+        "handoff evidence must match orchestration candidate HEAD",
+        lambda: validate_orchestration_handoffs(evidence_orchestration, [mutated_handoff]),
     )
 
     mutated = copy.deepcopy(specialist_agent)
