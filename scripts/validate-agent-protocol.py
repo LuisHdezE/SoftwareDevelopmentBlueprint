@@ -235,8 +235,20 @@ def validate_orchestration(doc: dict[str, Any]) -> None:
         declared_invalidations = set(replanning["invalidates"]) - {"PLAN"}
         if declared_invalidations != invalidated:
             raise AssertionError("INVALIDATED evidence must exactly match replanning invalidates")
-        if "AUDIT_EVIDENCE" in preserved:
-            raise AssertionError("Audit evidence cannot be preserved across a task revision")
+        non_preservable = {"QA_EVIDENCE", "SECURITY_EVIDENCE", "AUDIT_EVIDENCE"}
+        forbidden = preserved & non_preservable
+        if forbidden:
+            raise AssertionError(
+                f"Independent verification evidence cannot be preserved across revisions: {sorted(forbidden)}"
+            )
+        rationale = replanning["preservation_rationale"]
+        rationale_classes = [item["evidence_class"] for item in rationale]
+        if len(rationale_classes) != len(set(rationale_classes)):
+            raise AssertionError("Preservation rationale cannot duplicate evidence classes")
+        if set(rationale_classes) != preserved:
+            raise AssertionError("Every PRESERVED evidence class requires exactly one preservation rationale")
+        if any(item["from_revision"] != replanning["previous_revision"] for item in rationale):
+            raise AssertionError("Preserved evidence must identify the immediately previous revision")
         if agents["orchestrator"] != "REQUIRED":
             raise AssertionError("Replanning keeps Orchestrator active")
         if doc.get("current_agent") != "planner":
@@ -672,6 +684,13 @@ def main() -> int:
             "REVALIDATE": ["IMPLEMENTATION_EVIDENCE"],
             "INVALIDATED": [],
         },
+        "preservation_rationale": [
+            {
+                "evidence_class": "DOCUMENTATION_EVIDENCE",
+                "from_revision": previous_revision["task"]["revision"],
+                "reason": "Documentation remains outside the changed planning premise.",
+            }
+        ],
     }
     current_revision = copy.deepcopy(orchestration)
     current_revision["task"]["revision"] = previous_revision["task"]["revision"] + 1
@@ -843,11 +862,32 @@ def main() -> int:
             "REVALIDATE": ["IMPLEMENTATION_EVIDENCE"],
             "INVALIDATED": ["QA_EVIDENCE"],
         },
+        "preservation_rationale": [
+            {
+                "evidence_class": "DOCUMENTATION_EVIDENCE",
+                "from_revision": orchestration["task"]["revision"],
+                "reason": "Documentation remains factually unchanged by this replanning trigger.",
+            }
+        ],
     }
     replanning["agents"]["planner"] = "REQUIRED"
     replanning["agents"]["qa"] = "REQUIRED"
     validate_orchestration(replanning)
     print("PASS governed replanning invalidates stale evidence")
+
+    mutated = copy.deepcopy(replanning)
+    mutated["replanning"]["preservation_rationale"] = []
+    expect_failure(
+        "preserved evidence requires explicit rationale",
+        lambda: validate_orchestration(mutated),
+    )
+
+    mutated = copy.deepcopy(replanning)
+    mutated["replanning"]["preservation_rationale"][0]["from_revision"] -= 1
+    expect_failure(
+        "preserved evidence must identify its exact source revision",
+        lambda: validate_orchestration(mutated),
+    )
 
     mutated = copy.deepcopy(replanning)
     mutated["replanning"]["evidence_freshness"]["PRESERVED"].append("QA_EVIDENCE")
