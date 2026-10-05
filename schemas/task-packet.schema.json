@@ -135,10 +135,8 @@
     },
     "dependencies": {
       "type": "array",
-      "uniqueItems": true,
       "items": {
-        "type": "string",
-        "pattern": "^[A-Z][A-Z0-9._-]*-[0-9]{3,}$"
+        "$ref": "#/$defs/task_dependency"
       }
     },
     "implementation_constraints": {
@@ -281,6 +279,29 @@
         "not_required",
         "conditional"
       ]
+    },
+    "task_dependency": {
+      "type": "object",
+      "required": [
+        "task_id",
+        "required_state"
+      ],
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9._-]*-[0-9]{3,}$"
+        },
+        "required_state": {
+          "enum": [
+            "READY_FOR_IMPLEMENTATION",
+            "READY_FOR_QA",
+            "READY_FOR_AUDIT",
+            "READY_FOR_HUMAN_DECISION",
+            "CLOSED"
+          ]
+        }
+      },
+      "additionalProperties": false
     },
     "risk": {
       "type": "object",
