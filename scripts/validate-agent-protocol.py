@@ -218,6 +218,8 @@ def validate_orchestration(doc: dict[str, Any]) -> None:
     if doc["current_state"] == "REPLANNING_REQUIRED":
         if not replanning:
             raise AssertionError("REPLANNING_REQUIRED requires replanning metadata")
+        if replanning["previous_revision"] != doc["task"]["revision"]:
+            raise AssertionError("REPLANNING_REQUIRED must reference the current task revision as previous_revision")
         if agents["orchestrator"] != "REQUIRED":
             raise AssertionError("Replanning keeps Orchestrator active")
         if doc.get("current_agent") != "planner":
@@ -272,6 +274,21 @@ DEPENDENCY_STATE_RANK = {
     "READY_FOR_HUMAN_DECISION": 4,
     "CLOSED": 5,
 }
+
+
+def validate_revision_transition(
+    previous: dict[str, Any],
+    current: dict[str, Any],
+) -> None:
+    if previous["task"]["id"] != current["task"]["id"]:
+        raise AssertionError("Revision transition must preserve task id")
+    if current["task"]["revision"] != previous["task"]["revision"] + 1:
+        raise AssertionError("Task revisions must advance exactly by one")
+    if previous["current_state"] != "REPLANNING_REQUIRED":
+        raise AssertionError("A new task revision requires predecessor REPLANNING_REQUIRED")
+    replanning = previous.get("replanning")
+    if not replanning or replanning["previous_revision"] != previous["task"]["revision"]:
+        raise AssertionError("Previous revision lacks valid replanning provenance")
 
 
 def validate_task_dependency_graph(tasks: list[dict[str, Any]]) -> None:
@@ -624,6 +641,33 @@ def main() -> int:
         lambda: validate_task_packet(mutated),
     )
 
+    previous_revision = copy.deepcopy(orchestration)
+    previous_revision["current_state"] = "REPLANNING_REQUIRED"
+    previous_revision["current_agent"] = "planner"
+    previous_revision["agents"]["planner"] = "REQUIRED"
+    previous_revision["replanning"] = {
+        "reason": "REQUIREMENT_CHANGED",
+        "invalidates": ["PLAN"],
+        "previous_revision": previous_revision["task"]["revision"],
+        "previous_baseline": copy.deepcopy(previous_revision["baseline"]),
+    }
+    current_revision = copy.deepcopy(orchestration)
+    current_revision["task"]["revision"] = previous_revision["task"]["revision"] + 1
+    validate_revision_transition(previous_revision, current_revision)
+    print("PASS task revision advances monotonically from governed replanning")
+
+    skipped_revision = copy.deepcopy(current_revision)
+    skipped_revision["task"]["revision"] += 1
+    expect_failure(
+        "task revision cannot skip a generation",
+        lambda: validate_revision_transition(previous_revision, skipped_revision),
+    )
+
+    expect_failure(
+        "task revision cannot advance without governed replanning",
+        lambda: validate_revision_transition(orchestration, current_revision),
+    )
+
     graph_a = copy.deepcopy(task)
     graph_a["task_id"] = "BP-GRAPH-001"
     graph_a["dependencies"] = []
@@ -747,12 +791,20 @@ def main() -> int:
     replanning["replanning"] = {
         "reason": "BASELINE_CHANGED",
         "invalidates": ["PLAN", "QA_EVIDENCE"],
+        "previous_revision": orchestration["task"]["revision"],
         "previous_baseline": copy.deepcopy(orchestration["baseline"]),
     }
     replanning["agents"]["planner"] = "REQUIRED"
     replanning["agents"]["qa"] = "REQUIRED"
     validate_orchestration(replanning)
     print("PASS governed replanning invalidates stale evidence")
+
+    mutated = copy.deepcopy(replanning)
+    mutated["replanning"]["previous_revision"] = replanning["task"]["revision"] - 1
+    expect_failure(
+        "replanning must originate from the current governed revision",
+        lambda: validate_orchestration(mutated),
+    )
 
     mutated = copy.deepcopy(replanning)
     mutated["replanning"] = None
