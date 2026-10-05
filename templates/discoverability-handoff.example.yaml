@@ -1,6 +1,7 @@
 schema_version: agent-protocol-proposal-1
 handoff_id: HO-DISC-STORE-001-SPECIALIST-QA
 task_id: DISC-STORE-001
+task_revision: 1
 from_agent: specialist:search-ai-discoverability
 to_agents:
   - qa
