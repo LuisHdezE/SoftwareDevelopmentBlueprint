@@ -223,6 +223,11 @@ def validate_orchestration(doc: dict[str, Any]) -> None:
             raise AssertionError(
                 "READY_FOR_HUMAN_DECISION requires completed Auditor"
             )
+        auditor_handoff_marker = f"-AUDITOR"
+        if not any(auditor_handoff_marker in handoff for handoff in doc["handoffs"]):
+            raise AssertionError(
+                "READY_FOR_HUMAN_DECISION requires a recorded Auditor handoff"
+            )
         if not doc["required_human_decisions"]:
             raise AssertionError(
                 "READY_FOR_HUMAN_DECISION requires an explicit human decision"
@@ -444,6 +449,20 @@ def main() -> int:
     mutated["agents"]["auditor"] = "REQUIRED"
     expect_failure(
         "human decision requires completed Auditor",
+        lambda: validate_orchestration(mutated),
+    )
+
+    mutated = copy.deepcopy(orchestration)
+    mutated["current_state"] = "READY_FOR_HUMAN_DECISION"
+    mutated["current_agent"] = None
+    for participant, state in list(mutated["agents"].items()):
+        if state == "REQUIRED":
+            mutated["agents"][participant] = "COMPLETED"
+    mutated["handoffs"] = [
+        handoff for handoff in mutated["handoffs"] if "-AUDITOR" not in handoff
+    ]
+    expect_failure(
+        "human decision requires recorded Auditor handoff",
         lambda: validate_orchestration(mutated),
     )
 
