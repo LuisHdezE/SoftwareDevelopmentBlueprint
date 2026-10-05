@@ -1,5 +1,6 @@
 schema_version: agent-protocol-proposal-1
 task_id: BP-CART-001
+revision: 1
 title: Implement cart quantity controls
 objective: Allow the customer to change line quantities while preserving approved cart rules.
 baseline:
