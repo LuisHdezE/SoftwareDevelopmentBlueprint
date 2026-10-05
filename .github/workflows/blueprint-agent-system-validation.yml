@@ -1,0 +1,42 @@
+name: Blueprint Agent System Validation
+
+on:
+  push:
+    branches:
+      - main
+      - 'blueprint/**'
+    paths:
+      - 'tests/fixtures/agent-system/**'
+      - 'scripts/validate-agent-system.py'
+      - '.github/workflows/blueprint-agent-system-validation.yml'
+
+  pull_request:
+    branches:
+      - main
+      - 'blueprint/**'
+    paths:
+      - 'tests/fixtures/agent-system/**'
+      - 'scripts/validate-agent-system.py'
+      - '.github/workflows/blueprint-agent-system-validation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: [self-hosted, linux, x64, blueprint]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+
+      - name: Install validator dependencies
+        run: python -m pip install --disable-pip-version-check PyYAML==6.0.2
+
+      - name: Validate multi-agent system
+        run: python scripts/validate-agent-system.py
