@@ -40,7 +40,7 @@
       "minItems": 1,
       "uniqueItems": true,
       "items": {
-        "$ref": "#/$defs/agent_id"
+        "$ref": "#/$defs/handoff_target"
       }
     },
     "status": {
@@ -217,6 +217,16 @@
         {
           "type": "string",
           "pattern": "^specialist:[a-z][a-z0-9-]*$"
+        }
+      ]
+    },
+    "handoff_target": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/agent_id"
+        },
+        {
+          "const": "human"
         }
       ]
     },
