@@ -1,6 +1,7 @@
 schema_version: agent-protocol-proposal-1
 task:
   id: DISC-STORE-001
+  revision: 1
   title: Validate storefront product discoverability
   classification: FRONTEND_ONLY
 baseline:
