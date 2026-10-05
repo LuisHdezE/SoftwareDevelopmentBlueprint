@@ -236,6 +236,71 @@ def validate_orchestration(doc: dict[str, Any]) -> None:
             )
 
 
+def validate_protocol_chain(
+    task: dict[str, Any],
+    orchestration: dict[str, Any],
+    handoff_docs: list[dict[str, Any]],
+) -> None:
+    if task["task_id"] != orchestration["task"]["id"]:
+        raise AssertionError("Task Packet and orchestration task ids must match")
+
+    task_baseline = task["baseline"]
+    orchestration_baseline = orchestration["baseline"]
+    for field in ("repository", "base_branch", "base_sha"):
+        if task_baseline[field] != orchestration_baseline[field]:
+            raise AssertionError(
+                f"Task Packet and orchestration baseline mismatch: {field}"
+            )
+
+    for field in ("working_branch", "head_sha", "pull_request"):
+        task_value = task_baseline.get(field)
+        orchestration_value = orchestration_baseline.get(field)
+        if task_value is not None and task_value != orchestration_value:
+            raise AssertionError(
+                f"Task Packet and orchestration candidate mismatch: {field}"
+            )
+
+    task_required = set(task["required_agents"])
+    task_optional = set(task["optional_agents"])
+    task_na = set(task["not_applicable_agents"])
+    participants = {**orchestration["agents"], **orchestration.get("specialists", {})}
+
+    for participant in task_required:
+        if participant not in participants:
+            raise AssertionError(
+                f"Required Task Packet participant missing from orchestration: {participant}"
+            )
+        if participants[participant] in {"OPTIONAL", "NOT_APPLICABLE"}:
+            raise AssertionError(
+                f"Required Task Packet participant is not required/completed in orchestration: {participant}"
+            )
+
+    for participant in task_na:
+        if participant in participants and participants[participant] != "NOT_APPLICABLE":
+            raise AssertionError(
+                f"Task Packet N/A participant is active in orchestration: {participant}"
+            )
+
+    declared = task_required | task_optional | task_na
+    for item in handoff_docs:
+        if item["task_id"] != task["task_id"]:
+            continue
+        involved = {item["from_agent"]} | {
+            target for target in item["to_agents"] if target != "human"
+        }
+        undeclared = {
+            participant
+            for participant in involved
+            if participant not in declared and participant != "orchestrator"
+        }
+        if undeclared:
+            raise AssertionError(
+                f"Handoff uses participants outside Task Packet applicability: {sorted(undeclared)}"
+            )
+
+    validate_orchestration_handoffs(orchestration, handoff_docs)
+
+
 def validate_orchestration_handoffs(
     orchestration: dict[str, Any],
     handoff_docs: list[dict[str, Any]],
@@ -400,8 +465,8 @@ def main() -> int:
 
     evidence_orchestration = copy.deepcopy(orchestration)
     evidence_orchestration["handoffs"] = [handoff["handoff_id"]]
-    validate_orchestration_handoffs(evidence_orchestration, [handoff])
-    print("PASS orchestration handoff evidence linkage")
+    validate_protocol_chain(task, evidence_orchestration, [handoff])
+    print("PASS Task Packet -> orchestration -> handoff chain of custody")
 
 
     mutated = copy.deepcopy(agent)
@@ -531,6 +596,28 @@ def main() -> int:
     expect_failure(
         "human decision requires recorded Auditor handoff",
         lambda: validate_orchestration(mutated),
+    )
+
+    mutated_task = copy.deepcopy(task)
+    mutated_task["task_id"] = "BP-OTHER-999"
+    expect_failure(
+        "Task Packet and orchestration must describe the same task",
+        lambda: validate_protocol_chain(mutated_task, evidence_orchestration, [handoff]),
+    )
+
+    mutated_task = copy.deepcopy(task)
+    mutated_task["baseline"]["base_sha"] = "7654321"
+    expect_failure(
+        "Task Packet and orchestration must share the same baseline",
+        lambda: validate_protocol_chain(mutated_task, evidence_orchestration, [handoff]),
+    )
+
+    mutated_task = copy.deepcopy(task)
+    mutated_task["required_agents"].append("backend")
+    mutated_task["not_applicable_agents"].remove("backend")
+    expect_failure(
+        "required Task Packet participant cannot be N/A in orchestration",
+        lambda: validate_protocol_chain(mutated_task, evidence_orchestration, [handoff]),
     )
 
     mutated = copy.deepcopy(evidence_orchestration)
