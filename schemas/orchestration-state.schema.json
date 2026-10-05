@@ -185,10 +185,39 @@
         "READY_FOR_AUDIT",
         "AUDITING",
         "READY_FOR_HUMAN_DECISION",
+        "REPLANNING_REQUIRED",
         "BLOCKED",
         "REJECTED",
         "CLOSED"
       ]
+    },
+    "replanning": {
+      "type": ["object", "null"],
+      "required": ["reason", "invalidates", "previous_baseline"],
+      "properties": {
+        "reason": {
+          "enum": [
+            "REQUIREMENT_CHANGED",
+            "SCOPE_CHANGED",
+            "BASELINE_CHANGED",
+            "DEPENDENCY_CHANGED",
+            "ASSUMPTION_INVALIDATED",
+            "CRITICAL_BLOCKER"
+          ]
+        },
+        "invalidates": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": ["PLAN", "IMPLEMENTATION_EVIDENCE", "QA_EVIDENCE", "SECURITY_EVIDENCE", "AUDIT_EVIDENCE"]
+          }
+        },
+        "previous_baseline": {
+          "$ref": "#/$defs/baseline"
+        }
+      },
+      "additionalProperties": false
     },
     "blocked_by": {
       "type": "array",
