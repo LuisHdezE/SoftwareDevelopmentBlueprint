@@ -11,7 +11,7 @@ baseline:
   head_sha: "1234567"
   pull_request: 101
 agents:
-  orchestrator: COMPLETED
+  orchestrator: REQUIRED
   analyst: COMPLETED
   planner: COMPLETED
   architect: OPTIONAL
