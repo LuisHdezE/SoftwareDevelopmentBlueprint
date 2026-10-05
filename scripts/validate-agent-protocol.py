@@ -743,6 +743,7 @@ def main() -> int:
         "invalidates": ["PLAN", "QA_EVIDENCE"],
         "previous_baseline": copy.deepcopy(orchestration["baseline"]),
     }
+    replanning["agents"]["planner"] = "REQUIRED"
     replanning["agents"]["qa"] = "REQUIRED"
     validate_orchestration(replanning)
     print("PASS governed replanning invalidates stale evidence")
