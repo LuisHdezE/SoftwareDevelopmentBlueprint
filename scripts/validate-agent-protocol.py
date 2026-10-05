@@ -248,6 +248,41 @@ def validate_orchestration(doc: dict[str, Any]) -> None:
             )
 
 
+DEPENDENCY_STATE_RANK = {
+    "READY_FOR_IMPLEMENTATION": 1,
+    "READY_FOR_QA": 2,
+    "READY_FOR_AUDIT": 3,
+    "READY_FOR_HUMAN_DECISION": 4,
+    "CLOSED": 5,
+}
+
+
+def validate_task_dependencies(
+    task: dict[str, Any],
+    predecessor_orchestrations: list[dict[str, Any]],
+) -> None:
+    predecessors = {
+        item["task"]["id"]: item
+        for item in predecessor_orchestrations
+    }
+    for dependency in task["dependencies"]:
+        predecessor = predecessors.get(dependency["task_id"])
+        if predecessor is None:
+            raise AssertionError(
+                f"Dependency predecessor orchestration not found: {dependency['task_id']}"
+            )
+        actual_state = predecessor["current_state"]
+        if actual_state not in DEPENDENCY_STATE_RANK:
+            raise AssertionError(
+                f"Dependency predecessor {dependency['task_id']} has not reached an unlockable state: {actual_state}"
+            )
+        required_state = dependency["required_state"]
+        if DEPENDENCY_STATE_RANK[actual_state] < DEPENDENCY_STATE_RANK[required_state]:
+            raise AssertionError(
+                f"Dependency predecessor {dependency['task_id']} is {actual_state}; requires {required_state}"
+            )
+
+
 def validate_protocol_chain(
     task: dict[str, Any],
     orchestration: dict[str, Any],
@@ -532,6 +567,34 @@ def main() -> int:
     expect_failure(
         "task owner must be required",
         lambda: validate_task_packet(mutated),
+    )
+
+    predecessor = copy.deepcopy(orchestration)
+    predecessor["task"]["id"] = "BP-PREV-001"
+    predecessor["current_state"] = "READY_FOR_AUDIT"
+    dependency_task = copy.deepcopy(task)
+    dependency_task["dependencies"] = [
+        {"task_id": "BP-PREV-001", "required_state": "READY_FOR_QA"}
+    ]
+    validate_task_dependencies(dependency_task, [predecessor])
+    print("PASS inter-task dependency state satisfaction")
+
+    expect_failure(
+        "task dependency requires predecessor orchestration evidence",
+        lambda: validate_task_dependencies(dependency_task, []),
+    )
+
+    immature_predecessor = copy.deepcopy(predecessor)
+    immature_predecessor["current_state"] = "IMPLEMENTING"
+    expect_failure(
+        "task dependency cannot unlock from immature predecessor state",
+        lambda: validate_task_dependencies(dependency_task, [immature_predecessor]),
+    )
+
+    dependency_task["dependencies"][0]["required_state"] = "READY_FOR_HUMAN_DECISION"
+    expect_failure(
+        "task dependency cannot unlock below required predecessor state",
+        lambda: validate_task_dependencies(dependency_task, [predecessor]),
     )
 
     mutated = copy.deepcopy(task)
