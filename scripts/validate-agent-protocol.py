@@ -339,6 +339,8 @@ def validate_protocol_chain(
 ) -> None:
     if task["task_id"] != orchestration["task"]["id"]:
         raise AssertionError("Task Packet and orchestration task ids must match")
+    if task["revision"] != orchestration["task"]["revision"]:
+        raise AssertionError("Task Packet and orchestration task revisions must match")
 
     task_baseline = task["baseline"]
     orchestration_baseline = orchestration["baseline"]
@@ -451,6 +453,10 @@ def validate_orchestration_handoffs(
         if item["task_id"] != task_id:
             raise AssertionError(
                 f"Handoff {handoff_id} belongs to task {item['task_id']}, expected {task_id}"
+            )
+        if item["task_revision"] != orchestration["task"]["revision"]:
+            raise AssertionError(
+                f"Handoff {handoff_id} belongs to stale task revision {item['task_revision']}, expected {orchestration['task']['revision']}"
             )
         if item["baseline"]["repository"] != repository:
             raise AssertionError(
@@ -841,6 +847,20 @@ def main() -> int:
     expect_failure(
         "Task Packet and orchestration must describe the same task",
         lambda: validate_protocol_chain(mutated_task, evidence_orchestration, [handoff]),
+    )
+
+    mutated_task = copy.deepcopy(task)
+    mutated_task["revision"] += 1
+    expect_failure(
+        "Task Packet and orchestration revisions must match",
+        lambda: validate_protocol_chain(mutated_task, evidence_orchestration, [handoff]),
+    )
+
+    stale_handoff = copy.deepcopy(handoff)
+    stale_handoff["task_revision"] += 1
+    expect_failure(
+        "handoff evidence from another task revision is stale",
+        lambda: validate_orchestration_handoffs(evidence_orchestration, [stale_handoff]),
     )
 
     mutated_task = copy.deepcopy(task)
