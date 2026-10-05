@@ -188,12 +188,22 @@ Each task must have one primary owner.
 
 ## 9. Dependencies
 
-Dependencies must be explicit.
+Dependencies must be explicit and must state the predecessor condition that unlocks the dependent task.
 
 Example:
 
+```yaml
+dependencies:
+  - task_id: DB-001
+    required_state: READY_FOR_IMPLEMENTATION
+```
+
+A dependency is not satisfied merely because the predecessor task exists or appears earlier in a plan. The declared predecessor state must be evidenced before the dependent task may cross its corresponding start boundary.
+
+Conceptually:
+
 ```text
-DB-001
+DB-001 [required state reached]
   ↓
 BE-001
   ↓
