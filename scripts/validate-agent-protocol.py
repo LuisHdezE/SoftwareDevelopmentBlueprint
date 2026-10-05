@@ -123,6 +123,8 @@ def validate_handoff(doc: dict[str, Any]) -> None:
 
     if from_agent in targets:
         raise AssertionError("Agent handoff cannot target the producing agent itself")
+    if "human" in targets and from_agent != "auditor":
+        raise AssertionError("Only Auditor may hand off a merge decision to human")
 
     status = doc["status"]
     if status not in allowed_statuses(from_agent):
@@ -223,9 +225,60 @@ def validate_orchestration(doc: dict[str, Any]) -> None:
             raise AssertionError(
                 "READY_FOR_HUMAN_DECISION requires completed Auditor"
             )
+        auditor_handoff_marker = f"-AUDITOR"
+        if not any(auditor_handoff_marker in handoff for handoff in doc["handoffs"]):
+            raise AssertionError(
+                "READY_FOR_HUMAN_DECISION requires a recorded Auditor handoff"
+            )
         if not doc["required_human_decisions"]:
             raise AssertionError(
                 "READY_FOR_HUMAN_DECISION requires an explicit human decision"
+            )
+
+
+def validate_orchestration_handoffs(
+    orchestration: dict[str, Any],
+    handoff_docs: list[dict[str, Any]],
+) -> None:
+    declared_ids = set(orchestration["handoffs"])
+    actual_by_id = {item["handoff_id"]: item for item in handoff_docs}
+
+    missing = declared_ids - set(actual_by_id)
+    if missing:
+        raise AssertionError(
+            f"Orchestration references handoffs without evidence documents: {sorted(missing)}"
+        )
+
+    task_id = orchestration["task"]["id"]
+    repository = orchestration["baseline"]["repository"]
+    head_sha = orchestration["baseline"].get("head_sha")
+
+    for handoff_id in declared_ids:
+        item = actual_by_id[handoff_id]
+        if item["task_id"] != task_id:
+            raise AssertionError(
+                f"Handoff {handoff_id} belongs to task {item['task_id']}, expected {task_id}"
+            )
+        if item["baseline"]["repository"] != repository:
+            raise AssertionError(
+                f"Handoff {handoff_id} repository does not match orchestration baseline"
+            )
+        if head_sha is not None and item["baseline"]["head_sha"] != head_sha:
+            raise AssertionError(
+                f"Handoff {handoff_id} HEAD does not match orchestration candidate HEAD"
+            )
+
+    if orchestration["current_state"] == "READY_FOR_HUMAN_DECISION":
+        auditor_docs = [
+            item
+            for item in actual_by_id.values()
+            if item["handoff_id"] in declared_ids
+            and item["from_agent"] == "auditor"
+            and item["status"] == "READY_FOR_MERGE"
+        ]
+        if not auditor_docs:
+            raise AssertionError(
+                "READY_FOR_HUMAN_DECISION requires Auditor READY_FOR_MERGE handoff evidence"
             )
 
 
@@ -338,6 +391,18 @@ def main() -> int:
     validate_orchestration(specialist_orchestration)
     print("PASS specialist orchestration")
 
+    auditor_handoff = validate_schema(
+        "schemas/agent-handoff.schema.json",
+        "templates/auditor-human-handoff.example.yaml",
+    )
+    validate_handoff(auditor_handoff)
+    print("PASS Auditor to human handoff contract")
+
+    evidence_orchestration = copy.deepcopy(orchestration)
+    evidence_orchestration["handoffs"] = [handoff["handoff_id"]]
+    validate_orchestration_handoffs(evidence_orchestration, [handoff])
+    print("PASS orchestration handoff evidence linkage")
+
 
     mutated = copy.deepcopy(agent)
     mutated["handoff_targets"].append(mutated["agent"])
@@ -372,6 +437,13 @@ def main() -> int:
     expect_failure(
         "task cannot depend on itself",
         lambda: validate_task_packet(mutated),
+    )
+
+    mutated = copy.deepcopy(handoff)
+    mutated["to_agents"] = ["human"]
+    expect_failure(
+        "only Auditor may hand off merge decision to human",
+        lambda: validate_handoff(mutated),
     )
 
     mutated = copy.deepcopy(handoff)
@@ -445,6 +517,41 @@ def main() -> int:
     expect_failure(
         "human decision requires completed Auditor",
         lambda: validate_orchestration(mutated),
+    )
+
+    mutated = copy.deepcopy(orchestration)
+    mutated["current_state"] = "READY_FOR_HUMAN_DECISION"
+    mutated["current_agent"] = None
+    for participant, state in list(mutated["agents"].items()):
+        if state == "REQUIRED":
+            mutated["agents"][participant] = "COMPLETED"
+    mutated["handoffs"] = [
+        handoff for handoff in mutated["handoffs"] if "-AUDITOR" not in handoff
+    ]
+    expect_failure(
+        "human decision requires recorded Auditor handoff",
+        lambda: validate_orchestration(mutated),
+    )
+
+    mutated = copy.deepcopy(evidence_orchestration)
+    mutated["handoffs"].append("HO-BP-CART-001-FAKE")
+    expect_failure(
+        "orchestration cannot reference nonexistent handoff evidence",
+        lambda: validate_orchestration_handoffs(mutated, [handoff]),
+    )
+
+    mutated_handoff = copy.deepcopy(handoff)
+    mutated_handoff["task_id"] = "BP-OTHER-999"
+    expect_failure(
+        "handoff evidence must belong to orchestration task",
+        lambda: validate_orchestration_handoffs(evidence_orchestration, [mutated_handoff]),
+    )
+
+    mutated_handoff = copy.deepcopy(handoff)
+    mutated_handoff["baseline"]["head_sha"] = "7654321"
+    expect_failure(
+        "handoff evidence must match orchestration candidate HEAD",
+        lambda: validate_orchestration_handoffs(evidence_orchestration, [mutated_handoff]),
     )
 
     mutated = copy.deepcopy(specialist_agent)
