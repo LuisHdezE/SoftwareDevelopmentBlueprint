@@ -123,6 +123,8 @@ def validate_handoff(doc: dict[str, Any]) -> None:
 
     if from_agent in targets:
         raise AssertionError("Agent handoff cannot target the producing agent itself")
+    if "human" in targets and from_agent != "auditor":
+        raise AssertionError("Only Auditor may hand off a merge decision to human")
 
     status = doc["status"]
     if status not in allowed_statuses(from_agent):
@@ -389,6 +391,13 @@ def main() -> int:
     validate_orchestration(specialist_orchestration)
     print("PASS specialist orchestration")
 
+    auditor_handoff = validate_schema(
+        "schemas/agent-handoff.schema.json",
+        "templates/auditor-human-handoff.example.yaml",
+    )
+    validate_handoff(auditor_handoff)
+    print("PASS Auditor to human handoff contract")
+
     evidence_orchestration = copy.deepcopy(orchestration)
     evidence_orchestration["handoffs"] = [handoff["handoff_id"]]
     validate_orchestration_handoffs(evidence_orchestration, [handoff])
@@ -428,6 +437,13 @@ def main() -> int:
     expect_failure(
         "task cannot depend on itself",
         lambda: validate_task_packet(mutated),
+    )
+
+    mutated = copy.deepcopy(handoff)
+    mutated["to_agents"] = ["human"]
+    expect_failure(
+        "only Auditor may hand off merge decision to human",
+        lambda: validate_handoff(mutated),
     )
 
     mutated = copy.deepcopy(handoff)
