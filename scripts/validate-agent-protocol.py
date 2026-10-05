@@ -129,6 +129,12 @@ def validate_handoff(doc: dict[str, Any]) -> None:
     if "human" in targets and from_agent != "auditor":
         raise AssertionError("Only Auditor may hand off a merge decision to human")
 
+    for lineage in doc.get("revalidates", []):
+        if lineage["from_revision"] >= doc["task_revision"]:
+            raise AssertionError("Revalidated evidence must originate from an earlier task revision")
+        if lineage["evidence_id"] in set(doc["evidence_ids"]):
+            raise AssertionError("Revalidation must emit new evidence instead of reusing the historical evidence id")
+
     status = doc["status"]
     if status not in allowed_statuses(from_agent):
         raise AssertionError(
@@ -765,6 +771,29 @@ def main() -> int:
     expect_failure(
         "task cannot depend on itself",
         lambda: validate_task_packet(mutated),
+    )
+
+    revalidated_handoff = copy.deepcopy(handoff)
+    revalidated_handoff["task_revision"] = 2
+    revalidated_handoff["evidence_ids"] = ["EVD-CART-FRONTEND-TESTS-R2"]
+    revalidated_handoff["revalidates"] = [
+        {"evidence_id": "EVD-CART-FRONTEND-TESTS", "from_revision": 1}
+    ]
+    validate_handoff(revalidated_handoff)
+    print("PASS revalidated evidence preserves lineage and emits fresh evidence")
+
+    mutated = copy.deepcopy(revalidated_handoff)
+    mutated["revalidates"][0]["from_revision"] = 2
+    expect_failure(
+        "revalidation evidence must come from an earlier revision",
+        lambda: validate_handoff(mutated),
+    )
+
+    mutated = copy.deepcopy(revalidated_handoff)
+    mutated["evidence_ids"] = ["EVD-CART-FRONTEND-TESTS"]
+    expect_failure(
+        "revalidation cannot recycle the historical evidence id",
+        lambda: validate_handoff(mutated),
     )
 
     mutated = copy.deepcopy(handoff)
