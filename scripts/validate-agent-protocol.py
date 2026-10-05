@@ -113,7 +113,10 @@ def validate_task_packet(doc: dict[str, Any]) -> None:
     if doc["owner_agent"] not in required:
         raise AssertionError("Task owner_agent must be listed in required_agents")
 
-    if doc["task_id"] in set(doc["dependencies"]):
+    dependency_ids = [item["task_id"] for item in doc["dependencies"]]
+    if len(dependency_ids) != len(set(dependency_ids)):
+        raise AssertionError("Task dependencies must reference unique predecessor tasks")
+    if doc["task_id"] in set(dependency_ids):
         raise AssertionError("Task cannot depend on itself")
 
 
@@ -532,6 +535,16 @@ def main() -> int:
     )
 
     mutated = copy.deepcopy(task)
+    mutated["dependencies"] = [
+        {"task_id": "BP-PREV-001", "required_state": "READY_FOR_QA"},
+        {"task_id": "BP-PREV-001", "required_state": "CLOSED"},
+    ]
+    expect_failure(
+        "task dependencies cannot duplicate predecessor task",
+        lambda: validate_task_packet(mutated),
+    )
+
+    mutated = copy.deepcopy(task)
     mutated["not_applicable_agents"].append("qa")
     expect_failure(
         "task applicability sets are disjoint",
@@ -539,7 +552,9 @@ def main() -> int:
     )
 
     mutated = copy.deepcopy(task)
-    mutated["dependencies"].append(mutated["task_id"])
+    mutated["dependencies"].append(
+        {"task_id": mutated["task_id"], "required_state": "CLOSED"}
+    )
     expect_failure(
         "task cannot depend on itself",
         lambda: validate_task_packet(mutated),
