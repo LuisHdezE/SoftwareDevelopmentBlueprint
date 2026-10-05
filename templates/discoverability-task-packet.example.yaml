@@ -1,5 +1,6 @@
 schema_version: agent-protocol-proposal-1
 task_id: DISC-STORE-001
+revision: 1
 title: Validate storefront product discoverability
 objective: Validate one public product surface for traditional search and AI-assisted discovery.
 baseline:
