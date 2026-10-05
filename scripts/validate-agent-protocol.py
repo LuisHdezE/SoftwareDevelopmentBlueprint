@@ -308,6 +308,38 @@ def validate_protocol_chain(
             )
 
     validate_orchestration_handoffs(orchestration, handoff_docs)
+    validate_execution_causality(orchestration, handoff_docs)
+
+
+def validate_execution_causality(
+    orchestration: dict[str, Any],
+    handoff_docs: list[dict[str, Any]],
+) -> None:
+    position = {
+        participant: index
+        for index, participant in enumerate(orchestration["execution_order"])
+    }
+    declared_ids = set(orchestration["handoffs"])
+
+    for item in handoff_docs:
+        if item["handoff_id"] not in declared_ids:
+            continue
+        producer = item["from_agent"]
+        if producer not in position:
+            raise AssertionError(
+                f"Handoff producer is absent from execution_order: {producer}"
+            )
+        for target in item["to_agents"]:
+            if target == "human":
+                continue
+            if target not in position:
+                raise AssertionError(
+                    f"Handoff target is absent from execution_order: {target}"
+                )
+            if position[producer] >= position[target]:
+                raise AssertionError(
+                    f"Handoff violates execution causality: {producer} must precede {target}"
+                )
 
 
 def validate_orchestration_handoffs(
@@ -648,6 +680,16 @@ def main() -> int:
     expect_failure(
         "handoff evidence must belong to orchestration task",
         lambda: validate_orchestration_handoffs(evidence_orchestration, [mutated_handoff]),
+    )
+
+    mutated_orchestration = copy.deepcopy(evidence_orchestration)
+    mutated_orchestration["execution_order"].remove("frontend")
+    mutated_orchestration["execution_order"].insert(
+        mutated_orchestration["execution_order"].index("qa") + 1, "frontend"
+    )
+    expect_failure(
+        "handoff producer must precede its consumer in execution order",
+        lambda: validate_protocol_chain(task, mutated_orchestration, [handoff]),
     )
 
     mutated_handoff = copy.deepcopy(handoff)
