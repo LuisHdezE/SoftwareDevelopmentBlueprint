@@ -23,6 +23,7 @@ agents:
   documentation: OPTIONAL
   auditor: REQUIRED
 execution_order:
+  - orchestrator
   - analyst
   - planner
   - frontend
