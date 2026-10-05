@@ -1,0 +1,25 @@
+schema_version: agent-protocol-proposal-1
+handoff_id: HO-BP-CART-001-AUDITOR-HUMAN
+task_id: BP-CART-001
+from_agent: auditor
+to_agents:
+  - human
+status: READY_FOR_MERGE
+baseline:
+  repository: owner/repository
+  branch: feat/cart-quantity
+  head_sha: "1234567"
+  pull_request: 101
+summary: Independent audit completed for the exact candidate HEAD; the remaining merge decision belongs to the human owner.
+outputs:
+  - governed audit verdict
+  - exact candidate HEAD confirmation
+evidence_ids:
+  - EVD-CART-AUDIT
+blockers: []
+open_questions: []
+decisions:
+  - id: DEC-CART-AUDIT-001
+    summary: Auditor recommends READY_FOR_MERGE but does not authorize merge.
+    decision_ref: null
+created_at: "2026-10-05T15:50:00-03:00"
