@@ -198,7 +198,7 @@
     },
     "replanning": {
       "type": ["object", "null"],
-      "required": ["reason", "invalidates", "previous_baseline"],
+      "required": ["reason", "invalidates", "previous_revision", "previous_baseline"],
       "properties": {
         "reason": {
           "enum": [
@@ -217,6 +217,10 @@
           "items": {
             "enum": ["PLAN", "IMPLEMENTATION_EVIDENCE", "QA_EVIDENCE", "SECURITY_EVIDENCE", "AUDIT_EVIDENCE"]
           }
+        },
+        "previous_revision": {
+          "type": "integer",
+          "minimum": 1
         },
         "previous_baseline": {
           "$ref": "#/$defs/baseline"
