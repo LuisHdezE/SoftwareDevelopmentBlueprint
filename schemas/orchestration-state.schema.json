@@ -23,6 +23,7 @@
       "type": "object",
       "required": [
         "id",
+        "revision",
         "title",
         "classification"
       ],
@@ -30,6 +31,10 @@
         "id": {
           "type": "string",
           "pattern": "^[A-Z][A-Z0-9._-]*-[0-9]{3,}$"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
         },
         "title": {
           "type": "string",
