@@ -25,6 +25,7 @@ agents:
 specialists:
   specialist:search-ai-discoverability: COMPLETED
 execution_order:
+  - orchestrator
   - analyst
   - planner
   - frontend
