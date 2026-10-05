@@ -23,6 +23,7 @@
       "type": "object",
       "required": [
         "id",
+        "revision",
         "title",
         "classification"
       ],
@@ -30,6 +31,10 @@
         "id": {
           "type": "string",
           "pattern": "^[A-Z][A-Z0-9._-]*-[0-9]{3,}$"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
         },
         "title": {
           "type": "string",
@@ -193,7 +198,7 @@
     },
     "replanning": {
       "type": ["object", "null"],
-      "required": ["reason", "invalidates", "previous_baseline"],
+      "required": ["reason", "invalidates", "previous_revision", "previous_baseline"],
       "properties": {
         "reason": {
           "enum": [
@@ -212,6 +217,10 @@
           "items": {
             "enum": ["PLAN", "IMPLEMENTATION_EVIDENCE", "QA_EVIDENCE", "SECURITY_EVIDENCE", "AUDIT_EVIDENCE"]
           }
+        },
+        "previous_revision": {
+          "type": "integer",
+          "minimum": 1
         },
         "previous_baseline": {
           "$ref": "#/$defs/baseline"
