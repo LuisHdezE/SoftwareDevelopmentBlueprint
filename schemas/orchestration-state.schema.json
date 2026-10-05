@@ -198,7 +198,7 @@
     },
     "replanning": {
       "type": ["object", "null"],
-      "required": ["reason", "invalidates", "previous_revision", "previous_baseline"],
+      "required": ["reason", "invalidates", "previous_revision", "previous_baseline", "evidence_freshness"],
       "properties": {
         "reason": {
           "enum": [
@@ -224,6 +224,28 @@
         },
         "previous_baseline": {
           "$ref": "#/$defs/baseline"
+        },
+        "evidence_freshness": {
+          "type": "object",
+          "required": ["PRESERVED", "REVALIDATE", "INVALIDATED"],
+          "properties": {
+            "PRESERVED": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {"$ref": "#/$defs/evidence_class"}
+            },
+            "REVALIDATE": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {"$ref": "#/$defs/evidence_class"}
+            },
+            "INVALIDATED": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {"$ref": "#/$defs/evidence_class"}
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
@@ -309,6 +331,9 @@
           "pattern": "^specialist:[a-z][a-z0-9-]*$"
         }
       ]
+    },
+    "evidence_class": {
+      "enum": ["IMPLEMENTATION_EVIDENCE", "QA_EVIDENCE", "SECURITY_EVIDENCE", "DOCUMENTATION_EVIDENCE", "SPECIALIST_EVIDENCE", "AUDIT_EVIDENCE"]
     },
     "applicability": {
       "enum": [
