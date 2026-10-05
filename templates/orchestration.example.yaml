@@ -1,6 +1,7 @@
 schema_version: agent-protocol-proposal-1
 task:
   id: BP-CART-001
+  revision: 1
   title: Implement cart quantity controls
   classification: FRONTEND_ONLY
 baseline:
