@@ -129,6 +129,12 @@ def validate_handoff(doc: dict[str, Any]) -> None:
     if "human" in targets and from_agent != "auditor":
         raise AssertionError("Only Auditor may hand off a merge decision to human")
 
+    for lineage in doc.get("revalidates", []):
+        if lineage["from_revision"] >= doc["task_revision"]:
+            raise AssertionError("Revalidated evidence must originate from an earlier task revision")
+        if lineage["evidence_id"] in set(doc["evidence_ids"]):
+            raise AssertionError("Revalidation must emit new evidence instead of reusing the historical evidence id")
+
     status = doc["status"]
     if status not in allowed_statuses(from_agent):
         raise AssertionError(
@@ -220,6 +226,17 @@ def validate_orchestration(doc: dict[str, Any]) -> None:
             raise AssertionError("REPLANNING_REQUIRED requires replanning metadata")
         if replanning["previous_revision"] != doc["task"]["revision"]:
             raise AssertionError("REPLANNING_REQUIRED must reference the current task revision as previous_revision")
+        freshness = replanning["evidence_freshness"]
+        preserved = set(freshness["PRESERVED"])
+        revalidate = set(freshness["REVALIDATE"])
+        invalidated = set(freshness["INVALIDATED"])
+        if preserved & revalidate or preserved & invalidated or revalidate & invalidated:
+            raise AssertionError("Evidence freshness classes must be disjoint")
+        declared_invalidations = set(replanning["invalidates"]) - {"PLAN"}
+        if declared_invalidations != invalidated:
+            raise AssertionError("INVALIDATED evidence must exactly match replanning invalidates")
+        if "AUDIT_EVIDENCE" in preserved:
+            raise AssertionError("Audit evidence cannot be preserved across a task revision")
         if agents["orchestrator"] != "REQUIRED":
             raise AssertionError("Replanning keeps Orchestrator active")
         if doc.get("current_agent") != "planner":
@@ -650,6 +667,11 @@ def main() -> int:
         "invalidates": ["PLAN"],
         "previous_revision": previous_revision["task"]["revision"],
         "previous_baseline": copy.deepcopy(previous_revision["baseline"]),
+        "evidence_freshness": {
+            "PRESERVED": ["DOCUMENTATION_EVIDENCE"],
+            "REVALIDATE": ["IMPLEMENTATION_EVIDENCE"],
+            "INVALIDATED": [],
+        },
     }
     current_revision = copy.deepcopy(orchestration)
     current_revision["task"]["revision"] = previous_revision["task"]["revision"] + 1
@@ -751,6 +773,29 @@ def main() -> int:
         lambda: validate_task_packet(mutated),
     )
 
+    revalidated_handoff = copy.deepcopy(handoff)
+    revalidated_handoff["task_revision"] = 2
+    revalidated_handoff["evidence_ids"] = ["EVD-CART-FRONTEND-TESTS-R2"]
+    revalidated_handoff["revalidates"] = [
+        {"evidence_id": "EVD-CART-FRONTEND-TESTS", "from_revision": 1}
+    ]
+    validate_handoff(revalidated_handoff)
+    print("PASS revalidated evidence preserves lineage and emits fresh evidence")
+
+    mutated = copy.deepcopy(revalidated_handoff)
+    mutated["revalidates"][0]["from_revision"] = 2
+    expect_failure(
+        "revalidation evidence must come from an earlier revision",
+        lambda: validate_handoff(mutated),
+    )
+
+    mutated = copy.deepcopy(revalidated_handoff)
+    mutated["evidence_ids"] = ["EVD-CART-FRONTEND-TESTS"]
+    expect_failure(
+        "revalidation cannot recycle the historical evidence id",
+        lambda: validate_handoff(mutated),
+    )
+
     mutated = copy.deepcopy(handoff)
     mutated["to_agents"] = ["human"]
     expect_failure(
@@ -793,11 +838,37 @@ def main() -> int:
         "invalidates": ["PLAN", "QA_EVIDENCE"],
         "previous_revision": orchestration["task"]["revision"],
         "previous_baseline": copy.deepcopy(orchestration["baseline"]),
+        "evidence_freshness": {
+            "PRESERVED": ["DOCUMENTATION_EVIDENCE"],
+            "REVALIDATE": ["IMPLEMENTATION_EVIDENCE"],
+            "INVALIDATED": ["QA_EVIDENCE"],
+        },
     }
     replanning["agents"]["planner"] = "REQUIRED"
     replanning["agents"]["qa"] = "REQUIRED"
     validate_orchestration(replanning)
     print("PASS governed replanning invalidates stale evidence")
+
+    mutated = copy.deepcopy(replanning)
+    mutated["replanning"]["evidence_freshness"]["PRESERVED"].append("QA_EVIDENCE")
+    expect_failure(
+        "evidence freshness classifications cannot overlap",
+        lambda: validate_orchestration(mutated),
+    )
+
+    mutated = copy.deepcopy(replanning)
+    mutated["replanning"]["evidence_freshness"]["INVALIDATED"] = []
+    expect_failure(
+        "declared invalidation must match INVALIDATED freshness evidence",
+        lambda: validate_orchestration(mutated),
+    )
+
+    mutated = copy.deepcopy(replanning)
+    mutated["replanning"]["evidence_freshness"]["PRESERVED"].append("AUDIT_EVIDENCE")
+    expect_failure(
+        "audit verdict cannot survive into a new task revision",
+        lambda: validate_orchestration(mutated),
+    )
 
     mutated = copy.deepcopy(replanning)
     mutated["replanning"]["previous_revision"] = replanning["task"]["revision"] - 1
