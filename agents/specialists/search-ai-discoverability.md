@@ -327,13 +327,23 @@ discoverability:
   recommendation:
 ```
 
-Recommendation values:
+Role completion status:
+
+```text
+SPECIALIST_PASS
+SPECIALIST_FAIL
+BLOCKED
+```
+
+Capability recommendation:
 
 ```text
 DISCOVERABILITY_READY
 BLOCKED
 NOT_APPLICABLE
 ```
+
+The specialist role status and the capability gate recommendation are separate facts.
 
 ## 17. Master rule
 

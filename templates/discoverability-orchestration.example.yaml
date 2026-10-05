@@ -1,33 +1,36 @@
 schema_version: agent-protocol-proposal-1
 task:
-  id: BP-CART-001
+  id: DISC-STORE-001
   revision: 1
-  title: Implement cart quantity controls
+  title: Validate storefront product discoverability
   classification: FRONTEND_ONLY
 baseline:
   repository: owner/repository
   base_branch: main
   base_sha: abcdef1
-  working_branch: feat/cart-quantity
+  working_branch: feat/storefront-product-discoverability
   head_sha: "1234567"
-  pull_request: 101
+  pull_request: 102
 agents:
   orchestrator: REQUIRED
   analyst: COMPLETED
   planner: COMPLETED
   architect: OPTIONAL
   database: NOT_APPLICABLE
-  backend: NOT_APPLICABLE
+  backend: OPTIONAL
   frontend: COMPLETED
   qa: REQUIRED
   security: OPTIONAL
   documentation: OPTIONAL
   auditor: REQUIRED
+specialists:
+  specialist:search-ai-discoverability: COMPLETED
 execution_order:
   - orchestrator
   - analyst
   - planner
   - frontend
+  - specialist:search-ai-discoverability
   - qa
   - auditor
 current_agent: qa
@@ -36,10 +39,9 @@ blocked_by: []
 required_human_decisions:
   - merge_approval
 handoffs:
-  - HO-BP-CART-001-ANALYST-PLANNER
-  - HO-BP-CART-001-PLANNER-FRONTEND
-  - HO-BP-CART-001-FRONTEND-QA
-  - HO-BP-CART-001-AUDITOR-HUMAN
+  - HO-DISC-STORE-001-ANALYST-PLANNER
+  - HO-DISC-STORE-001-PLANNER-FRONTEND
+  - HO-DISC-STORE-001-FRONTEND-SPECIALIST
+  - HO-DISC-STORE-001-SPECIALIST-QA
 notes:
-  - Backend and database are intentionally not applicable to this bounded frontend-only task.
-  - READY_FOR_MERGE will still require Auditor evidence and explicit human merge approval.
+  - The specialist is conditional and does not become part of the eleven-agent core.

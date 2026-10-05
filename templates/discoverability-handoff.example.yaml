@@ -1,0 +1,28 @@
+schema_version: agent-protocol-proposal-1
+handoff_id: HO-DISC-STORE-001-SPECIALIST-QA
+task_id: DISC-STORE-001
+task_revision: 1
+from_agent: specialist:search-ai-discoverability
+to_agents:
+  - qa
+status: SPECIALIST_PASS
+baseline:
+  repository: owner/repository
+  branch: feat/storefront-product-discoverability
+  head_sha: "1234567"
+  pull_request: 102
+summary: Public product discoverability review completed with no specialist blocker.
+outputs:
+  - crawlability and indexability review
+  - structured-data review
+  - AI crawler-policy review
+  - ecommerce discovery applicability review
+evidence_ids:
+  - EVD-DISC-PRODUCT-001
+blockers: []
+open_questions: []
+decisions:
+  - id: DEC-DISC-001
+    summary: GPTBot policy remains independent from OAI-SearchBot search discovery policy.
+    decision_ref: null
+created_at: "2026-10-03T19:00:00-03:00"

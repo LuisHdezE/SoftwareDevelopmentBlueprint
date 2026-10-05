@@ -4,6 +4,7 @@ from __future__ import annotations
 import copy
 import json
 import pathlib
+import re
 import sys
 from typing import Any, Callable
 
@@ -12,7 +13,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
-AGENTS = (
+CORE_AGENTS = (
     "orchestrator",
     "analyst",
     "planner",
@@ -25,6 +26,8 @@ AGENTS = (
     "documentation",
     "auditor",
 )
+
+SPECIALIST_ID = re.compile(r"^specialist:[a-z][a-z0-9-]*$")
 
 ROLE_STATUSES = {
     "orchestrator": {"ROUTED", "READY_FOR_HUMAN_DECISION", "BLOCKED", "REJECTED"},
@@ -39,6 +42,21 @@ ROLE_STATUSES = {
     "documentation": {"DOCUMENTED", "BLOCKED"},
     "auditor": {"READY_FOR_MERGE", "BLOCKED", "REJECTED"},
 }
+
+SPECIALIST_STATUSES = {"SPECIALIST_PASS", "SPECIALIST_FAIL", "BLOCKED"}
+
+
+def is_specialist(agent: str) -> bool:
+    return bool(SPECIALIST_ID.fullmatch(agent))
+
+
+def allowed_statuses(agent: str) -> set[str]:
+    if agent in ROLE_STATUSES:
+        return ROLE_STATUSES[agent]
+    if is_specialist(agent):
+        return SPECIALIST_STATUSES
+    raise AssertionError(f"Unknown agent or specialist id: {agent}")
+
 
 
 def load(path: str) -> Any:
@@ -67,7 +85,7 @@ def validate_schema(schema_path: str, instance_path: str) -> Any:
 
 def validate_agent_contract(doc: dict[str, Any]) -> None:
     agent = doc["agent"]
-    allowed = ROLE_STATUSES[agent]
+    allowed = allowed_statuses(agent)
     statuses = set(doc["completion_statuses"])
     invalid = statuses - allowed
     if invalid:
@@ -95,7 +113,10 @@ def validate_task_packet(doc: dict[str, Any]) -> None:
     if doc["owner_agent"] not in required:
         raise AssertionError("Task owner_agent must be listed in required_agents")
 
-    if doc["task_id"] in set(doc["dependencies"]):
+    dependency_ids = [item["task_id"] for item in doc["dependencies"]]
+    if len(dependency_ids) != len(set(dependency_ids)):
+        raise AssertionError("Task dependencies must reference unique predecessor tasks")
+    if doc["task_id"] in set(dependency_ids):
         raise AssertionError("Task cannot depend on itself")
 
 
@@ -105,9 +126,17 @@ def validate_handoff(doc: dict[str, Any]) -> None:
 
     if from_agent in targets:
         raise AssertionError("Agent handoff cannot target the producing agent itself")
+    if "human" in targets and from_agent != "auditor":
+        raise AssertionError("Only Auditor may hand off a merge decision to human")
+
+    for lineage in doc.get("revalidates", []):
+        if lineage["from_revision"] >= doc["task_revision"]:
+            raise AssertionError("Revalidated evidence must originate from an earlier task revision")
+        if lineage["evidence_id"] in set(doc["evidence_ids"]):
+            raise AssertionError("Revalidation must emit new evidence instead of reusing the historical evidence id")
 
     status = doc["status"]
-    if status not in ROLE_STATUSES[from_agent]:
+    if status not in allowed_statuses(from_agent):
         raise AssertionError(
             f"Handoff status {status} is not owned by agent {from_agent}"
         )
@@ -127,10 +156,43 @@ def validate_handoff(doc: dict[str, Any]) -> None:
 
 def validate_orchestration(doc: dict[str, Any]) -> None:
     agents = doc["agents"]
-    order = set(doc["execution_order"])
+    specialists = doc.get("specialists", {})
+    participants = {**agents, **specialists}
+    execution_order = doc["execution_order"]
+    order = set(execution_order)
+
+    if agents["orchestrator"] not in {"REQUIRED", "COMPLETED"}:
+        raise AssertionError(
+            "Orchestrator must be REQUIRED or COMPLETED for every adopted multi-agent orchestration"
+        )
+    terminal_states = {"READY_FOR_HUMAN_DECISION", "CLOSED"}
+    if doc["current_state"] not in terminal_states and agents["orchestrator"] != "REQUIRED":
+        raise AssertionError(
+            "Orchestrator must remain REQUIRED until human-decision handoff or closure"
+        )
+    if doc["current_state"] == "READY_FOR_HUMAN_DECISION" and agents["orchestrator"] != "COMPLETED":
+        raise AssertionError(
+            "Orchestrator completes only when coordination reaches the human-decision boundary"
+        )
+    if "orchestrator" not in order:
+        raise AssertionError(
+            "Orchestrator must participate in execution_order for every adopted multi-agent orchestration"
+        )
+    if execution_order[0] != "orchestrator":
+        raise AssertionError(
+            "Orchestrator must be the first participant in execution_order"
+        )
+
+    unknown = {participant for participant in order if participant not in participants}
+    if unknown:
+        raise AssertionError(
+            f"Execution order contains undeclared participants: {sorted(unknown)}"
+        )
 
     not_applicable_in_order = {
-        agent for agent in order if agents[agent] == "NOT_APPLICABLE"
+        participant
+        for participant in order
+        if participants[participant] == "NOT_APPLICABLE"
     }
     if not_applicable_in_order:
         raise AssertionError(
@@ -138,7 +200,11 @@ def validate_orchestration(doc: dict[str, Any]) -> None:
             f"{sorted(not_applicable_in_order)}"
         )
 
-    required = {agent for agent, state in agents.items() if state == "REQUIRED"}
+    required = {
+        participant
+        for participant, state in participants.items()
+        if state == "REQUIRED"
+    }
     missing_required = required - order
     if missing_required:
         raise AssertionError(
@@ -149,10 +215,52 @@ def validate_orchestration(doc: dict[str, Any]) -> None:
     if current_agent is not None:
         if current_agent not in order:
             raise AssertionError("current_agent must exist in execution_order")
-        if agents[current_agent] in {"NOT_APPLICABLE", "COMPLETED"}:
+        if participants[current_agent] in {"NOT_APPLICABLE", "COMPLETED"}:
             raise AssertionError(
-                f"current_agent cannot be {agents[current_agent]}"
+                f"current_agent cannot be {participants[current_agent]}"
             )
+
+    replanning = doc.get("replanning")
+    if doc["current_state"] == "REPLANNING_REQUIRED":
+        if not replanning:
+            raise AssertionError("REPLANNING_REQUIRED requires replanning metadata")
+        if replanning["previous_revision"] != doc["task"]["revision"]:
+            raise AssertionError("REPLANNING_REQUIRED must reference the current task revision as previous_revision")
+        freshness = replanning["evidence_freshness"]
+        preserved = set(freshness["PRESERVED"])
+        revalidate = set(freshness["REVALIDATE"])
+        invalidated = set(freshness["INVALIDATED"])
+        if preserved & revalidate or preserved & invalidated or revalidate & invalidated:
+            raise AssertionError("Evidence freshness classes must be disjoint")
+        declared_invalidations = set(replanning["invalidates"]) - {"PLAN"}
+        if declared_invalidations != invalidated:
+            raise AssertionError("INVALIDATED evidence must exactly match replanning invalidates")
+        non_preservable = {"QA_EVIDENCE", "SECURITY_EVIDENCE", "AUDIT_EVIDENCE"}
+        forbidden = preserved & non_preservable
+        if forbidden:
+            raise AssertionError(
+                f"Independent verification evidence cannot be preserved across revisions: {sorted(forbidden)}"
+            )
+        rationale = replanning["preservation_rationale"]
+        rationale_classes = [item["evidence_class"] for item in rationale]
+        if len(rationale_classes) != len(set(rationale_classes)):
+            raise AssertionError("Preservation rationale cannot duplicate evidence classes")
+        if set(rationale_classes) != preserved:
+            raise AssertionError("Every PRESERVED evidence class requires exactly one preservation rationale")
+        if any(item["from_revision"] != replanning["previous_revision"] for item in rationale):
+            raise AssertionError("Preserved evidence must identify the immediately previous revision")
+        if agents["orchestrator"] != "REQUIRED":
+            raise AssertionError("Replanning keeps Orchestrator active")
+        if doc.get("current_agent") != "planner":
+            raise AssertionError("REPLANNING_REQUIRED routes control to Planner")
+        if "AUDIT_EVIDENCE" in replanning["invalidates"] and agents["auditor"] == "COMPLETED":
+            raise AssertionError("Invalidated audit evidence cannot leave Auditor completed")
+        if "QA_EVIDENCE" in replanning["invalidates"] and agents["qa"] == "COMPLETED":
+            raise AssertionError("Invalidated QA evidence cannot leave QA completed")
+        if "SECURITY_EVIDENCE" in replanning["invalidates"] and agents["security"] == "COMPLETED":
+            raise AssertionError("Invalidated Security evidence cannot leave Security completed")
+    elif replanning is not None:
+        raise AssertionError("replanning metadata is only valid in REPLANNING_REQUIRED")
 
     blocked_by = doc["blocked_by"]
     if blocked_by and doc["current_state"] != "BLOCKED":
@@ -164,8 +272,8 @@ def validate_orchestration(doc: dict[str, Any]) -> None:
 
     if doc["current_state"] == "READY_FOR_HUMAN_DECISION":
         unresolved = {
-            agent
-            for agent, state in agents.items()
+            participant
+            for participant, state in participants.items()
             if state in {"REQUIRED", "BLOCKED"}
         }
         if unresolved:
@@ -177,9 +285,274 @@ def validate_orchestration(doc: dict[str, Any]) -> None:
             raise AssertionError(
                 "READY_FOR_HUMAN_DECISION requires completed Auditor"
             )
+        auditor_handoff_marker = f"-AUDITOR"
+        if not any(auditor_handoff_marker in handoff for handoff in doc["handoffs"]):
+            raise AssertionError(
+                "READY_FOR_HUMAN_DECISION requires a recorded Auditor handoff"
+            )
         if not doc["required_human_decisions"]:
             raise AssertionError(
                 "READY_FOR_HUMAN_DECISION requires an explicit human decision"
+            )
+
+
+DEPENDENCY_STATE_RANK = {
+    "READY_FOR_IMPLEMENTATION": 1,
+    "READY_FOR_QA": 2,
+    "READY_FOR_AUDIT": 3,
+    "READY_FOR_HUMAN_DECISION": 4,
+    "CLOSED": 5,
+}
+
+
+def validate_revision_transition(
+    previous: dict[str, Any],
+    current: dict[str, Any],
+) -> None:
+    if previous["task"]["id"] != current["task"]["id"]:
+        raise AssertionError("Revision transition must preserve task id")
+    if current["task"]["revision"] != previous["task"]["revision"] + 1:
+        raise AssertionError("Task revisions must advance exactly by one")
+    if previous["current_state"] != "REPLANNING_REQUIRED":
+        raise AssertionError("A new task revision requires predecessor REPLANNING_REQUIRED")
+    replanning = previous.get("replanning")
+    if not replanning or replanning["previous_revision"] != previous["task"]["revision"]:
+        raise AssertionError("Previous revision lacks valid replanning provenance")
+
+
+def validate_task_dependency_graph(tasks: list[dict[str, Any]]) -> None:
+    graph = {
+        task["task_id"]: [item["task_id"] for item in task["dependencies"]]
+        for task in tasks
+    }
+    known = set(graph)
+
+    for task_id, dependencies in graph.items():
+        missing = [dependency for dependency in dependencies if dependency not in known]
+        if missing:
+            raise AssertionError(
+                f"Task dependency graph references unknown tasks from {task_id}: {sorted(missing)}"
+            )
+
+    visiting: set[str] = set()
+    visited: set[str] = set()
+
+    def visit(task_id: str) -> None:
+        if task_id in visiting:
+            raise AssertionError(f"Task dependency cycle detected at {task_id}")
+        if task_id in visited:
+            return
+        visiting.add(task_id)
+        for dependency in graph[task_id]:
+            visit(dependency)
+        visiting.remove(task_id)
+        visited.add(task_id)
+
+    for task_id in graph:
+        visit(task_id)
+
+
+def validate_task_dependencies(
+    task: dict[str, Any],
+    predecessor_orchestrations: list[dict[str, Any]],
+) -> None:
+    predecessors = {
+        item["task"]["id"]: item
+        for item in predecessor_orchestrations
+    }
+    for dependency in task["dependencies"]:
+        predecessor = predecessors.get(dependency["task_id"])
+        if predecessor is None:
+            raise AssertionError(
+                f"Dependency predecessor orchestration not found: {dependency['task_id']}"
+            )
+        actual_state = predecessor["current_state"]
+        if actual_state not in DEPENDENCY_STATE_RANK:
+            raise AssertionError(
+                f"Dependency predecessor {dependency['task_id']} has not reached an unlockable state: {actual_state}"
+            )
+        required_state = dependency["required_state"]
+        if DEPENDENCY_STATE_RANK[actual_state] < DEPENDENCY_STATE_RANK[required_state]:
+            raise AssertionError(
+                f"Dependency predecessor {dependency['task_id']} is {actual_state}; requires {required_state}"
+            )
+
+
+def validate_protocol_chain(
+    task: dict[str, Any],
+    orchestration: dict[str, Any],
+    handoff_docs: list[dict[str, Any]],
+) -> None:
+    if task["task_id"] != orchestration["task"]["id"]:
+        raise AssertionError("Task Packet and orchestration task ids must match")
+    if task["revision"] != orchestration["task"]["revision"]:
+        raise AssertionError("Task Packet and orchestration task revisions must match")
+
+    task_baseline = task["baseline"]
+    orchestration_baseline = orchestration["baseline"]
+    for field in ("repository", "base_branch", "base_sha"):
+        if task_baseline[field] != orchestration_baseline[field]:
+            raise AssertionError(
+                f"Task Packet and orchestration baseline mismatch: {field}"
+            )
+
+    for field in ("working_branch", "head_sha", "pull_request"):
+        task_value = task_baseline.get(field)
+        orchestration_value = orchestration_baseline.get(field)
+        if task_value is not None and task_value != orchestration_value:
+            raise AssertionError(
+                f"Task Packet and orchestration candidate mismatch: {field}"
+            )
+
+    task_required = set(task["required_agents"])
+    task_optional = set(task["optional_agents"])
+    task_na = set(task["not_applicable_agents"])
+    participants = {**orchestration["agents"], **orchestration.get("specialists", {})}
+
+    for participant in task_required:
+        if participant not in participants:
+            raise AssertionError(
+                f"Required Task Packet participant missing from orchestration: {participant}"
+            )
+        if participants[participant] in {"OPTIONAL", "NOT_APPLICABLE"}:
+            raise AssertionError(
+                f"Required Task Packet participant is not required/completed in orchestration: {participant}"
+            )
+
+    for participant in task_na:
+        if participant in participants and participants[participant] != "NOT_APPLICABLE":
+            raise AssertionError(
+                f"Task Packet N/A participant is active in orchestration: {participant}"
+            )
+
+    declared = task_required | task_optional | task_na
+    for item in handoff_docs:
+        if item["task_id"] != task["task_id"]:
+            continue
+        involved = {item["from_agent"]} | {
+            target for target in item["to_agents"] if target != "human"
+        }
+        undeclared = {
+            participant
+            for participant in involved
+            if participant not in declared and participant != "orchestrator"
+        }
+        if undeclared:
+            raise AssertionError(
+                f"Handoff uses participants outside Task Packet applicability: {sorted(undeclared)}"
+            )
+
+    validate_orchestration_handoffs(orchestration, handoff_docs)
+    validate_execution_causality(orchestration, handoff_docs)
+
+
+def validate_execution_causality(
+    orchestration: dict[str, Any],
+    handoff_docs: list[dict[str, Any]],
+) -> None:
+    position = {
+        participant: index
+        for index, participant in enumerate(orchestration["execution_order"])
+    }
+    declared_ids = set(orchestration["handoffs"])
+
+    for item in handoff_docs:
+        if item["handoff_id"] not in declared_ids:
+            continue
+        producer = item["from_agent"]
+        if producer not in position:
+            raise AssertionError(
+                f"Handoff producer is absent from execution_order: {producer}"
+            )
+        for target in item["to_agents"]:
+            if target == "human":
+                continue
+            if target not in position:
+                raise AssertionError(
+                    f"Handoff target is absent from execution_order: {target}"
+                )
+            if position[producer] >= position[target]:
+                raise AssertionError(
+                    f"Handoff violates execution causality: {producer} must precede {target}"
+                )
+
+
+def validate_orchestration_handoffs(
+    orchestration: dict[str, Any],
+    handoff_docs: list[dict[str, Any]],
+) -> None:
+    declared_ids = set(orchestration["handoffs"])
+    actual_by_id = {item["handoff_id"]: item for item in handoff_docs}
+
+    missing = declared_ids - set(actual_by_id)
+    if missing:
+        raise AssertionError(
+            f"Orchestration references handoffs without evidence documents: {sorted(missing)}"
+        )
+
+    task_id = orchestration["task"]["id"]
+    repository = orchestration["baseline"]["repository"]
+    head_sha = orchestration["baseline"].get("head_sha")
+
+    for handoff_id in declared_ids:
+        item = actual_by_id[handoff_id]
+        if item["task_id"] != task_id:
+            raise AssertionError(
+                f"Handoff {handoff_id} belongs to task {item['task_id']}, expected {task_id}"
+            )
+        if item["task_revision"] != orchestration["task"]["revision"]:
+            raise AssertionError(
+                f"Handoff {handoff_id} belongs to stale task revision {item['task_revision']}, expected {orchestration['task']['revision']}"
+            )
+        if item["baseline"]["repository"] != repository:
+            raise AssertionError(
+                f"Handoff {handoff_id} repository does not match orchestration baseline"
+            )
+        if head_sha is not None and item["baseline"]["head_sha"] != head_sha:
+            raise AssertionError(
+                f"Handoff {handoff_id} HEAD does not match orchestration candidate HEAD"
+            )
+
+    if orchestration["current_state"] == "READY_FOR_HUMAN_DECISION":
+        auditor_docs = [
+            item
+            for item in actual_by_id.values()
+            if item["handoff_id"] in declared_ids
+            and item["from_agent"] == "auditor"
+            and item["status"] == "READY_FOR_MERGE"
+        ]
+        if not auditor_docs:
+            raise AssertionError(
+                "READY_FOR_HUMAN_DECISION requires Auditor READY_FOR_MERGE handoff evidence"
+            )
+
+
+def validate_specialist_registry(doc: dict[str, Any]) -> None:
+    seen: set[str] = set()
+    for item in doc["specialists"]:
+        specialist_id = item["id"]
+        if not is_specialist(specialist_id):
+            raise AssertionError(f"Invalid specialist id: {specialist_id}")
+        if specialist_id in seen:
+            raise AssertionError(f"Duplicate specialist id: {specialist_id}")
+        seen.add(specialist_id)
+
+        if item["core_agent"] is not False:
+            raise AssertionError(f"Specialist {specialist_id} cannot be a core agent")
+
+        if item["completion_statuses"] != [
+            "SPECIALIST_PASS",
+            "SPECIALIST_FAIL",
+            "BLOCKED",
+        ]:
+            raise AssertionError(
+                f"Specialist {specialist_id} must use canonical specialist statuses"
+            )
+
+        contract_path = ROOT / item["contract"]
+        if not contract_path.is_file():
+            raise AssertionError(
+                f"Specialist contract does not exist: {item['contract']}"
             )
 
 
@@ -193,6 +566,13 @@ def expect_failure(label: str, action: Callable[[], None]) -> None:
 
 
 def main() -> int:
+    registry = validate_schema(
+        "schemas/specialist-agent-registry.schema.json",
+        "catalog/specialist-agents.proposal.yaml",
+    )
+    validate_specialist_registry(registry)
+    print("PASS specialist registry")
+
     pairs = [
         (
             "schemas/agent-contract.schema.json",
@@ -228,6 +608,47 @@ def main() -> int:
     handoff = docs["templates/agent-handoff.example.yaml"]
     orchestration = docs["templates/orchestration.example.yaml"]
 
+    specialist_agent = validate_schema(
+        "schemas/agent-contract.schema.json",
+        "templates/search-ai-discoverability-agent.example.yaml",
+    )
+    validate_agent_contract(specialist_agent)
+    print("PASS specialist contract: search-ai-discoverability")
+
+    specialist_task = validate_schema(
+        "schemas/task-packet.schema.json",
+        "templates/discoverability-task-packet.example.yaml",
+    )
+    validate_task_packet(specialist_task)
+    print("PASS specialist task packet")
+
+    specialist_handoff = validate_schema(
+        "schemas/agent-handoff.schema.json",
+        "templates/discoverability-handoff.example.yaml",
+    )
+    validate_handoff(specialist_handoff)
+    print("PASS specialist handoff")
+
+    specialist_orchestration = validate_schema(
+        "schemas/orchestration-state.schema.json",
+        "templates/discoverability-orchestration.example.yaml",
+    )
+    validate_orchestration(specialist_orchestration)
+    print("PASS specialist orchestration")
+
+    auditor_handoff = validate_schema(
+        "schemas/agent-handoff.schema.json",
+        "templates/auditor-human-handoff.example.yaml",
+    )
+    validate_handoff(auditor_handoff)
+    print("PASS Auditor to human handoff contract")
+
+    evidence_orchestration = copy.deepcopy(orchestration)
+    evidence_orchestration["handoffs"] = [handoff["handoff_id"]]
+    validate_protocol_chain(task, evidence_orchestration, [handoff])
+    print("PASS Task Packet -> orchestration -> handoff chain of custody")
+
+
     mutated = copy.deepcopy(agent)
     mutated["handoff_targets"].append(mutated["agent"])
     expect_failure(
@@ -249,6 +670,112 @@ def main() -> int:
         lambda: validate_task_packet(mutated),
     )
 
+    previous_revision = copy.deepcopy(orchestration)
+    previous_revision["current_state"] = "REPLANNING_REQUIRED"
+    previous_revision["current_agent"] = "planner"
+    previous_revision["agents"]["planner"] = "REQUIRED"
+    previous_revision["replanning"] = {
+        "reason": "REQUIREMENT_CHANGED",
+        "invalidates": ["PLAN"],
+        "previous_revision": previous_revision["task"]["revision"],
+        "previous_baseline": copy.deepcopy(previous_revision["baseline"]),
+        "evidence_freshness": {
+            "PRESERVED": ["DOCUMENTATION_EVIDENCE"],
+            "REVALIDATE": ["IMPLEMENTATION_EVIDENCE"],
+            "INVALIDATED": [],
+        },
+        "preservation_rationale": [
+            {
+                "evidence_class": "DOCUMENTATION_EVIDENCE",
+                "from_revision": previous_revision["task"]["revision"],
+                "reason": "Documentation remains outside the changed planning premise.",
+            }
+        ],
+    }
+    current_revision = copy.deepcopy(orchestration)
+    current_revision["task"]["revision"] = previous_revision["task"]["revision"] + 1
+    validate_revision_transition(previous_revision, current_revision)
+    print("PASS task revision advances monotonically from governed replanning")
+
+    skipped_revision = copy.deepcopy(current_revision)
+    skipped_revision["task"]["revision"] += 1
+    expect_failure(
+        "task revision cannot skip a generation",
+        lambda: validate_revision_transition(previous_revision, skipped_revision),
+    )
+
+    expect_failure(
+        "task revision cannot advance without governed replanning",
+        lambda: validate_revision_transition(orchestration, current_revision),
+    )
+
+    graph_a = copy.deepcopy(task)
+    graph_a["task_id"] = "BP-GRAPH-001"
+    graph_a["dependencies"] = []
+    graph_b = copy.deepcopy(task)
+    graph_b["task_id"] = "BP-GRAPH-002"
+    graph_b["dependencies"] = [
+        {"task_id": "BP-GRAPH-001", "required_state": "READY_FOR_IMPLEMENTATION"}
+    ]
+    validate_task_dependency_graph([graph_a, graph_b])
+    print("PASS task dependency graph is acyclic and closed")
+
+    cyclic_a = copy.deepcopy(graph_a)
+    cyclic_a["dependencies"] = [
+        {"task_id": "BP-GRAPH-002", "required_state": "READY_FOR_IMPLEMENTATION"}
+    ]
+    expect_failure(
+        "task dependency graph cannot contain cycles",
+        lambda: validate_task_dependency_graph([cyclic_a, graph_b]),
+    )
+
+    unknown_dependency = copy.deepcopy(graph_b)
+    unknown_dependency["dependencies"] = [
+        {"task_id": "BP-MISSING-999", "required_state": "READY_FOR_IMPLEMENTATION"}
+    ]
+    expect_failure(
+        "task dependency graph cannot reference unknown predecessor tasks",
+        lambda: validate_task_dependency_graph([graph_a, unknown_dependency]),
+    )
+
+    predecessor = copy.deepcopy(orchestration)
+    predecessor["task"]["id"] = "BP-PREV-001"
+    predecessor["current_state"] = "READY_FOR_AUDIT"
+    dependency_task = copy.deepcopy(task)
+    dependency_task["dependencies"] = [
+        {"task_id": "BP-PREV-001", "required_state": "READY_FOR_QA"}
+    ]
+    validate_task_dependencies(dependency_task, [predecessor])
+    print("PASS inter-task dependency state satisfaction")
+
+    expect_failure(
+        "task dependency requires predecessor orchestration evidence",
+        lambda: validate_task_dependencies(dependency_task, []),
+    )
+
+    immature_predecessor = copy.deepcopy(predecessor)
+    immature_predecessor["current_state"] = "IMPLEMENTING"
+    expect_failure(
+        "task dependency cannot unlock from immature predecessor state",
+        lambda: validate_task_dependencies(dependency_task, [immature_predecessor]),
+    )
+
+    dependency_task["dependencies"][0]["required_state"] = "READY_FOR_HUMAN_DECISION"
+    expect_failure(
+        "task dependency cannot unlock below required predecessor state",
+        lambda: validate_task_dependencies(dependency_task, [predecessor]),
+    )
+
+    mutated = copy.deepcopy(task)
+    mutated["dependencies"] = [
+        {"task_id": "BP-PREV-001", "required_state": "READY_FOR_QA"},
+        {"task_id": "BP-PREV-001", "required_state": "CLOSED"},
+    ]
+    expect_failure(
+        "task dependencies cannot duplicate predecessor task",
+        lambda: validate_task_packet(mutated),
+    )
+
     mutated = copy.deepcopy(task)
     mutated["not_applicable_agents"].append("qa")
     expect_failure(
@@ -257,10 +784,42 @@ def main() -> int:
     )
 
     mutated = copy.deepcopy(task)
-    mutated["dependencies"].append(mutated["task_id"])
+    mutated["dependencies"].append(
+        {"task_id": mutated["task_id"], "required_state": "CLOSED"}
+    )
     expect_failure(
         "task cannot depend on itself",
         lambda: validate_task_packet(mutated),
+    )
+
+    revalidated_handoff = copy.deepcopy(handoff)
+    revalidated_handoff["task_revision"] = 2
+    revalidated_handoff["evidence_ids"] = ["EVD-CART-FRONTEND-TESTS-R2"]
+    revalidated_handoff["revalidates"] = [
+        {"evidence_id": "EVD-CART-FRONTEND-TESTS", "from_revision": 1}
+    ]
+    validate_handoff(revalidated_handoff)
+    print("PASS revalidated evidence preserves lineage and emits fresh evidence")
+
+    mutated = copy.deepcopy(revalidated_handoff)
+    mutated["revalidates"][0]["from_revision"] = 2
+    expect_failure(
+        "revalidation evidence must come from an earlier revision",
+        lambda: validate_handoff(mutated),
+    )
+
+    mutated = copy.deepcopy(revalidated_handoff)
+    mutated["evidence_ids"] = ["EVD-CART-FRONTEND-TESTS"]
+    expect_failure(
+        "revalidation cannot recycle the historical evidence id",
+        lambda: validate_handoff(mutated),
+    )
+
+    mutated = copy.deepcopy(handoff)
+    mutated["to_agents"] = ["human"]
+    expect_failure(
+        "only Auditor may hand off merge decision to human",
+        lambda: validate_handoff(mutated),
     )
 
     mutated = copy.deepcopy(handoff)
@@ -290,6 +849,124 @@ def main() -> int:
         lambda: validate_handoff(mutated),
     )
 
+    replanning = copy.deepcopy(orchestration)
+    replanning["current_state"] = "REPLANNING_REQUIRED"
+    replanning["current_agent"] = "planner"
+    replanning["replanning"] = {
+        "reason": "BASELINE_CHANGED",
+        "invalidates": ["PLAN", "QA_EVIDENCE"],
+        "previous_revision": orchestration["task"]["revision"],
+        "previous_baseline": copy.deepcopy(orchestration["baseline"]),
+        "evidence_freshness": {
+            "PRESERVED": ["DOCUMENTATION_EVIDENCE"],
+            "REVALIDATE": ["IMPLEMENTATION_EVIDENCE"],
+            "INVALIDATED": ["QA_EVIDENCE"],
+        },
+        "preservation_rationale": [
+            {
+                "evidence_class": "DOCUMENTATION_EVIDENCE",
+                "from_revision": orchestration["task"]["revision"],
+                "reason": "Documentation remains factually unchanged by this replanning trigger.",
+            }
+        ],
+    }
+    replanning["agents"]["planner"] = "REQUIRED"
+    replanning["agents"]["qa"] = "REQUIRED"
+    validate_orchestration(replanning)
+    print("PASS governed replanning invalidates stale evidence")
+
+    mutated = copy.deepcopy(replanning)
+    mutated["replanning"]["preservation_rationale"] = []
+    expect_failure(
+        "preserved evidence requires explicit rationale",
+        lambda: validate_orchestration(mutated),
+    )
+
+    mutated = copy.deepcopy(replanning)
+    mutated["replanning"]["preservation_rationale"][0]["from_revision"] -= 1
+    expect_failure(
+        "preserved evidence must identify its exact source revision",
+        lambda: validate_orchestration(mutated),
+    )
+
+    mutated = copy.deepcopy(replanning)
+    mutated["replanning"]["evidence_freshness"]["PRESERVED"].append("QA_EVIDENCE")
+    expect_failure(
+        "evidence freshness classifications cannot overlap",
+        lambda: validate_orchestration(mutated),
+    )
+
+    mutated = copy.deepcopy(replanning)
+    mutated["replanning"]["evidence_freshness"]["INVALIDATED"] = []
+    expect_failure(
+        "declared invalidation must match INVALIDATED freshness evidence",
+        lambda: validate_orchestration(mutated),
+    )
+
+    mutated = copy.deepcopy(replanning)
+    mutated["replanning"]["evidence_freshness"]["PRESERVED"].append("AUDIT_EVIDENCE")
+    expect_failure(
+        "audit verdict cannot survive into a new task revision",
+        lambda: validate_orchestration(mutated),
+    )
+
+    mutated = copy.deepcopy(replanning)
+    mutated["replanning"]["previous_revision"] = replanning["task"]["revision"] - 1
+    expect_failure(
+        "replanning must originate from the current governed revision",
+        lambda: validate_orchestration(mutated),
+    )
+
+    mutated = copy.deepcopy(replanning)
+    mutated["replanning"] = None
+    expect_failure(
+        "replanning state requires explicit invalidation metadata",
+        lambda: validate_orchestration(mutated),
+    )
+
+    mutated = copy.deepcopy(replanning)
+    mutated["current_agent"] = "qa"
+    expect_failure(
+        "replanning routes control back to Planner",
+        lambda: validate_orchestration(mutated),
+    )
+
+    mutated = copy.deepcopy(replanning)
+    mutated["agents"]["qa"] = "COMPLETED"
+    expect_failure(
+        "invalidated QA evidence cannot remain completed",
+        lambda: validate_orchestration(mutated),
+    )
+
+    mutated = copy.deepcopy(orchestration)
+    mutated["agents"]["orchestrator"] = "COMPLETED"
+    expect_failure(
+        "Orchestrator cannot complete while downstream work remains active",
+        lambda: validate_orchestration(mutated),
+    )
+
+    mutated = copy.deepcopy(orchestration)
+    mutated["agents"]["orchestrator"] = "NOT_APPLICABLE"
+    expect_failure(
+        "multi-agent orchestration cannot omit Orchestrator applicability",
+        lambda: validate_orchestration(mutated),
+    )
+
+    mutated = copy.deepcopy(orchestration)
+    mutated["execution_order"].remove("orchestrator")
+    expect_failure(
+        "multi-agent orchestration cannot omit Orchestrator execution",
+        lambda: validate_orchestration(mutated),
+    )
+
+    mutated = copy.deepcopy(orchestration)
+    mutated["execution_order"].remove("orchestrator")
+    mutated["execution_order"].append("orchestrator")
+    expect_failure(
+        "Orchestrator must route before specialized execution",
+        lambda: validate_orchestration(mutated),
+    )
+
     mutated = copy.deepcopy(orchestration)
     mutated["execution_order"].append("backend")
     expect_failure(
@@ -311,6 +988,108 @@ def main() -> int:
     mutated["agents"]["auditor"] = "REQUIRED"
     expect_failure(
         "human decision requires completed Auditor",
+        lambda: validate_orchestration(mutated),
+    )
+
+    mutated = copy.deepcopy(orchestration)
+    mutated["current_state"] = "READY_FOR_HUMAN_DECISION"
+    mutated["current_agent"] = None
+    for participant, state in list(mutated["agents"].items()):
+        if state == "REQUIRED":
+            mutated["agents"][participant] = "COMPLETED"
+    mutated["handoffs"] = [
+        handoff for handoff in mutated["handoffs"] if "-AUDITOR" not in handoff
+    ]
+    expect_failure(
+        "human decision requires recorded Auditor handoff",
+        lambda: validate_orchestration(mutated),
+    )
+
+    mutated_task = copy.deepcopy(task)
+    mutated_task["task_id"] = "BP-OTHER-999"
+    expect_failure(
+        "Task Packet and orchestration must describe the same task",
+        lambda: validate_protocol_chain(mutated_task, evidence_orchestration, [handoff]),
+    )
+
+    mutated_task = copy.deepcopy(task)
+    mutated_task["revision"] += 1
+    expect_failure(
+        "Task Packet and orchestration revisions must match",
+        lambda: validate_protocol_chain(mutated_task, evidence_orchestration, [handoff]),
+    )
+
+    stale_handoff = copy.deepcopy(handoff)
+    stale_handoff["task_revision"] += 1
+    expect_failure(
+        "handoff evidence from another task revision is stale",
+        lambda: validate_orchestration_handoffs(evidence_orchestration, [stale_handoff]),
+    )
+
+    mutated_task = copy.deepcopy(task)
+    mutated_task["baseline"]["base_sha"] = "7654321"
+    expect_failure(
+        "Task Packet and orchestration must share the same baseline",
+        lambda: validate_protocol_chain(mutated_task, evidence_orchestration, [handoff]),
+    )
+
+    mutated_task = copy.deepcopy(task)
+    mutated_task["required_agents"].append("backend")
+    mutated_task["not_applicable_agents"].remove("backend")
+    expect_failure(
+        "required Task Packet participant cannot be N/A in orchestration",
+        lambda: validate_protocol_chain(mutated_task, evidence_orchestration, [handoff]),
+    )
+
+    mutated = copy.deepcopy(evidence_orchestration)
+    mutated["handoffs"].append("HO-BP-CART-001-FAKE")
+    expect_failure(
+        "orchestration cannot reference nonexistent handoff evidence",
+        lambda: validate_orchestration_handoffs(mutated, [handoff]),
+    )
+
+    mutated_handoff = copy.deepcopy(handoff)
+    mutated_handoff["task_id"] = "BP-OTHER-999"
+    expect_failure(
+        "handoff evidence must belong to orchestration task",
+        lambda: validate_orchestration_handoffs(evidence_orchestration, [mutated_handoff]),
+    )
+
+    mutated_orchestration = copy.deepcopy(evidence_orchestration)
+    mutated_orchestration["execution_order"].remove("frontend")
+    mutated_orchestration["execution_order"].insert(
+        mutated_orchestration["execution_order"].index("qa") + 1, "frontend"
+    )
+    expect_failure(
+        "handoff producer must precede its consumer in execution order",
+        lambda: validate_protocol_chain(task, mutated_orchestration, [handoff]),
+    )
+
+    mutated_handoff = copy.deepcopy(handoff)
+    mutated_handoff["baseline"]["head_sha"] = "7654321"
+    expect_failure(
+        "handoff evidence must match orchestration candidate HEAD",
+        lambda: validate_orchestration_handoffs(evidence_orchestration, [mutated_handoff]),
+    )
+
+    mutated = copy.deepcopy(specialist_agent)
+    mutated["completion_statuses"] = ["QA_PASS"]
+    expect_failure(
+        "specialist cannot claim QA status",
+        lambda: validate_agent_contract(mutated),
+    )
+
+    mutated = copy.deepcopy(specialist_handoff)
+    mutated["status"] = "READY_FOR_MERGE"
+    expect_failure(
+        "specialist cannot claim Auditor status",
+        lambda: validate_handoff(mutated),
+    )
+
+    mutated = copy.deepcopy(specialist_orchestration)
+    mutated["execution_order"].append("specialist:not-declared")
+    expect_failure(
+        "undeclared specialist cannot execute",
         lambda: validate_orchestration(mutated),
     )
 

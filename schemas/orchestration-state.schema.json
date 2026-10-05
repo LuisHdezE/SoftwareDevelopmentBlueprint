@@ -21,11 +21,20 @@
     },
     "task": {
       "type": "object",
-      "required": ["id", "title", "classification"],
+      "required": [
+        "id",
+        "revision",
+        "title",
+        "classification"
+      ],
       "properties": {
         "id": {
           "type": "string",
           "pattern": "^[A-Z][A-Z0-9._-]*-[0-9]{3,}$"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
         },
         "title": {
           "type": "string",
@@ -53,7 +62,11 @@
     },
     "baseline": {
       "type": "object",
-      "required": ["repository", "base_branch", "base_sha"],
+      "required": [
+        "repository",
+        "base_branch",
+        "base_sha"
+      ],
       "properties": {
         "repository": {
           "type": "string",
@@ -68,15 +81,24 @@
           "pattern": "^[a-fA-F0-9]{7,40}$"
         },
         "working_branch": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "minLength": 1
         },
         "head_sha": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "pattern": "^[a-fA-F0-9]{7,40}$"
         },
         "pull_request": {
-          "type": ["integer", "null"],
+          "type": [
+            "integer",
+            "null"
+          ],
           "minimum": 1
         }
       },
@@ -98,17 +120,39 @@
         "auditor"
       ],
       "properties": {
-        "orchestrator": {"$ref": "#/$defs/applicability"},
-        "analyst": {"$ref": "#/$defs/applicability"},
-        "planner": {"$ref": "#/$defs/applicability"},
-        "architect": {"$ref": "#/$defs/applicability"},
-        "database": {"$ref": "#/$defs/applicability"},
-        "backend": {"$ref": "#/$defs/applicability"},
-        "frontend": {"$ref": "#/$defs/applicability"},
-        "qa": {"$ref": "#/$defs/applicability"},
-        "security": {"$ref": "#/$defs/applicability"},
-        "documentation": {"$ref": "#/$defs/applicability"},
-        "auditor": {"$ref": "#/$defs/applicability"}
+        "orchestrator": {
+          "$ref": "#/$defs/applicability"
+        },
+        "analyst": {
+          "$ref": "#/$defs/applicability"
+        },
+        "planner": {
+          "$ref": "#/$defs/applicability"
+        },
+        "architect": {
+          "$ref": "#/$defs/applicability"
+        },
+        "database": {
+          "$ref": "#/$defs/applicability"
+        },
+        "backend": {
+          "$ref": "#/$defs/applicability"
+        },
+        "frontend": {
+          "$ref": "#/$defs/applicability"
+        },
+        "qa": {
+          "$ref": "#/$defs/applicability"
+        },
+        "security": {
+          "$ref": "#/$defs/applicability"
+        },
+        "documentation": {
+          "$ref": "#/$defs/applicability"
+        },
+        "auditor": {
+          "$ref": "#/$defs/applicability"
+        }
       },
       "additionalProperties": false
     },
@@ -122,8 +166,12 @@
     },
     "current_agent": {
       "oneOf": [
-        {"$ref": "#/$defs/agent_id"},
-        {"type": "null"}
+        {
+          "$ref": "#/$defs/agent_id"
+        },
+        {
+          "type": "null"
+        }
       ]
     },
     "current_state": {
@@ -142,18 +190,95 @@
         "READY_FOR_AUDIT",
         "AUDITING",
         "READY_FOR_HUMAN_DECISION",
+        "REPLANNING_REQUIRED",
         "BLOCKED",
         "REJECTED",
         "CLOSED"
       ]
+    },
+    "replanning": {
+      "type": ["object", "null"],
+      "required": ["reason", "invalidates", "previous_revision", "previous_baseline", "evidence_freshness", "preservation_rationale"],
+      "properties": {
+        "reason": {
+          "enum": [
+            "REQUIREMENT_CHANGED",
+            "SCOPE_CHANGED",
+            "BASELINE_CHANGED",
+            "DEPENDENCY_CHANGED",
+            "ASSUMPTION_INVALIDATED",
+            "CRITICAL_BLOCKER"
+          ]
+        },
+        "invalidates": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": ["PLAN", "IMPLEMENTATION_EVIDENCE", "QA_EVIDENCE", "SECURITY_EVIDENCE", "AUDIT_EVIDENCE"]
+          }
+        },
+        "previous_revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "previous_baseline": {
+          "$ref": "#/$defs/baseline"
+        },
+        "preservation_rationale": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "required": ["evidence_class", "from_revision", "reason"],
+            "properties": {
+              "evidence_class": {"$ref": "#/$defs/evidence_class"},
+              "from_revision": {"type": "integer", "minimum": 1},
+              "reason": {"type": "string", "minLength": 1}
+            },
+            "additionalProperties": false
+          }
+        },
+        "evidence_freshness": {
+          "type": "object",
+          "required": ["PRESERVED", "REVALIDATE", "INVALIDATED"],
+          "properties": {
+            "PRESERVED": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {"$ref": "#/$defs/evidence_class"}
+            },
+            "REVALIDATE": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {"$ref": "#/$defs/evidence_class"}
+            },
+            "INVALIDATED": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {"$ref": "#/$defs/evidence_class"}
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
     },
     "blocked_by": {
       "type": "array",
       "uniqueItems": true,
       "items": {
         "oneOf": [
-          {"$ref": "#/$defs/agent_id"},
-          {"enum": ["human", "infrastructure", "external_dependency"]}
+          {
+            "$ref": "#/$defs/agent_id"
+          },
+          {
+            "enum": [
+              "human",
+              "infrastructure",
+              "external_dependency"
+            ]
+          }
         ]
       }
     },
@@ -185,23 +310,44 @@
         "type": "string",
         "minLength": 1
       }
+    },
+    "specialists": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^specialist:[a-z][a-z0-9-]*$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/applicability"
+      },
+      "description": "Conditional specialist applicability for this task. Core agents remain in the fixed agents object."
     }
   },
   "$defs": {
     "agent_id": {
-      "enum": [
-        "orchestrator",
-        "analyst",
-        "planner",
-        "architect",
-        "database",
-        "backend",
-        "frontend",
-        "qa",
-        "security",
-        "documentation",
-        "auditor"
+      "oneOf": [
+        {
+          "enum": [
+            "orchestrator",
+            "analyst",
+            "planner",
+            "architect",
+            "database",
+            "backend",
+            "frontend",
+            "qa",
+            "security",
+            "documentation",
+            "auditor"
+          ]
+        },
+        {
+          "type": "string",
+          "pattern": "^specialist:[a-z][a-z0-9-]*$"
+        }
       ]
+    },
+    "evidence_class": {
+      "enum": ["IMPLEMENTATION_EVIDENCE", "QA_EVIDENCE", "SECURITY_EVIDENCE", "DOCUMENTATION_EVIDENCE", "SPECIALIST_EVIDENCE", "AUDIT_EVIDENCE"]
     },
     "applicability": {
       "enum": [
