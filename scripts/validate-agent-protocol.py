@@ -147,7 +147,21 @@ def validate_orchestration(doc: dict[str, Any]) -> None:
     agents = doc["agents"]
     specialists = doc.get("specialists", {})
     participants = {**agents, **specialists}
-    order = set(doc["execution_order"])
+    execution_order = doc["execution_order"]
+    order = set(execution_order)
+
+    if agents["orchestrator"] not in {"REQUIRED", "COMPLETED"}:
+        raise AssertionError(
+            "Orchestrator must be REQUIRED or COMPLETED for every adopted multi-agent orchestration"
+        )
+    if "orchestrator" not in order:
+        raise AssertionError(
+            "Orchestrator must participate in execution_order for every adopted multi-agent orchestration"
+        )
+    if execution_order[0] != "orchestrator":
+        raise AssertionError(
+            "Orchestrator must be the first participant in execution_order"
+        )
 
     unknown = {participant for participant in order if participant not in participants}
     if unknown:
@@ -385,6 +399,28 @@ def main() -> int:
     expect_failure(
         "successful handoff cannot carry blocking question",
         lambda: validate_handoff(mutated),
+    )
+
+    mutated = copy.deepcopy(orchestration)
+    mutated["agents"]["orchestrator"] = "NOT_APPLICABLE"
+    expect_failure(
+        "multi-agent orchestration cannot omit Orchestrator applicability",
+        lambda: validate_orchestration(mutated),
+    )
+
+    mutated = copy.deepcopy(orchestration)
+    mutated["execution_order"].remove("orchestrator")
+    expect_failure(
+        "multi-agent orchestration cannot omit Orchestrator execution",
+        lambda: validate_orchestration(mutated),
+    )
+
+    mutated = copy.deepcopy(orchestration)
+    mutated["execution_order"].remove("orchestrator")
+    mutated["execution_order"].append("orchestrator")
+    expect_failure(
+        "Orchestrator must route before specialized execution",
+        lambda: validate_orchestration(mutated),
     )
 
     mutated = copy.deepcopy(orchestration)
