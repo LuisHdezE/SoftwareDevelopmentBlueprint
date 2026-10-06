@@ -1,0 +1,52 @@
+name: Blueprint Planner Boundary Validation
+
+on:
+  push:
+    branches:
+      - main
+      - 'blueprint/**'
+    paths:
+      - 'schemas/agent-handoff.schema.json'
+      - 'schemas/task-packet.schema.json'
+      - 'schemas/orchestration-state.schema.json'
+      - 'templates/task-packet.example.yaml'
+      - 'templates/orchestration.example.yaml'
+      - 'templates/planner-task-packet-boundary-handoff.example.yaml'
+      - 'scripts/validate-planner-task-packet-boundary.py'
+      - '.github/workflows/blueprint-planner-boundary-validation.yml'
+
+  pull_request:
+    branches:
+      - main
+      - 'blueprint/**'
+    paths:
+      - 'schemas/agent-handoff.schema.json'
+      - 'schemas/task-packet.schema.json'
+      - 'schemas/orchestration-state.schema.json'
+      - 'templates/task-packet.example.yaml'
+      - 'templates/orchestration.example.yaml'
+      - 'templates/planner-task-packet-boundary-handoff.example.yaml'
+      - 'scripts/validate-planner-task-packet-boundary.py'
+      - '.github/workflows/blueprint-planner-boundary-validation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: [self-hosted, linux, x64, blueprint]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+
+      - name: Install validator dependencies
+        run: python -m pip install --disable-pip-version-check jsonschema==4.26.0 PyYAML==6.0.2
+
+      - name: Validate Planner Task Packet boundary
+        run: python scripts/validate-planner-task-packet-boundary.py

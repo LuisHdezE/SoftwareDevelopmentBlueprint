@@ -41,6 +41,7 @@
     "scope": {
       "enum": [
         "LIFECYCLE_GOVERNANCE",
+        "TASK_PACKET_BOUNDARY",
         "TASK_EXECUTION",
         "HUMAN_DECISION"
       ]
