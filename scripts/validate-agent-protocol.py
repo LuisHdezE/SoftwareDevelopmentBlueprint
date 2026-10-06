@@ -1007,6 +1007,10 @@ def main() -> int:
     documentation_replanning["replanning"]["evidence_freshness"]["INVALIDATED"] = ["DOCUMENTATION_EVIDENCE"]
     documentation_replanning["replanning"]["preservation_rationale"] = []
     documentation_replanning["agents"]["documentation"] = "REQUIRED"
+    if "documentation" not in documentation_replanning["execution_order"]:
+        documentation_replanning["execution_order"].insert(
+            documentation_replanning["execution_order"].index("auditor"), "documentation"
+        )
     validate_orchestration(documentation_replanning)
     print("PASS Documentation evidence can be invalidated coherently")
 
