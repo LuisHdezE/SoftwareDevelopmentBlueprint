@@ -135,6 +135,17 @@ def validate_handoff(doc: dict[str, Any]) -> None:
         if lineage["evidence_id"] in set(doc["evidence_ids"]):
             raise AssertionError("Revalidation must emit new evidence instead of reusing the historical evidence id")
 
+    scope = doc["scope"]
+    if scope == "HUMAN_DECISION" and (from_agent != "auditor" or targets != {"human"}):
+        raise AssertionError("HUMAN_DECISION handoff must be exactly Auditor -> human")
+    if scope != "HUMAN_DECISION" and "human" in targets:
+        raise AssertionError("Only HUMAN_DECISION scope may target human")
+    if scope == "LIFECYCLE_GOVERNANCE":
+        lifecycle_agents = {"orchestrator", "analyst", "planner"}
+        involved = {from_agent} | {target for target in targets if target != "human"}
+        if not involved.issubset(lifecycle_agents):
+            raise AssertionError("Lifecycle governance scope is restricted to Orchestrator, Analyst, and Planner")
+
     status = doc["status"]
     if status not in allowed_statuses(from_agent):
         raise AssertionError(
@@ -426,21 +437,36 @@ def validate_protocol_chain(
             )
 
     declared = task_required | task_optional | task_na
+    lifecycle_agents = {"orchestrator", "analyst", "planner"}
     for item in handoff_docs:
         if item["task_id"] != task["task_id"]:
             continue
-        involved = {item["from_agent"]} | {
-            target for target in item["to_agents"] if target != "human"
-        }
-        undeclared = {
-            participant
-            for participant in involved
-            if participant not in declared and participant != "orchestrator"
-        }
-        if undeclared:
-            raise AssertionError(
-                f"Handoff uses participants outside Task Packet applicability: {sorted(undeclared)}"
-            )
+        scope = item["scope"]
+        producer = item["from_agent"]
+        targets = set(item["to_agents"])
+
+        if scope == "LIFECYCLE_GOVERNANCE":
+            involved_agents = {producer} | {target for target in targets if target != "human"}
+            if not involved_agents.issubset(lifecycle_agents):
+                raise AssertionError(
+                    "LIFECYCLE_GOVERNANCE handoff may only involve Orchestrator, Analyst, and Planner"
+                )
+            if "human" in targets:
+                raise AssertionError("Lifecycle governance cannot cross the human decision boundary")
+        elif scope == "TASK_EXECUTION":
+            involved = {producer} | {target for target in targets if target != "human"}
+            undeclared = {participant for participant in involved if participant not in declared}
+            if undeclared:
+                raise AssertionError(
+                    f"TASK_EXECUTION handoff uses participants outside Task Packet applicability: {sorted(undeclared)}"
+                )
+            if "human" in targets:
+                raise AssertionError("TASK_EXECUTION cannot target human")
+        elif scope == "HUMAN_DECISION":
+            if producer != "auditor" or targets != {"human"}:
+                raise AssertionError("HUMAN_DECISION must be exactly Auditor -> human")
+        else:
+            raise AssertionError(f"Unknown handoff scope: {scope}")
 
     validate_orchestration_handoffs(orchestration, handoff_docs)
     validate_execution_causality(orchestration, handoff_docs)
