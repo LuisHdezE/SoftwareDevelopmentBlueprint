@@ -1228,35 +1228,54 @@ def main() -> int:
     mutated_handoff["scope"] = "TASK_EXECUTION"
     expect_failure(
         "Analyst and Planner cannot masquerade as Task Packet executors",
-        lambda: validate_protocol_chain(task, lifecycle_orchestration, [mutated_handoff]),
+        lambda: validate_protocol_chain(
+            task,
+            lifecycle_orchestration,
+            [mutated_handoff, boundary_handoff],
+        ),
     )
 
     mutated_task = copy.deepcopy(task)
     mutated_task["task_id"] = "BP-OTHER-999"
     expect_failure(
         "Task Packet and orchestration must describe the same task",
-        lambda: validate_protocol_chain(mutated_task, evidence_orchestration, [handoff]),
+        lambda: validate_protocol_chain(
+            mutated_task,
+            evidence_orchestration,
+            [boundary_handoff, handoff],
+        ),
     )
 
     mutated_task = copy.deepcopy(task)
     mutated_task["revision"] += 1
     expect_failure(
         "Task Packet and orchestration revisions must match",
-        lambda: validate_protocol_chain(mutated_task, evidence_orchestration, [handoff]),
+        lambda: validate_protocol_chain(
+            mutated_task,
+            evidence_orchestration,
+            [boundary_handoff, handoff],
+        ),
     )
 
     stale_handoff = copy.deepcopy(handoff)
     stale_handoff["task_revision"] += 1
     expect_failure(
         "handoff evidence from another task revision is stale",
-        lambda: validate_orchestration_handoffs(evidence_orchestration, [stale_handoff]),
+        lambda: validate_orchestration_handoffs(
+            evidence_orchestration,
+            [boundary_handoff, stale_handoff],
+        ),
     )
 
     mutated_task = copy.deepcopy(task)
     mutated_task["baseline"]["base_sha"] = "7654321"
     expect_failure(
         "Task Packet and orchestration must share the same baseline",
-        lambda: validate_protocol_chain(mutated_task, evidence_orchestration, [handoff]),
+        lambda: validate_protocol_chain(
+            mutated_task,
+            evidence_orchestration,
+            [boundary_handoff, handoff],
+        ),
     )
 
     mutated_task = copy.deepcopy(task)
@@ -1264,21 +1283,31 @@ def main() -> int:
     mutated_task["not_applicable_agents"].remove("backend")
     expect_failure(
         "required Task Packet participant cannot be N/A in orchestration",
-        lambda: validate_protocol_chain(mutated_task, evidence_orchestration, [handoff]),
+        lambda: validate_protocol_chain(
+            mutated_task,
+            evidence_orchestration,
+            [boundary_handoff, handoff],
+        ),
     )
 
     mutated = copy.deepcopy(evidence_orchestration)
     mutated["handoffs"].append("HO-BP-CART-001-FAKE")
     expect_failure(
         "orchestration cannot reference nonexistent handoff evidence",
-        lambda: validate_orchestration_handoffs(mutated, [handoff]),
+        lambda: validate_orchestration_handoffs(
+            mutated,
+            [boundary_handoff, handoff],
+        ),
     )
 
     mutated_handoff = copy.deepcopy(handoff)
     mutated_handoff["task_id"] = "BP-OTHER-999"
     expect_failure(
         "handoff evidence must belong to orchestration task",
-        lambda: validate_orchestration_handoffs(evidence_orchestration, [mutated_handoff]),
+        lambda: validate_orchestration_handoffs(
+            evidence_orchestration,
+            [boundary_handoff, mutated_handoff],
+        ),
     )
 
     mutated_orchestration = copy.deepcopy(evidence_orchestration)
@@ -1288,14 +1317,21 @@ def main() -> int:
     )
     expect_failure(
         "handoff producer must precede its consumer in execution order",
-        lambda: validate_protocol_chain(task, mutated_orchestration, [handoff]),
+        lambda: validate_protocol_chain(
+            task,
+            mutated_orchestration,
+            [boundary_handoff, handoff],
+        ),
     )
 
     mutated_handoff = copy.deepcopy(handoff)
     mutated_handoff["baseline"]["head_sha"] = "7654321"
     expect_failure(
         "handoff evidence must match orchestration candidate HEAD",
-        lambda: validate_orchestration_handoffs(evidence_orchestration, [mutated_handoff]),
+        lambda: validate_orchestration_handoffs(
+            evidence_orchestration,
+            [boundary_handoff, mutated_handoff],
+        ),
     )
 
     mutated = copy.deepcopy(specialist_agent)
