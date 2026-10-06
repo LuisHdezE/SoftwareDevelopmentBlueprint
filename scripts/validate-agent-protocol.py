@@ -270,6 +270,19 @@ def validate_orchestration(doc: dict[str, Any]) -> None:
             raise AssertionError("Invalidated QA evidence cannot leave QA completed")
         if "SECURITY_EVIDENCE" in replanning["invalidates"] and agents["security"] == "COMPLETED":
             raise AssertionError("Invalidated Security evidence cannot leave Security completed")
+        if "DOCUMENTATION_EVIDENCE" in replanning["invalidates"] and agents["documentation"] == "COMPLETED":
+            raise AssertionError("Invalidated Documentation evidence cannot leave Documentation completed")
+        if "SPECIALIST_EVIDENCE" in replanning["invalidates"]:
+            completed_specialists = [
+                specialist
+                for specialist, state in specialists.items()
+                if state == "COMPLETED"
+            ]
+            if completed_specialists:
+                raise AssertionError(
+                    "Invalidated Specialist evidence cannot leave specialists completed: "
+                    f"{sorted(completed_specialists)}"
+                )
     elif replanning is not None:
         raise AssertionError("replanning metadata is only valid in REPLANNING_REQUIRED")
 
@@ -841,6 +854,30 @@ def main() -> int:
         lambda: validate_handoff(mutated),
     )
 
+    lifecycle_handoff = copy.deepcopy(handoff)
+    lifecycle_handoff["handoff_id"] = "HO-BP-CART-001-ANALYST-PLANNER"
+    lifecycle_handoff["scope"] = "LIFECYCLE_GOVERNANCE"
+    lifecycle_handoff["from_agent"] = "analyst"
+    lifecycle_handoff["to_agents"] = ["planner"]
+    lifecycle_handoff["status"] = "ANALYZED"
+    lifecycle_handoff["evidence_ids"] = []
+    validate_handoff(lifecycle_handoff)
+    print("PASS Analyst -> Planner lifecycle governance handoff")
+
+    mutated = copy.deepcopy(lifecycle_handoff)
+    mutated["to_agents"] = ["frontend"]
+    expect_failure(
+        "lifecycle governance cannot contain task execution participants",
+        lambda: validate_handoff(mutated),
+    )
+
+    mutated = copy.deepcopy(handoff)
+    mutated["scope"] = "HUMAN_DECISION"
+    expect_failure(
+        "human decision scope is reserved for Auditor -> human",
+        lambda: validate_handoff(mutated),
+    )
+
     mutated = copy.deepcopy(handoff)
     mutated["to_agents"] = ["human"]
     expect_failure(
@@ -964,6 +1001,49 @@ def main() -> int:
         lambda: validate_orchestration(mutated),
     )
 
+    documentation_replanning = copy.deepcopy(replanning)
+    documentation_replanning["replanning"]["invalidates"] = ["PLAN", "DOCUMENTATION_EVIDENCE"]
+    documentation_replanning["replanning"]["evidence_freshness"]["PRESERVED"] = []
+    documentation_replanning["replanning"]["evidence_freshness"]["INVALIDATED"] = ["DOCUMENTATION_EVIDENCE"]
+    documentation_replanning["replanning"]["preservation_rationale"] = []
+    documentation_replanning["agents"]["documentation"] = "REQUIRED"
+    validate_orchestration(documentation_replanning)
+    print("PASS Documentation evidence can be invalidated coherently")
+
+    mutated = copy.deepcopy(documentation_replanning)
+    mutated["agents"]["documentation"] = "COMPLETED"
+    expect_failure(
+        "invalidated Documentation evidence cannot remain completed",
+        lambda: validate_orchestration(mutated),
+    )
+
+    specialist_replanning = copy.deepcopy(specialist_orchestration)
+    specialist_replanning["current_state"] = "REPLANNING_REQUIRED"
+    specialist_replanning["current_agent"] = "planner"
+    specialist_replanning["agents"]["planner"] = "REQUIRED"
+    specialist_replanning["specialists"]["specialist:search-ai-discoverability"] = "REQUIRED"
+    specialist_replanning["replanning"] = {
+        "reason": "BASELINE_CHANGED",
+        "invalidates": ["PLAN", "SPECIALIST_EVIDENCE"],
+        "previous_revision": specialist_replanning["task"]["revision"],
+        "previous_baseline": copy.deepcopy(specialist_replanning["baseline"]),
+        "evidence_freshness": {
+            "PRESERVED": [],
+            "REVALIDATE": [],
+            "INVALIDATED": ["SPECIALIST_EVIDENCE"],
+        },
+        "preservation_rationale": [],
+    }
+    validate_orchestration(specialist_replanning)
+    print("PASS Specialist evidence can be invalidated coherently")
+
+    mutated = copy.deepcopy(specialist_replanning)
+    mutated["specialists"]["specialist:search-ai-discoverability"] = "COMPLETED"
+    expect_failure(
+        "invalidated Specialist evidence cannot remain completed",
+        lambda: validate_orchestration(mutated),
+    )
+
     mutated = copy.deepcopy(orchestration)
     mutated["agents"]["orchestrator"] = "COMPLETED"
     expect_failure(
@@ -1029,6 +1109,22 @@ def main() -> int:
     expect_failure(
         "human decision requires recorded Auditor handoff",
         lambda: validate_orchestration(mutated),
+    )
+
+    lifecycle_chain_handoff = copy.deepcopy(lifecycle_handoff)
+    lifecycle_chain_handoff["task_id"] = task["task_id"]
+    lifecycle_chain_handoff["task_revision"] = task["revision"]
+    lifecycle_chain_handoff["baseline"] = copy.deepcopy(handoff["baseline"])
+    lifecycle_orchestration = copy.deepcopy(evidence_orchestration)
+    lifecycle_orchestration["handoffs"] = [lifecycle_chain_handoff["handoff_id"]]
+    validate_protocol_chain(task, lifecycle_orchestration, [lifecycle_chain_handoff])
+    print("PASS lifecycle governance operates outside Task Packet applicability")
+
+    mutated_handoff = copy.deepcopy(lifecycle_chain_handoff)
+    mutated_handoff["scope"] = "TASK_EXECUTION"
+    expect_failure(
+        "Analyst and Planner cannot masquerade as Task Packet executors",
+        lambda: validate_protocol_chain(task, lifecycle_orchestration, [mutated_handoff]),
     )
 
     mutated_task = copy.deepcopy(task)
