@@ -2,6 +2,7 @@ schema_version: agent-protocol-proposal-1
 handoff_id: HO-BP-CART-001-FRONTEND-QA
 task_id: BP-CART-001
 task_revision: 1
+scope: TASK_EXECUTION
 from_agent: frontend
 to_agents:
   - qa

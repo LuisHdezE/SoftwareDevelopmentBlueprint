@@ -9,6 +9,7 @@
     "handoff_id",
     "task_id",
     "task_revision",
+    "scope",
     "from_agent",
     "to_agents",
     "status",
@@ -36,6 +37,13 @@
     "task_revision": {
       "type": "integer",
       "minimum": 1
+    },
+    "scope": {
+      "enum": [
+        "LIFECYCLE_GOVERNANCE",
+        "TASK_EXECUTION",
+        "HUMAN_DECISION"
+      ]
     },
     "from_agent": {
       "$ref": "#/$defs/agent_id"

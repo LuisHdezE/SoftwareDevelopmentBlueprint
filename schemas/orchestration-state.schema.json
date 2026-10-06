@@ -215,7 +215,7 @@
           "minItems": 1,
           "uniqueItems": true,
           "items": {
-            "enum": ["PLAN", "IMPLEMENTATION_EVIDENCE", "QA_EVIDENCE", "SECURITY_EVIDENCE", "AUDIT_EVIDENCE"]
+            "enum": ["PLAN", "IMPLEMENTATION_EVIDENCE", "QA_EVIDENCE", "SECURITY_EVIDENCE", "DOCUMENTATION_EVIDENCE", "SPECIALIST_EVIDENCE", "AUDIT_EVIDENCE"]
           }
         },
         "previous_revision": {

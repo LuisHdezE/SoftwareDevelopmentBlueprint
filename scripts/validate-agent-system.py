@@ -132,11 +132,16 @@ def validate_governed_chain(doc: dict[str, Any]) -> None:
         if not handoff["evidence_ids"]:
             raise AssertionError("Every governed handoff requires evidence")
         producer = handoff["from_agent"]
+        scope = handoff.get("scope")
         for target in handoff["to_agents"]:
             if target == "human":
+                if scope != "HUMAN_DECISION":
+                    raise AssertionError("Human boundary requires HUMAN_DECISION scope")
                 if producer != "auditor":
                     raise AssertionError("Only Auditor may cross the human decision boundary")
                 continue
+            if scope != "TASK_EXECUTION":
+                raise AssertionError("Governed Task Packet handoffs require TASK_EXECUTION scope")
             if producer not in position or target not in position:
                 raise AssertionError("Handoff participants must exist in execution order")
             if position[producer] >= position[target]:
@@ -279,6 +284,14 @@ def main() -> int:
     mutated_chain = copy.deepcopy(chain)
     mutated_chain["handoffs"][-1]["from_agent"] = "qa"
     expect_failure("non-Auditor cannot cross human boundary", lambda: validate_governed_chain(mutated_chain))
+
+    mutated_chain = copy.deepcopy(chain)
+    mutated_chain["handoffs"][0]["scope"] = "LIFECYCLE_GOVERNANCE"
+    expect_failure("Task Packet execution cannot use lifecycle governance scope", lambda: validate_governed_chain(mutated_chain))
+
+    mutated_chain = copy.deepcopy(chain)
+    mutated_chain["handoffs"][-1]["scope"] = "TASK_EXECUTION"
+    expect_failure("human boundary requires HUMAN_DECISION scope", lambda: validate_governed_chain(mutated_chain))
 
     mutated_chain = copy.deepcopy(chain)
     mutated_chain["orchestration"]["handoffs"].append("HO-SYS-CHAIN-001-MISSING")

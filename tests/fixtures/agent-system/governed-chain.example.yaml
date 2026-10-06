@@ -45,6 +45,7 @@ handoffs:
   - handoff_id: HO-SYS-CHAIN-001-FRONTEND-SPECIALIST
     task_id: SYS-CHAIN-001
     task_revision: 2
+    scope: TASK_EXECUTION
     from_agent: frontend
     to_agents: [specialist:search-ai-discoverability]
     head_sha: abcdef1234567890
@@ -52,6 +53,7 @@ handoffs:
   - handoff_id: HO-SYS-CHAIN-001-SPECIALIST-QA
     task_id: SYS-CHAIN-001
     task_revision: 2
+    scope: TASK_EXECUTION
     from_agent: specialist:search-ai-discoverability
     to_agents: [qa]
     head_sha: abcdef1234567890
@@ -59,6 +61,7 @@ handoffs:
   - handoff_id: HO-SYS-CHAIN-001-QA-AUDITOR
     task_id: SYS-CHAIN-001
     task_revision: 2
+    scope: TASK_EXECUTION
     from_agent: qa
     to_agents: [auditor]
     head_sha: abcdef1234567890
@@ -66,6 +69,7 @@ handoffs:
   - handoff_id: HO-SYS-CHAIN-001-SECURITY-AUDITOR
     task_id: SYS-CHAIN-001
     task_revision: 2
+    scope: TASK_EXECUTION
     from_agent: security
     to_agents: [auditor]
     head_sha: abcdef1234567890
@@ -73,6 +77,7 @@ handoffs:
   - handoff_id: HO-SYS-CHAIN-001-DOCUMENTATION-AUDITOR
     task_id: SYS-CHAIN-001
     task_revision: 2
+    scope: TASK_EXECUTION
     from_agent: documentation
     to_agents: [auditor]
     head_sha: abcdef1234567890
@@ -80,6 +85,7 @@ handoffs:
   - handoff_id: HO-SYS-CHAIN-001-AUDITOR-HUMAN
     task_id: SYS-CHAIN-001
     task_revision: 2
+    scope: HUMAN_DECISION
     from_agent: auditor
     to_agents: [human]
     status: READY_FOR_MERGE
