@@ -1,6 +1,6 @@
-schema_version: agent-protocol-proposal-1
 evidence:
-  - evidence_id: EVD-SYS-FRONTEND-R2
+  - schema_version: agent-protocol-proposal-1
+    evidence_id: EVD-SYS-FRONTEND-R2
     task_id: SYS-CHAIN-001
     task_revision: 2
     evidence_type: IMPLEMENTATION_EVIDENCE
@@ -9,7 +9,8 @@ evidence:
     result: PASS
     artifacts: [frontend implementation verification]
     created_at: "2026-10-05T21:00:00-03:00"
-  - evidence_id: EVD-SYS-DISCOVERABILITY-R2
+  - schema_version: agent-protocol-proposal-1
+    evidence_id: EVD-SYS-DISCOVERABILITY-R2
     task_id: SYS-CHAIN-001
     task_revision: 2
     evidence_type: SPECIALIST_EVIDENCE
@@ -18,7 +19,8 @@ evidence:
     result: PASS
     artifacts: [discoverability validation]
     created_at: "2026-10-05T21:01:00-03:00"
-  - evidence_id: EVD-SYS-QA-R2
+  - schema_version: agent-protocol-proposal-1
+    evidence_id: EVD-SYS-QA-R2
     task_id: SYS-CHAIN-001
     task_revision: 2
     evidence_type: QA_EVIDENCE
@@ -27,7 +29,8 @@ evidence:
     result: PASS
     artifacts: [qa test report]
     created_at: "2026-10-05T21:02:00-03:00"
-  - evidence_id: EVD-SYS-SECURITY-R2
+  - schema_version: agent-protocol-proposal-1
+    evidence_id: EVD-SYS-SECURITY-R2
     task_id: SYS-CHAIN-001
     task_revision: 2
     evidence_type: SECURITY_EVIDENCE
@@ -36,7 +39,8 @@ evidence:
     result: PASS
     artifacts: [security review]
     created_at: "2026-10-05T21:03:00-03:00"
-  - evidence_id: EVD-SYS-DOCUMENTATION-R2
+  - schema_version: agent-protocol-proposal-1
+    evidence_id: EVD-SYS-DOCUMENTATION-R2
     task_id: SYS-CHAIN-001
     task_revision: 2
     evidence_type: DOCUMENTATION_EVIDENCE
@@ -45,7 +49,8 @@ evidence:
     result: PASS
     artifacts: [documentation review]
     created_at: "2026-10-05T21:04:00-03:00"
-  - evidence_id: EVD-SYS-AUDIT-R2
+  - schema_version: agent-protocol-proposal-1
+    evidence_id: EVD-SYS-AUDIT-R2
     task_id: SYS-CHAIN-001
     task_revision: 2
     evidence_type: AUDIT_EVIDENCE
