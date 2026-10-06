@@ -183,6 +183,36 @@ def validate_evidence_records(chain: dict[str, Any], evidence_doc: dict[str, Any
             if record["result"] != "PASS":
                 raise AssertionError("Only PASS evidence can satisfy a successful governed handoff")
 
+    referenced_ids = {
+        evidence_id
+        for handoff in chain["handoffs"]
+        for evidence_id in handoff["evidence_ids"]
+    }
+    current_ids = {
+        evidence_id
+        for evidence_id, record in by_id.items()
+        if record["task_id"] == task["task_id"] and record["task_revision"] == task["revision"]
+    }
+    orphaned = current_ids - referenced_ids
+    if orphaned:
+        raise AssertionError(f"Current revision contains orphan Evidence Records: {sorted(orphaned)}")
+
+    for record in records:
+        for lineage in record.get("revalidates", []):
+            source = by_id.get(lineage["evidence_id"])
+            if source is None:
+                raise AssertionError("Evidence revalidation lineage must resolve to a historical record")
+            if source["task_id"] != record["task_id"]:
+                raise AssertionError("Revalidation lineage cannot cross task identity")
+            if source["task_revision"] != lineage["from_revision"]:
+                raise AssertionError("Revalidation source revision must match declared lineage")
+            if source["task_revision"] >= record["task_revision"]:
+                raise AssertionError("Revalidation lineage must point to an earlier revision")
+            if source["evidence_type"] != record["evidence_type"]:
+                raise AssertionError("Revalidation must preserve evidence class")
+            if source["evidence_id"] == record["evidence_id"]:
+                raise AssertionError("Revalidation must emit a new Evidence Record id")
+
     audit = by_id.get("EVD-SYS-AUDIT-R2")
     if not audit or audit["producer_agent"] != "auditor" or audit["evidence_type"] != "AUDIT_EVIDENCE":
         raise AssertionError("Human decision boundary requires current Auditor evidence")
@@ -225,6 +255,18 @@ def main() -> int:
     mutated_evidence = copy.deepcopy(evidence_doc)
     mutated_evidence["evidence"][3]["baseline"]["head_sha"] = "deadbeef"
     expect_failure("Evidence Record must match exact candidate HEAD", lambda: validate_evidence_records(chain, mutated_evidence))
+
+    mutated_evidence = copy.deepcopy(evidence_doc)
+    orphan = copy.deepcopy(mutated_evidence["evidence"][0])
+    orphan["evidence_id"] = "EVD-SYS-ORPHAN-R2"
+    mutated_evidence["evidence"].append(orphan)
+    expect_failure("orphan current-revision evidence is rejected", lambda: validate_evidence_records(chain, mutated_evidence))
+
+    mutated_evidence = copy.deepcopy(evidence_doc)
+    mutated_evidence["evidence"][0]["revalidates"] = [
+        {"evidence_id": "EVD-SYS-MISSING-R1", "from_revision": 1}
+    ]
+    expect_failure("revalidation lineage must resolve historical evidence", lambda: validate_evidence_records(chain, mutated_evidence))
 
     mutated_chain = copy.deepcopy(chain)
     mutated_chain["handoffs"][0]["task_revision"] = 1
