@@ -25,6 +25,8 @@ PLANNER
    ↓
 PLANNED
    ↓
+TASK PACKET BOUNDARY
+   ↓
 ARCHITECT / IMPLEMENTATION AGENTS
 ```
 
@@ -44,7 +46,8 @@ Planner must:
 8. define validation expectations before implementation;
 9. record delivery risks;
 10. keep unrelated work out of the lane;
-11. produce a clean execution handoff.
+11. produce a clean execution handoff;
+12. cross the Task Packet boundary explicitly before executor work begins.
 
 ## 4. Inputs
 
@@ -455,12 +458,51 @@ Planner may declare `PLANNED` when:
 - no blocking analysis question remains;
 - baseline is known.
 
-## 23. Handoff
+## 23. Task Packet boundary
+
+Planner does not start implementation by using ordinary `TASK_EXECUTION` and does not dispatch executor work as `LIFECYCLE_GOVERNANCE`.
+
+The first handoff from Planner to an executor must use:
+
+```text
+TASK_PACKET_BOUNDARY
+```
+
+Boundary rules:
+
+- producer: `planner` only;
+- status: `PLANNED` only;
+- target: exactly the first non-lifecycle executor in `execution_order`;
+- target must be active in the Task Packet as required or optional;
+- target must not be `NOT_APPLICABLE`;
+- target must not be `orchestrator`, `analyst`, `planner`, or `human`;
+- orchestration must record the boundary handoff id.
+
+Conceptually:
+
+```text
+LIFECYCLE_GOVERNANCE
+  Orchestrator → Analyst → Planner
+
+TASK_PACKET_BOUNDARY
+  Planner → first declared executor
+
+TASK_EXECUTION
+  Executor → next executor / QA / Auditor
+
+HUMAN_DECISION
+  Auditor → human
+```
+
+This boundary is the hinge where planning stops being lifecycle governance and becomes bounded delivery.
+
+## 24. Handoff
 
 ```yaml
 handoff:
   from: planner
   status: PLANNED
+  scope: TASK_PACKET_BOUNDARY
 
   execution_order: []
   next_agent:
@@ -471,7 +513,7 @@ handoff:
   blocked_items: []
 ```
 
-## 24. Master rule
+## 25. Master rule
 
 Planner prevents:
 
