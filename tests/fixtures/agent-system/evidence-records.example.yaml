@@ -8,6 +8,9 @@ evidence:
     baseline: {repository: owner/repository, head_sha: abcdef1234567890}
     result: PASS
     artifacts: [frontend implementation verification]
+    revalidates:
+      - evidence_id: EVD-SYS-FRONTEND-R1
+        from_revision: 1
     created_at: "2026-10-05T21:00:00-03:00"
   - schema_version: agent-protocol-proposal-1
     evidence_id: EVD-SYS-DISCOVERABILITY-R2
@@ -59,3 +62,13 @@ evidence:
     result: PASS
     artifacts: [independent audit verdict]
     created_at: "2026-10-05T21:05:00-03:00"
+  - schema_version: agent-protocol-proposal-1
+    evidence_id: EVD-SYS-FRONTEND-R1
+    task_id: SYS-CHAIN-001
+    task_revision: 1
+    evidence_type: IMPLEMENTATION_EVIDENCE
+    producer_agent: frontend
+    baseline: {repository: owner/repository, head_sha: 1111111}
+    result: PASS
+    artifacts: [historical frontend implementation verification]
+    created_at: "2026-10-05T20:00:00-03:00"
