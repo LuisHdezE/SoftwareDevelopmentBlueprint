@@ -10,6 +10,7 @@ import yaml
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 FIXTURE = ROOT / "tests/fixtures/agent-system/multiagent-system.example.yaml"
+CHAIN_FIXTURE = ROOT / "tests/fixtures/agent-system/governed-chain.example.yaml"
 
 CORE_AGENTS = {
     "orchestrator", "analyst", "planner", "architect", "database",
@@ -93,6 +94,59 @@ def validate_system(doc: dict[str, Any]) -> None:
         raise AssertionError("Human merge approval is mandatory")
 
 
+def validate_governed_chain(doc: dict[str, Any]) -> None:
+    task = doc["task_packet"]
+    orchestration = doc["orchestration"]
+    handoffs = doc["handoffs"]
+
+    if task["task_id"] != orchestration["task"]["id"]:
+        raise AssertionError("Task Packet and orchestration task identity must match")
+    if task["revision"] != orchestration["task"]["revision"]:
+        raise AssertionError("Task Packet and orchestration revision must match")
+    if task["baseline"] != orchestration["baseline"]:
+        raise AssertionError("Task Packet and orchestration candidate baseline must match")
+
+    declared = set(orchestration["handoffs"])
+    actual = {handoff["handoff_id"]: handoff for handoff in handoffs}
+    if declared != set(actual):
+        raise AssertionError("Orchestration handoff set must resolve exactly to chain documents")
+
+    participants = set(task["required_agents"]) | set(task["required_specialists"]) | {"orchestrator"}
+    order = orchestration["execution_order"]
+    if not participants.issubset(set(order)):
+        raise AssertionError("Every required participant must execute in the governed chain")
+
+    position = {participant: index for index, participant in enumerate(order)}
+    for handoff_id in declared:
+        handoff = actual[handoff_id]
+        if handoff["task_id"] != task["task_id"]:
+            raise AssertionError("Handoff task identity drifted")
+        if handoff["task_revision"] != task["revision"]:
+            raise AssertionError("Stale handoff revision cannot satisfy current chain")
+        if handoff["head_sha"] != task["baseline"]["head_sha"]:
+            raise AssertionError("Handoff evidence must match exact candidate HEAD")
+        if not handoff["evidence_ids"]:
+            raise AssertionError("Every governed handoff requires evidence")
+        producer = handoff["from_agent"]
+        for target in handoff["to_agents"]:
+            if target == "human":
+                if producer != "auditor":
+                    raise AssertionError("Only Auditor may cross the human decision boundary")
+                continue
+            if producer not in position or target not in position:
+                raise AssertionError("Handoff participants must exist in execution order")
+            if position[producer] >= position[target]:
+                raise AssertionError("Handoff must preserve execution causality")
+
+    auditor = actual.get("HO-SYS-CHAIN-001-AUDITOR-HUMAN")
+    if not auditor or auditor.get("status") != "READY_FOR_MERGE":
+        raise AssertionError("Current chain requires Auditor READY_FOR_MERGE handoff")
+    if orchestration["current_state"] != "READY_FOR_HUMAN_DECISION":
+        raise AssertionError("Audited chain must stop at human-decision boundary")
+    if "merge_approval" not in orchestration["required_human_decisions"]:
+        raise AssertionError("Human merge approval must remain explicit")
+
+
 def expect_failure(label: str, action: Callable[[], None]) -> None:
     try:
         action()
@@ -106,6 +160,26 @@ def main() -> int:
     doc = load_fixture()
     validate_system(doc)
     print("PASS complete multi-agent system fixture")
+
+    chain = yaml.safe_load(CHAIN_FIXTURE.read_text(encoding="utf-8"))
+    validate_governed_chain(chain)
+    print("PASS governed Task Packet -> orchestration -> handoff -> human chain")
+
+    mutated_chain = copy.deepcopy(chain)
+    mutated_chain["handoffs"][0]["task_revision"] = 1
+    expect_failure("stale handoff revision breaks governed chain", lambda: validate_governed_chain(mutated_chain))
+
+    mutated_chain = copy.deepcopy(chain)
+    mutated_chain["handoffs"][1]["head_sha"] = "deadbeef"
+    expect_failure("stale candidate HEAD breaks governed chain", lambda: validate_governed_chain(mutated_chain))
+
+    mutated_chain = copy.deepcopy(chain)
+    mutated_chain["handoffs"][-1]["from_agent"] = "qa"
+    expect_failure("non-Auditor cannot cross human boundary", lambda: validate_governed_chain(mutated_chain))
+
+    mutated_chain = copy.deepcopy(chain)
+    mutated_chain["orchestration"]["handoffs"].append("HO-SYS-CHAIN-001-MISSING")
+    expect_failure("unresolved handoff reference breaks governed chain", lambda: validate_governed_chain(mutated_chain))
 
     mutated = copy.deepcopy(doc)
     mutated["tasks"][1]["depends_on"][0]["task_id"] = "SYS-MISSING-999"
