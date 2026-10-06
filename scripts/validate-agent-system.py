@@ -2,15 +2,19 @@
 from __future__ import annotations
 
 import copy
+import json
 import pathlib
 import sys
 from typing import Any, Callable
 
 import yaml
+from jsonschema import Draft202012Validator, FormatChecker
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 FIXTURE = ROOT / "tests/fixtures/agent-system/multiagent-system.example.yaml"
 CHAIN_FIXTURE = ROOT / "tests/fixtures/agent-system/governed-chain.example.yaml"
+EVIDENCE_FIXTURE = ROOT / "tests/fixtures/agent-system/evidence-records.example.yaml"
+EVIDENCE_SCHEMA = ROOT / "schemas/evidence-record.schema.json"
 
 CORE_AGENTS = {
     "orchestrator", "analyst", "planner", "architect", "database",
@@ -147,6 +151,43 @@ def validate_governed_chain(doc: dict[str, Any]) -> None:
         raise AssertionError("Human merge approval must remain explicit")
 
 
+def validate_evidence_records(chain: dict[str, Any], evidence_doc: dict[str, Any]) -> None:
+    schema = json.loads(EVIDENCE_SCHEMA.read_text(encoding="utf-8"))
+    validator = Draft202012Validator(schema, format_checker=FormatChecker())
+    records = evidence_doc["evidence"]
+    by_id: dict[str, dict[str, Any]] = {}
+
+    for record in records:
+        errors = sorted(validator.iter_errors(record), key=lambda e: list(e.path))
+        if errors:
+            raise AssertionError(f"Evidence schema invalid for {record.get('evidence_id')}: {errors[0].message}")
+        if record["evidence_id"] in by_id:
+            raise AssertionError("Evidence ids must be globally unique within the governed chain")
+        by_id[record["evidence_id"]] = record
+
+    task = chain["task_packet"]
+    expected_baseline = task["baseline"]
+    for handoff in chain["handoffs"]:
+        for evidence_id in handoff["evidence_ids"]:
+            if evidence_id not in by_id:
+                raise AssertionError(f"Missing Evidence Record: {evidence_id}")
+            record = by_id[evidence_id]
+            if record["task_id"] != task["task_id"]:
+                raise AssertionError("Evidence Record belongs to another task")
+            if record["task_revision"] != task["revision"]:
+                raise AssertionError("Evidence Record belongs to a stale task revision")
+            if record["baseline"] != expected_baseline:
+                raise AssertionError("Evidence Record does not match exact candidate baseline")
+            if record["producer_agent"] != handoff["from_agent"]:
+                raise AssertionError("Handoff cannot present evidence produced by another agent")
+            if record["result"] != "PASS":
+                raise AssertionError("Only PASS evidence can satisfy a successful governed handoff")
+
+    audit = by_id.get("EVD-SYS-AUDIT-R2")
+    if not audit or audit["producer_agent"] != "auditor" or audit["evidence_type"] != "AUDIT_EVIDENCE":
+        raise AssertionError("Human decision boundary requires current Auditor evidence")
+
+
 def expect_failure(label: str, action: Callable[[], None]) -> None:
     try:
         action()
@@ -164,6 +205,26 @@ def main() -> int:
     chain = yaml.safe_load(CHAIN_FIXTURE.read_text(encoding="utf-8"))
     validate_governed_chain(chain)
     print("PASS governed Task Packet -> orchestration -> handoff -> human chain")
+
+    evidence_doc = yaml.safe_load(EVIDENCE_FIXTURE.read_text(encoding="utf-8"))
+    validate_evidence_records(chain, evidence_doc)
+    print("PASS concrete Evidence Records resolve the governed chain")
+
+    mutated_evidence = copy.deepcopy(evidence_doc)
+    mutated_evidence["evidence"] = mutated_evidence["evidence"][1:]
+    expect_failure("missing evidence document breaks chain", lambda: validate_evidence_records(chain, mutated_evidence))
+
+    mutated_evidence = copy.deepcopy(evidence_doc)
+    mutated_evidence["evidence"][0]["producer_agent"] = "backend"
+    expect_failure("agent cannot present another producer's evidence", lambda: validate_evidence_records(chain, mutated_evidence))
+
+    mutated_evidence = copy.deepcopy(evidence_doc)
+    mutated_evidence["evidence"][2]["task_revision"] = 1
+    expect_failure("stale Evidence Record cannot satisfy current revision", lambda: validate_evidence_records(chain, mutated_evidence))
+
+    mutated_evidence = copy.deepcopy(evidence_doc)
+    mutated_evidence["evidence"][3]["baseline"]["head_sha"] = "deadbeef"
+    expect_failure("Evidence Record must match exact candidate HEAD", lambda: validate_evidence_records(chain, mutated_evidence))
 
     mutated_chain = copy.deepcopy(chain)
     mutated_chain["handoffs"][0]["task_revision"] = 1
