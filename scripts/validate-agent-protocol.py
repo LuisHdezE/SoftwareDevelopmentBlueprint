@@ -330,6 +330,14 @@ def validate_orchestration(doc: dict[str, Any]) -> None:
     elif replanning is not None:
         raise AssertionError("replanning metadata is only valid in REPLANNING_REQUIRED")
 
+    executed_handoffs = set(doc["handoffs"])
+    expected_handoffs = set(doc.get("expected_handoffs", []))
+    overlap = executed_handoffs & expected_handoffs
+    if overlap:
+        raise AssertionError(
+            f"Executed and expected handoff ledgers cannot overlap: {sorted(overlap)}"
+        )
+
     blocked_by = doc["blocked_by"]
     if blocked_by and doc["current_state"] != "BLOCKED":
         raise AssertionError(
@@ -553,6 +561,9 @@ def validate_protocol_chain(
     validate_task_packet_boundary(task, orchestration, boundaries[0])
 
     for item in handoff_docs:
+        validate_handoff(item)
+
+    for item in handoff_docs:
         if item["task_id"] != task["task_id"]:
             continue
         scope = item["scope"]
@@ -675,6 +686,20 @@ def validate_orchestration_handoffs(
             raise AssertionError(
                 f"COMPLETED participant lacks successful declared handoff evidence: {participant}"
             )
+
+    human_decision_docs = [
+        item
+        for item in actual_by_id.values()
+        if item["handoff_id"] in declared_ids
+        and item["scope"] == "HUMAN_DECISION"
+    ]
+    if human_decision_docs and orchestration["current_state"] not in {
+        "READY_FOR_HUMAN_DECISION",
+        "CLOSED",
+    }:
+        raise AssertionError(
+            "HUMAN_DECISION handoff evidence cannot exist before the human-decision boundary"
+        )
 
     if orchestration["current_state"] == "READY_FOR_HUMAN_DECISION":
         auditor_docs = [
@@ -821,12 +846,41 @@ def main() -> int:
     print("PASS Planner Task Packet boundary handoff contract")
 
     chain_handoffs = [analyst_handoff, boundary_handoff, handoff]
+    future_overlap = copy.deepcopy(orchestration)
+    future_overlap["handoffs"].append("HO-BP-CART-001-AUDITOR-HUMAN")
+    expect_failure(
+        "executed and expected handoff ledgers cannot overlap",
+        lambda: validate_orchestration(future_overlap),
+    )
+
     evidence_orchestration = copy.deepcopy(orchestration)
     evidence_orchestration["handoffs"] = [
         item["handoff_id"] for item in chain_handoffs
     ]
     validate_protocol_chain(task, evidence_orchestration, chain_handoffs)
     print("PASS completed participants are backed by declared handoff evidence")
+
+    premature_human = copy.deepcopy(evidence_orchestration)
+    premature_human["handoffs"].append(auditor_handoff["handoff_id"])
+    expect_failure(
+        "future human-decision handoff cannot be recorded during validation",
+        lambda: validate_orchestration_handoffs(
+            premature_human,
+            chain_handoffs + [auditor_handoff],
+        ),
+    )
+
+    malformed_role_handoff = copy.deepcopy(handoff)
+    malformed_role_handoff["status"] = "QA_PASS"
+    expect_failure(
+        "protocol chain validates every handoff semantically",
+        lambda: validate_protocol_chain(
+            task,
+            evidence_orchestration,
+            [analyst_handoff, boundary_handoff, malformed_role_handoff],
+        ),
+    )
+
 
     missing_boundary = copy.deepcopy(evidence_orchestration)
     missing_boundary["handoffs"] = [

@@ -39,6 +39,7 @@ handoffs:
   - HO-BP-CART-001-ANALYST-PLANNER
   - HO-BP-CART-001-PLANNER-FRONTEND
   - HO-BP-CART-001-FRONTEND-QA
+expected_handoffs:
   - HO-BP-CART-001-AUDITOR-HUMAN
 notes:
   - Backend and database are intentionally not applicable to this bounded frontend-only task.
