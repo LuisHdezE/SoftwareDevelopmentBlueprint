@@ -1,0 +1,53 @@
+schema_version: agent-protocol-proposal-1
+task:
+  id: BP-AGENT-070
+  revision: 1
+  title: Expose the multi-agent protocol proposal entrypoint in README
+  classification: DOCUMENTATION_ONLY
+baseline:
+  repository: LuisHdezE/SoftwareDevelopmentBlueprint
+  base_branch: blueprint/agent-system-validation
+  base_sha: "914bf600c9eb99d16e3e979b461eb241f9ef68a4"
+  working_branch: pilot/r12-agent-protocol-readme
+  head_sha: "105391b1254cef18f43d122aa6174227463925a2"
+  pull_request: 70
+evidence_plane:
+  mode: DETACHED
+  record_repository: LuisHdezE/SoftwareDevelopmentBlueprint
+  record_ref: governance/evidence/r12-agent-protocol-readme
+  candidate_head_frozen: true
+agents:
+  orchestrator: COMPLETED
+  analyst: COMPLETED
+  planner: COMPLETED
+  architect: NOT_APPLICABLE
+  database: NOT_APPLICABLE
+  backend: NOT_APPLICABLE
+  frontend: NOT_APPLICABLE
+  qa: COMPLETED
+  security: NOT_APPLICABLE
+  documentation: COMPLETED
+  auditor: COMPLETED
+execution_order:
+  - orchestrator
+  - analyst
+  - planner
+  - documentation
+  - qa
+  - auditor
+current_agent: null
+current_state: READY_FOR_HUMAN_DECISION
+blocked_by: []
+required_human_decisions:
+  - merge_approval
+handoffs:
+  - HO-BP-AGENT-070-ANALYST-PLANNER
+  - HO-BP-AGENT-070-PLANNER-DOCUMENTATION
+  - HO-BP-AGENT-070-DOCUMENTATION-QA
+  - HO-BP-AGENT-070-QA-AUDITOR
+  - HO-BP-AGENT-070-AUDITOR-HUMAN
+expected_handoffs: []
+notes:
+  - Candidate PR #70 is frozen at the exact governed HEAD.
+  - Governance evidence is recorded only on the detached evidence branch.
+  - The remaining authority is explicit human merge approval.
