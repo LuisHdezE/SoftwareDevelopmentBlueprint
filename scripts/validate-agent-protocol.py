@@ -145,6 +145,12 @@ def validate_handoff(doc: dict[str, Any]) -> None:
         involved = {from_agent} | {target for target in targets if target != "human"}
         if not involved.issubset(lifecycle_agents):
             raise AssertionError("Lifecycle governance scope is restricted to Orchestrator, Analyst, and Planner")
+    if scope == "TASK_PACKET_BOUNDARY":
+        lifecycle_agents = {"orchestrator", "analyst", "planner"}
+        if from_agent != "planner":
+            raise AssertionError("TASK_PACKET_BOUNDARY must be produced by Planner")
+        if targets & lifecycle_agents:
+            raise AssertionError("TASK_PACKET_BOUNDARY cannot target lifecycle-governance agents")
 
     status = doc["status"]
     if status not in allowed_statuses(from_agent):
@@ -402,6 +408,55 @@ def validate_task_dependencies(
             )
 
 
+def validate_task_packet_boundary(
+    task: dict[str, Any],
+    orchestration: dict[str, Any],
+    handoff: dict[str, Any],
+) -> None:
+    lifecycle_agents = {"orchestrator", "analyst", "planner"}
+    if handoff["scope"] != "TASK_PACKET_BOUNDARY":
+        raise AssertionError("Planner execution admission must use TASK_PACKET_BOUNDARY")
+    if handoff["from_agent"] != "planner" or handoff["status"] != "PLANNED":
+        raise AssertionError("TASK_PACKET_BOUNDARY must be Planner-owned with PLANNED status")
+
+    targets = set(handoff["to_agents"])
+    if len(targets) != 1:
+        raise AssertionError("TASK_PACKET_BOUNDARY must target exactly one first executor")
+    if targets & lifecycle_agents or "human" in targets:
+        raise AssertionError("TASK_PACKET_BOUNDARY may target only the first Task Packet executor")
+
+    active = set(task["required_agents"]) | set(task["optional_agents"])
+    if not targets.issubset(active):
+        raise AssertionError("TASK_PACKET_BOUNDARY target must be active in Task Packet applicability")
+
+    if handoff["task_id"] != task["task_id"] or handoff["task_revision"] != task["revision"]:
+        raise AssertionError("TASK_PACKET_BOUNDARY must match Task Packet id and revision")
+
+    if handoff["baseline"]["repository"] != orchestration["baseline"]["repository"]:
+        raise AssertionError("TASK_PACKET_BOUNDARY repository must match orchestration baseline")
+    if orchestration["baseline"].get("head_sha") is not None and handoff["baseline"]["head_sha"] != orchestration["baseline"]["head_sha"]:
+        raise AssertionError("TASK_PACKET_BOUNDARY HEAD must match orchestration candidate HEAD")
+
+    order = orchestration["execution_order"]
+    if "planner" not in order:
+        raise AssertionError("Planner must exist in execution_order before Task Packet execution")
+    planner_index = order.index("planner")
+    downstream = [
+        participant
+        for participant in order[planner_index + 1 :]
+        if participant not in lifecycle_agents
+    ]
+    if not downstream:
+        raise AssertionError("TASK_PACKET_BOUNDARY requires a downstream executor")
+    first_executor = downstream[0]
+    if targets != {first_executor}:
+        raise AssertionError(
+            f"TASK_PACKET_BOUNDARY must target the first downstream executor: {first_executor}"
+        )
+    if handoff["handoff_id"] not in set(orchestration["handoffs"]):
+        raise AssertionError("Orchestration must record the TASK_PACKET_BOUNDARY handoff")
+
+
 def validate_protocol_chain(
     task: dict[str, Any],
     orchestration: dict[str, Any],
@@ -451,6 +506,14 @@ def validate_protocol_chain(
 
     declared = task_required | task_optional | task_na
     lifecycle_agents = {"orchestrator", "analyst", "planner"}
+    task_handoffs = [item for item in handoff_docs if item["task_id"] == task["task_id"]]
+    boundaries = [item for item in task_handoffs if item["scope"] == "TASK_PACKET_BOUNDARY"]
+    if len(boundaries) != 1:
+        raise AssertionError(
+            f"Exactly one TASK_PACKET_BOUNDARY is required before bounded execution; found {len(boundaries)}"
+        )
+    validate_task_packet_boundary(task, orchestration, boundaries[0])
+
     for item in handoff_docs:
         if item["task_id"] != task["task_id"]:
             continue
@@ -466,8 +529,15 @@ def validate_protocol_chain(
                 )
             if "human" in targets:
                 raise AssertionError("Lifecycle governance cannot cross the human decision boundary")
+        elif scope == "TASK_PACKET_BOUNDARY":
+            validate_task_packet_boundary(task, orchestration, item)
         elif scope == "TASK_EXECUTION":
             involved = {producer} | {target for target in targets if target != "human"}
+            lifecycle_involved = involved & lifecycle_agents
+            if lifecycle_involved:
+                raise AssertionError(
+                    f"TASK_EXECUTION cannot include lifecycle-governance agents: {sorted(lifecycle_involved)}"
+                )
             undeclared = {participant for participant in involved if participant not in declared}
             if undeclared:
                 raise AssertionError(
@@ -682,11 +752,34 @@ def main() -> int:
     validate_handoff(auditor_handoff)
     print("PASS Auditor to human handoff contract")
 
-    evidence_orchestration = copy.deepcopy(orchestration)
-    evidence_orchestration["handoffs"] = [handoff["handoff_id"]]
-    validate_protocol_chain(task, evidence_orchestration, [handoff])
-    print("PASS Task Packet -> orchestration -> handoff chain of custody")
+    boundary_handoff = validate_schema(
+        "schemas/agent-handoff.schema.json",
+        "templates/planner-task-packet-boundary-handoff.example.yaml",
+    )
+    validate_handoff(boundary_handoff)
+    print("PASS Planner Task Packet boundary handoff contract")
 
+    evidence_orchestration = copy.deepcopy(orchestration)
+    evidence_orchestration["handoffs"] = [
+        boundary_handoff["handoff_id"],
+        handoff["handoff_id"],
+    ]
+    validate_protocol_chain(task, evidence_orchestration, [boundary_handoff, handoff])
+    print("PASS Task Packet boundary -> bounded execution chain of custody")
+
+    missing_boundary = copy.deepcopy(evidence_orchestration)
+    missing_boundary["handoffs"] = [handoff["handoff_id"]]
+    expect_failure(
+        "bounded execution cannot start without exactly one Task Packet boundary",
+        lambda: validate_protocol_chain(task, missing_boundary, [handoff]),
+    )
+
+    wrong_boundary = copy.deepcopy(boundary_handoff)
+    wrong_boundary["to_agents"] = ["qa"]
+    expect_failure(
+        "Task Packet boundary cannot skip the first downstream executor",
+        lambda: validate_protocol_chain(task, evidence_orchestration, [wrong_boundary, handoff]),
+    )
 
     mutated = copy.deepcopy(agent)
     mutated["handoff_targets"].append(mutated["agent"])
@@ -1120,43 +1213,69 @@ def main() -> int:
     lifecycle_chain_handoff["task_revision"] = task["revision"]
     lifecycle_chain_handoff["baseline"] = copy.deepcopy(handoff["baseline"])
     lifecycle_orchestration = copy.deepcopy(evidence_orchestration)
-    lifecycle_orchestration["handoffs"] = [lifecycle_chain_handoff["handoff_id"]]
-    validate_protocol_chain(task, lifecycle_orchestration, [lifecycle_chain_handoff])
-    print("PASS lifecycle governance operates outside Task Packet applicability")
+    lifecycle_orchestration["handoffs"] = [
+        lifecycle_chain_handoff["handoff_id"],
+        boundary_handoff["handoff_id"],
+    ]
+    validate_protocol_chain(
+        task,
+        lifecycle_orchestration,
+        [lifecycle_chain_handoff, boundary_handoff],
+    )
+    print("PASS lifecycle governance remains distinct from the Task Packet boundary")
 
     mutated_handoff = copy.deepcopy(lifecycle_chain_handoff)
     mutated_handoff["scope"] = "TASK_EXECUTION"
     expect_failure(
         "Analyst and Planner cannot masquerade as Task Packet executors",
-        lambda: validate_protocol_chain(task, lifecycle_orchestration, [mutated_handoff]),
+        lambda: validate_protocol_chain(
+            task,
+            lifecycle_orchestration,
+            [mutated_handoff, boundary_handoff],
+        ),
     )
 
     mutated_task = copy.deepcopy(task)
     mutated_task["task_id"] = "BP-OTHER-999"
     expect_failure(
         "Task Packet and orchestration must describe the same task",
-        lambda: validate_protocol_chain(mutated_task, evidence_orchestration, [handoff]),
+        lambda: validate_protocol_chain(
+            mutated_task,
+            evidence_orchestration,
+            [boundary_handoff, handoff],
+        ),
     )
 
     mutated_task = copy.deepcopy(task)
     mutated_task["revision"] += 1
     expect_failure(
         "Task Packet and orchestration revisions must match",
-        lambda: validate_protocol_chain(mutated_task, evidence_orchestration, [handoff]),
+        lambda: validate_protocol_chain(
+            mutated_task,
+            evidence_orchestration,
+            [boundary_handoff, handoff],
+        ),
     )
 
     stale_handoff = copy.deepcopy(handoff)
     stale_handoff["task_revision"] += 1
     expect_failure(
         "handoff evidence from another task revision is stale",
-        lambda: validate_orchestration_handoffs(evidence_orchestration, [stale_handoff]),
+        lambda: validate_orchestration_handoffs(
+            evidence_orchestration,
+            [boundary_handoff, stale_handoff],
+        ),
     )
 
     mutated_task = copy.deepcopy(task)
     mutated_task["baseline"]["base_sha"] = "7654321"
     expect_failure(
         "Task Packet and orchestration must share the same baseline",
-        lambda: validate_protocol_chain(mutated_task, evidence_orchestration, [handoff]),
+        lambda: validate_protocol_chain(
+            mutated_task,
+            evidence_orchestration,
+            [boundary_handoff, handoff],
+        ),
     )
 
     mutated_task = copy.deepcopy(task)
@@ -1164,21 +1283,31 @@ def main() -> int:
     mutated_task["not_applicable_agents"].remove("backend")
     expect_failure(
         "required Task Packet participant cannot be N/A in orchestration",
-        lambda: validate_protocol_chain(mutated_task, evidence_orchestration, [handoff]),
+        lambda: validate_protocol_chain(
+            mutated_task,
+            evidence_orchestration,
+            [boundary_handoff, handoff],
+        ),
     )
 
     mutated = copy.deepcopy(evidence_orchestration)
     mutated["handoffs"].append("HO-BP-CART-001-FAKE")
     expect_failure(
         "orchestration cannot reference nonexistent handoff evidence",
-        lambda: validate_orchestration_handoffs(mutated, [handoff]),
+        lambda: validate_orchestration_handoffs(
+            mutated,
+            [boundary_handoff, handoff],
+        ),
     )
 
     mutated_handoff = copy.deepcopy(handoff)
     mutated_handoff["task_id"] = "BP-OTHER-999"
     expect_failure(
         "handoff evidence must belong to orchestration task",
-        lambda: validate_orchestration_handoffs(evidence_orchestration, [mutated_handoff]),
+        lambda: validate_orchestration_handoffs(
+            evidence_orchestration,
+            [boundary_handoff, mutated_handoff],
+        ),
     )
 
     mutated_orchestration = copy.deepcopy(evidence_orchestration)
@@ -1188,14 +1317,21 @@ def main() -> int:
     )
     expect_failure(
         "handoff producer must precede its consumer in execution order",
-        lambda: validate_protocol_chain(task, mutated_orchestration, [handoff]),
+        lambda: validate_protocol_chain(
+            task,
+            mutated_orchestration,
+            [boundary_handoff, handoff],
+        ),
     )
 
     mutated_handoff = copy.deepcopy(handoff)
     mutated_handoff["baseline"]["head_sha"] = "7654321"
     expect_failure(
         "handoff evidence must match orchestration candidate HEAD",
-        lambda: validate_orchestration_handoffs(evidence_orchestration, [mutated_handoff]),
+        lambda: validate_orchestration_handoffs(
+            evidence_orchestration,
+            [boundary_handoff, mutated_handoff],
+        ),
     )
 
     mutated = copy.deepcopy(specialist_agent)
