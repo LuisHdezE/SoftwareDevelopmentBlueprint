@@ -330,6 +330,14 @@ def validate_orchestration(doc: dict[str, Any]) -> None:
     elif replanning is not None:
         raise AssertionError("replanning metadata is only valid in REPLANNING_REQUIRED")
 
+    executed_handoffs = set(doc["handoffs"])
+    expected_handoffs = set(doc.get("expected_handoffs", []))
+    overlap = executed_handoffs & expected_handoffs
+    if overlap:
+        raise AssertionError(
+            f"Executed and expected handoff ledgers cannot overlap: {sorted(overlap)}"
+        )
+
     blocked_by = doc["blocked_by"]
     if blocked_by and doc["current_state"] != "BLOCKED":
         raise AssertionError(
