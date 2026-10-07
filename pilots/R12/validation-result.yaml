@@ -1,0 +1,26 @@
+pilot: R12
+task_id: BP-AGENT-070
+candidate:
+  pull_request: 70
+  head_sha: "105391b1254cef18f43d122aa6174227463925a2"
+evidence_plane:
+  ref: governance/evidence/r12-agent-protocol-readme
+validation:
+  source: authoritative GitHub file contents copied to an isolated temporary workspace
+  command: python pilots/R12/validate-r12.py
+  environment:
+    os: Windows
+    python: "3.12.4"
+  first_attempt:
+    status: FAIL
+    reason: QA handoff outputs containing colons were parsed as YAML mappings instead of strings.
+  correction:
+    commit: "832ad38ef4477ea7cd82216016db4d4c434b48a2"
+    action: Quote QA output scalars.
+  final_attempt:
+    status: PASS
+    output:
+      - R12 real multi-agent pilot protocol validation: PASS
+      - Candidate PR #70 matches the governed frozen HEAD.
+      - Final orchestration state is READY_FOR_HUMAN_DECISION.
+evidence_id: EVD-R12-PROTOCOL-VALIDATION
