@@ -846,12 +846,41 @@ def main() -> int:
     print("PASS Planner Task Packet boundary handoff contract")
 
     chain_handoffs = [analyst_handoff, boundary_handoff, handoff]
+    future_overlap = copy.deepcopy(orchestration)
+    future_overlap["handoffs"].append("HO-BP-CART-001-AUDITOR-HUMAN")
+    expect_failure(
+        "executed and expected handoff ledgers cannot overlap",
+        lambda: validate_orchestration(future_overlap),
+    )
+
     evidence_orchestration = copy.deepcopy(orchestration)
     evidence_orchestration["handoffs"] = [
         item["handoff_id"] for item in chain_handoffs
     ]
     validate_protocol_chain(task, evidence_orchestration, chain_handoffs)
     print("PASS completed participants are backed by declared handoff evidence")
+
+    premature_human = copy.deepcopy(evidence_orchestration)
+    premature_human["handoffs"].append(auditor_handoff["handoff_id"])
+    expect_failure(
+        "future human-decision handoff cannot be recorded during validation",
+        lambda: validate_orchestration_handoffs(
+            premature_human,
+            chain_handoffs + [auditor_handoff],
+        ),
+    )
+
+    malformed_role_handoff = copy.deepcopy(handoff)
+    malformed_role_handoff["status"] = "QA_PASS"
+    expect_failure(
+        "protocol chain validates every handoff semantically",
+        lambda: validate_protocol_chain(
+            task,
+            evidence_orchestration,
+            [analyst_handoff, boundary_handoff, malformed_role_handoff],
+        ),
+    )
+
 
     missing_boundary = copy.deepcopy(evidence_orchestration)
     missing_boundary["handoffs"] = [
