@@ -1,0 +1,28 @@
+schema_version: agent-protocol-proposal-1
+handoff_id: HO-BP-AGENT-070-ANALYST-PLANNER
+task_id: BP-AGENT-070
+task_revision: 1
+scope: LIFECYCLE_GOVERNANCE
+from_agent: analyst
+to_agents:
+  - planner
+status: ANALYZED
+baseline:
+  repository: LuisHdezE/SoftwareDevelopmentBlueprint
+  branch: pilot/r12-agent-protocol-readme
+  head_sha: "105391b1254cef18f43d122aa6174227463925a2"
+  pull_request: 70
+summary: The request is bounded to README discoverability and must not imply stable release adoption or alter protocol behavior.
+outputs:
+  - requirement R12-REQ-README-ENTRYPOINT
+  - acceptance criteria R12-AC-001 through R12-AC-003
+  - explicit out-of-scope boundaries
+evidence_ids:
+  - EVD-R12-ANALYSIS
+blockers: []
+open_questions: []
+decisions:
+  - id: DEC-R12-ANALYSIS-001
+    summary: Treat the task as documentation-only with no protocol semantic changes.
+    decision_ref: null
+created_at: "2026-10-07T18:41:00Z"
