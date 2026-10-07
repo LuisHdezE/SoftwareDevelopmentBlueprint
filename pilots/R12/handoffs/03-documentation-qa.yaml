@@ -1,0 +1,29 @@
+schema_version: agent-protocol-proposal-1
+handoff_id: HO-BP-AGENT-070-DOCUMENTATION-QA
+task_id: BP-AGENT-070
+task_revision: 1
+scope: TASK_EXECUTION
+from_agent: documentation
+to_agents:
+  - qa
+status: DOCUMENTED
+baseline:
+  repository: LuisHdezE/SoftwareDevelopmentBlueprint
+  branch: pilot/r12-agent-protocol-readme
+  head_sha: "105391b1254cef18f43d122aa6174227463925a2"
+  pull_request: 70
+summary: README now exposes the proposal-stage multi-agent protocol entrypoint without changing stable release claims or protocol semantics.
+outputs:
+  - README multi-agent proposal section
+  - canonical path references
+  - explicit stable-release disclaimer
+  - explicit consumer-adoption isolation statement
+evidence_ids:
+  - EVD-R12-DOCUMENTATION
+blockers: []
+open_questions: []
+decisions:
+  - id: DEC-R12-DOC-001
+    summary: Keep the change informational and bounded to README discoverability.
+    decision_ref: null
+created_at: "2026-10-07T18:43:00Z"
