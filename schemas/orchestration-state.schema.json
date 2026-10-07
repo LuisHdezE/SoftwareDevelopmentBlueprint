@@ -299,6 +299,16 @@
     "handoffs": {
       "type": "array",
       "uniqueItems": true,
+      "description": "Handoffs already executed and backed by evidence documents.",
+      "items": {
+        "type": "string",
+        "pattern": "^HO-[A-Z0-9][A-Z0-9._-]*$"
+      }
+    },
+    "expected_handoffs": {
+      "type": "array",
+      "uniqueItems": true,
+      "description": "Planned future handoffs that have not occurred yet and therefore do not count as evidence.",
       "items": {
         "type": "string",
         "pattern": "^HO-[A-Z0-9][A-Z0-9._-]*$"
