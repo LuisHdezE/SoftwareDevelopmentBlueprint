@@ -235,6 +235,18 @@ NON-FAILURE STATUS
 
 The Orchestrator should not advance a role when a required predecessor handoff is missing.
 
+The orchestration ledger distinguishes evidence from intent:
+
+```text
+handoffs
+  = already executed, evidence-backed transitions
+
+expected_handoffs
+  = planned future transitions, not evidence
+```
+
+A future handoff must never be pre-recorded in `handoffs`. In particular, an Auditor-to-human handoff cannot exist as executed evidence before `READY_FOR_HUMAN_DECISION` or `CLOSED`.
+
 Examples:
 
 ```text
