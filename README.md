@@ -36,6 +36,22 @@ El pilot WebBlueprint sobre `12cc52dabfe05ec9902f0ea6d73c7da6a19e1a74` produjo *
 
 WebBlueprint sigue sin modificación y con adopción `UNMANAGED`. La promoción estable de 0.5.5 requiere un PR separado; el tag `v0.5.5` requiere además aprobación humana separada después del merge y CI post-merge sobre el SHA real.
 
+## Protocolo multiagente (proposal)
+
+El Blueprint mantiene un carril de hardening separado para su protocolo multiagente. Este carril **no forma parte todavía de la release estable** y no modifica `VERSION` ni `DEVELOPMENT_VERSION`.
+
+Puntos de entrada:
+
+- `agents/`: contratos de roles especializados y límites de autoridad;
+- `schemas/agent-contract.schema.json`: contrato machine-readable de agentes;
+- `schemas/task-packet.schema.json`: unidad gobernada de trabajo;
+- `schemas/agent-handoff.schema.json`: handoffs y estados propios de cada rol;
+- `schemas/orchestration-state.schema.json`: estado y secuencia de la orquestación;
+- `scripts/validate-agent-protocol.py`: validación fail-closed del protocolo;
+- `templates/`: fixtures canónicos para tareas, handoffs y orquestación.
+
+La cadena gobernada preserva separación de responsabilidades, evidencia sobre el HEAD candidato exacto y decisión humana final. La existencia del protocolo canónico no implica adopción automática por repositorios consumidores.
+
 ## Modelo de plataformas
 
 Los targets de cliente son explícitos:
