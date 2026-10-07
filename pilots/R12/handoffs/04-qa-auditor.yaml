@@ -18,13 +18,15 @@ outputs:
   - "R12-AC-002 PASS: stable release status is not overstated"
   - "R12-AC-003 PASS: VERSION and DEVELOPMENT_VERSION are untouched"
   - "regression check: canonical protocol paths named in README exist"
+  - "protocol validation PASS after correction of evidence serialization"
 evidence_ids:
   - EVD-R12-QA-DIFF
   - EVD-R12-QA-SCOPE
+  - EVD-R12-PROTOCOL-VALIDATION
 blockers: []
 open_questions: []
 decisions:
   - id: DEC-R12-QA-001
     summary: Candidate satisfies the bounded documentation task and is ready for independent audit.
     decision_ref: null
-created_at: "2026-10-07T18:44:00Z"
+created_at: "2026-10-07T19:28:00Z"
