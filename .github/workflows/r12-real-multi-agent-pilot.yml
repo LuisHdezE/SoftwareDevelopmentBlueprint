@@ -12,6 +12,17 @@ on:
       - 'schemas/task-packet.schema.json'
       - 'schemas/orchestration-state.schema.json'
 
+  pull_request:
+    branches:
+      - blueprint/agent-system-validation
+    paths:
+      - 'pilots/R12/**'
+      - '.github/workflows/r12-real-multi-agent-pilot.yml'
+      - 'scripts/validate-agent-protocol.py'
+      - 'schemas/agent-handoff.schema.json'
+      - 'schemas/task-packet.schema.json'
+      - 'schemas/orchestration-state.schema.json'
+
 permissions:
   contents: read
 
