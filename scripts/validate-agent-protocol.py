@@ -237,6 +237,36 @@ def validate_orchestration(doc: dict[str, Any]) -> None:
                 f"current_agent cannot be {participants[current_agent]}"
             )
 
+    def require_completed_before(target: str, state_label: str) -> None:
+        if target not in execution_order:
+            raise AssertionError(f"{state_label} requires {target} in execution_order")
+        target_index = execution_order.index(target)
+        incomplete = {
+            participant
+            for participant in execution_order[:target_index]
+            if participant != "orchestrator"
+            and participants[participant] != "COMPLETED"
+        }
+        if incomplete:
+            raise AssertionError(
+                f"{state_label} cannot start before upstream participants complete: {sorted(incomplete)}"
+            )
+
+    state = doc["current_state"]
+    if state in {"READY_FOR_QA", "VALIDATING"}:
+        require_completed_before("qa", state)
+        if participants["qa"] not in {"REQUIRED", "OPTIONAL"}:
+            raise AssertionError(f"{state} requires active QA")
+        if state == "VALIDATING" and current_agent != "qa":
+            raise AssertionError("VALIDATING requires QA as current_agent")
+
+    if state in {"READY_FOR_AUDIT", "AUDITING"}:
+        require_completed_before("auditor", state)
+        if participants["auditor"] not in {"REQUIRED", "OPTIONAL"}:
+            raise AssertionError(f"{state} requires active Auditor")
+        if state == "AUDITING" and current_agent != "auditor":
+            raise AssertionError("AUDITING requires Auditor as current_agent")
+
     replanning = doc.get("replanning")
     if doc["current_state"] == "REPLANNING_REQUIRED":
         if not replanning:
@@ -1175,6 +1205,46 @@ def main() -> int:
     expect_failure(
         "NOT_APPLICABLE agent cannot execute",
         lambda: validate_orchestration(mutated),
+    )
+
+    validating_with_incomplete_upstream = copy.deepcopy(orchestration)
+    validating_with_incomplete_upstream["agents"]["frontend"] = "REQUIRED"
+    expect_failure(
+        "VALIDATING cannot begin while an upstream executor remains incomplete",
+        lambda: validate_orchestration(validating_with_incomplete_upstream),
+    )
+
+    validating_wrong_owner = copy.deepcopy(orchestration)
+    validating_wrong_owner["current_agent"] = "auditor"
+    expect_failure(
+        "VALIDATING is owned by QA",
+        lambda: validate_orchestration(validating_wrong_owner),
+    )
+
+    ready_for_audit = copy.deepcopy(orchestration)
+    ready_for_audit["current_state"] = "READY_FOR_AUDIT"
+    ready_for_audit["current_agent"] = "auditor"
+    ready_for_audit["agents"]["qa"] = "COMPLETED"
+    validate_orchestration(ready_for_audit)
+    print("PASS READY_FOR_AUDIT requires completed upstream execution")
+
+    premature_audit = copy.deepcopy(ready_for_audit)
+    premature_audit["agents"]["qa"] = "REQUIRED"
+    expect_failure(
+        "READY_FOR_AUDIT cannot skip incomplete QA",
+        lambda: validate_orchestration(premature_audit),
+    )
+
+    auditing = copy.deepcopy(ready_for_audit)
+    auditing["current_state"] = "AUDITING"
+    validate_orchestration(auditing)
+    print("PASS AUDITING starts only after upstream completion")
+
+    auditing_wrong_owner = copy.deepcopy(auditing)
+    auditing_wrong_owner["current_agent"] = "qa"
+    expect_failure(
+        "AUDITING is owned by Auditor",
+        lambda: validate_orchestration(auditing_wrong_owner),
     )
 
     mutated = copy.deepcopy(orchestration)
