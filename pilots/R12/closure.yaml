@@ -1,0 +1,24 @@
+pilot: R12
+task_id: BP-AGENT-070
+candidate:
+  pull_request: 70
+  head_sha: "105391b1254cef18f43d122aa6174227463925a2"
+  merge_commit_sha: "dbd6a3a137c57678d2adff0c99b94ba21d424152"
+human_decision:
+  merge_approved: true
+  approved_head_sha: "105391b1254cef18f43d122aa6174227463925a2"
+post_merge:
+  planner_boundary_validation:
+    run_id: 37676656632
+    conclusion: success
+  agent_system_validation:
+    run_id: 37676656737
+    conclusion: success
+  agent_protocol_validation:
+    run_id: 37676656613
+    conclusion: success
+evidence_plane:
+  pull_request: 71
+  disposition: CLOSE_WITHOUT_MERGE
+  rationale: Preserve detached governance trace without introducing pilot-only evidence files into the governed branch.
+final_state: CLOSED
