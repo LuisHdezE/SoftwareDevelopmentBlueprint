@@ -561,6 +561,9 @@ def validate_protocol_chain(
     validate_task_packet_boundary(task, orchestration, boundaries[0])
 
     for item in handoff_docs:
+        validate_handoff(item)
+
+    for item in handoff_docs:
         if item["task_id"] != task["task_id"]:
             continue
         scope = item["scope"]
