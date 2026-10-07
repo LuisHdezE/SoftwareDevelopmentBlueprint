@@ -400,6 +400,18 @@ Active PR when applicable
 
 If the baseline moves materially, downstream plans/evidence may require revalidation.
 
+For self-governed or repository-local work, terminal governance evidence must not mutate the candidate it is proving. When evidence is recorded after candidate freeze, the orchestration should declare a detached evidence plane:
+
+```yaml
+evidence_plane:
+  mode: DETACHED
+  record_repository: owner/repository
+  record_ref: governance/evidence/TASK-ID
+  candidate_head_frozen: true
+```
+
+If the evidence lives in the same repository, `record_ref` must differ from the candidate working branch.
+
 ## 18. Consumer isolation
 
 The canonical agent contracts live in `SoftwareDevelopmentBlueprint`.
