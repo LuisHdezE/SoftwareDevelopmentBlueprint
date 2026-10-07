@@ -1,0 +1,70 @@
+schema_version: agent-protocol-proposal-1
+task_id: BP-AGENT-070
+revision: 1
+title: Expose the multi-agent protocol proposal entrypoint in README
+objective: Make the proposal-stage multi-agent protocol discoverable from README without implying stable release adoption.
+baseline:
+  repository: LuisHdezE/SoftwareDevelopmentBlueprint
+  base_branch: blueprint/agent-system-validation
+  base_sha: "914bf600c9eb99d16e3e979b461eb241f9ef68a4"
+  working_branch: pilot/r12-agent-protocol-readme
+  head_sha: "105391b1254cef18f43d122aa6174227463925a2"
+  pull_request: 70
+source:
+  feature: Multi-agent protocol discoverability
+  requirements:
+    - R12-REQ-README-ENTRYPOINT
+  business_rules:
+    - R12-BR-PROPOSAL-NOT-STABLE
+    - R12-BR-CONSUMER-ADOPTION-EXPLICIT
+  acceptance_criteria:
+    - R12-AC-001
+    - R12-AC-002
+    - R12-AC-003
+scope:
+  in:
+    - add a README entrypoint for the multi-agent protocol proposal
+    - link canonical agent, schema, validator and template locations
+    - state that the protocol remains outside the stable release
+    - preserve explicit consumer adoption semantics
+  out:
+    - agent behavior changes
+    - schema changes
+    - validator changes
+    - VERSION changes
+    - DEVELOPMENT_VERSION changes
+owner_agent: documentation
+required_agents:
+  - documentation
+  - qa
+  - auditor
+optional_agents: []
+not_applicable_agents:
+  - architect
+  - database
+  - backend
+  - frontend
+  - security
+dependencies: []
+implementation_constraints:
+  - README only
+  - do not imply stable release adoption
+  - do not modify VERSION or DEVELOPMENT_VERSION
+expected_outputs:
+  - README proposal entrypoint
+  - exact-path links to canonical protocol assets
+validation:
+  build: not_required
+  tests: not_required
+  visual: not_required
+  security: not_required
+  notes:
+    - QA verifies exact diff, wording, scope isolation and absence of version changes.
+risks:
+  - id: R-AGENT-STABILITY-CLAIM
+    description: README wording could falsely imply that the multi-agent protocol is part of the stable Blueprint release.
+    probability: MEDIUM
+    impact: HIGH
+    mitigation: Explicitly label the section as proposal/hardening and state that stable versions are unchanged.
+checkpoint: README change is bounded, truthful and independently verified.
+exit_gate: READY_FOR_AUDIT
