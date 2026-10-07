@@ -180,6 +180,22 @@ def validate_handoff(doc: dict[str, Any]) -> None:
 
 
 def validate_orchestration(doc: dict[str, Any]) -> None:
+    evidence_plane = doc.get("evidence_plane")
+    if evidence_plane is not None:
+        if evidence_plane["mode"] != "DETACHED":
+            raise AssertionError("Evidence plane must use DETACHED mode")
+        if not evidence_plane["candidate_head_frozen"]:
+            raise AssertionError("Detached evidence requires a frozen candidate HEAD")
+        if doc["baseline"].get("head_sha") is None:
+            raise AssertionError("Detached evidence requires a concrete candidate HEAD")
+        if (
+            evidence_plane["record_repository"] == doc["baseline"]["repository"]
+            and evidence_plane["record_ref"] == doc["baseline"].get("working_branch")
+        ):
+            raise AssertionError(
+                "Detached evidence ref must differ from the candidate working branch"
+            )
+
     agents = doc["agents"]
     specialists = doc.get("specialists", {})
     participants = {**agents, **specialists}
@@ -1288,6 +1304,20 @@ def main() -> int:
     expect_failure(
         "invalidated Specialist evidence cannot remain completed",
         lambda: validate_orchestration(mutated),
+    )
+
+    same_ref_evidence = copy.deepcopy(orchestration)
+    same_ref_evidence["evidence_plane"]["record_ref"] = same_ref_evidence["baseline"]["working_branch"]
+    expect_failure(
+        "detached evidence cannot share the candidate working branch",
+        lambda: validate_orchestration(same_ref_evidence),
+    )
+
+    missing_candidate_head = copy.deepcopy(orchestration)
+    missing_candidate_head["baseline"]["head_sha"] = None
+    expect_failure(
+        "detached evidence requires a frozen concrete candidate HEAD",
+        lambda: validate_orchestration(missing_candidate_head),
     )
 
     mutated = copy.deepcopy(orchestration)
