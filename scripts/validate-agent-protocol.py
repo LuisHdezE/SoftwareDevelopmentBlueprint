@@ -851,7 +851,7 @@ def main() -> int:
         "COMPLETED Analyst requires declared successful handoff evidence",
         lambda: validate_orchestration_handoffs(
             missing_completion_evidence,
-            [boundary_handoff, handoff],
+            chain_handoffs,
         ),
     )
 
@@ -1351,11 +1351,12 @@ def main() -> int:
     lifecycle_orchestration["handoffs"] = [
         lifecycle_chain_handoff["handoff_id"],
         boundary_handoff["handoff_id"],
+        handoff["handoff_id"],
     ]
     validate_protocol_chain(
         task,
         lifecycle_orchestration,
-        [lifecycle_chain_handoff, boundary_handoff],
+        [lifecycle_chain_handoff, boundary_handoff, handoff],
     )
     print("PASS lifecycle governance remains distinct from the Task Packet boundary")
 
@@ -1366,7 +1367,7 @@ def main() -> int:
         lambda: validate_protocol_chain(
             task,
             lifecycle_orchestration,
-            [mutated_handoff, boundary_handoff],
+            [mutated_handoff, boundary_handoff, handoff],
         ),
     )
 
@@ -1377,7 +1378,7 @@ def main() -> int:
         lambda: validate_protocol_chain(
             mutated_task,
             evidence_orchestration,
-            [boundary_handoff, handoff],
+            chain_handoffs,
         ),
     )
 
@@ -1388,7 +1389,7 @@ def main() -> int:
         lambda: validate_protocol_chain(
             mutated_task,
             evidence_orchestration,
-            [boundary_handoff, handoff],
+            chain_handoffs,
         ),
     )
 
@@ -1398,7 +1399,7 @@ def main() -> int:
         "handoff evidence from another task revision is stale",
         lambda: validate_orchestration_handoffs(
             evidence_orchestration,
-            [boundary_handoff, stale_handoff],
+            [analyst_handoff, boundary_handoff, stale_handoff],
         ),
     )
 
@@ -1409,7 +1410,7 @@ def main() -> int:
         lambda: validate_protocol_chain(
             mutated_task,
             evidence_orchestration,
-            [boundary_handoff, handoff],
+            chain_handoffs,
         ),
     )
 
@@ -1421,7 +1422,7 @@ def main() -> int:
         lambda: validate_protocol_chain(
             mutated_task,
             evidence_orchestration,
-            [boundary_handoff, handoff],
+            chain_handoffs,
         ),
     )
 
@@ -1431,7 +1432,7 @@ def main() -> int:
         "orchestration cannot reference nonexistent handoff evidence",
         lambda: validate_orchestration_handoffs(
             mutated,
-            [boundary_handoff, handoff],
+            chain_handoffs,
         ),
     )
 
@@ -1441,7 +1442,7 @@ def main() -> int:
         "handoff evidence must belong to orchestration task",
         lambda: validate_orchestration_handoffs(
             evidence_orchestration,
-            [boundary_handoff, mutated_handoff],
+            [analyst_handoff, boundary_handoff, mutated_handoff],
         ),
     )
 
@@ -1455,7 +1456,7 @@ def main() -> int:
         lambda: validate_protocol_chain(
             task,
             mutated_orchestration,
-            [boundary_handoff, handoff],
+            chain_handoffs,
         ),
     )
 
@@ -1465,7 +1466,7 @@ def main() -> int:
         "handoff evidence must match orchestration candidate HEAD",
         lambda: validate_orchestration_handoffs(
             evidence_orchestration,
-            [boundary_handoff, mutated_handoff],
+            [analyst_handoff, boundary_handoff, mutated_handoff],
         ),
     )
 
