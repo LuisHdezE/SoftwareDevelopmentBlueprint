@@ -104,6 +104,32 @@
       },
       "additionalProperties": false
     },
+    "evidence_plane": {
+      "type": "object",
+      "required": [
+        "mode",
+        "record_repository",
+        "record_ref",
+        "candidate_head_frozen"
+      ],
+      "properties": {
+        "mode": {
+          "const": "DETACHED"
+        },
+        "record_repository": {
+          "type": "string",
+          "pattern": "^[^/\\s]+/[^/\\s]+$"
+        },
+        "record_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "candidate_head_frozen": {
+          "const": true
+        }
+      },
+      "additionalProperties": false
+    },
     "agents": {
       "type": "object",
       "required": [
