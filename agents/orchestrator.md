@@ -256,7 +256,25 @@ REJECTED
 CLOSED
 ```
 
-These states describe orchestration progress. They do not replace existing canonical Blueprint gates unless formally promoted into the machine-readable model.
+These states describe orchestration progress. They are not labels that may be advanced optimistically.
+
+Readiness gates are fail-closed:
+
+```text
+READY_FOR_QA / VALIDATING
+  => every upstream participant before QA, except the still-active Orchestrator, is COMPLETED
+
+READY_FOR_AUDIT / AUDITING
+  => every upstream participant before Auditor, except the still-active Orchestrator, is COMPLETED
+
+VALIDATING
+  => current_agent = qa
+
+AUDITING
+  => current_agent = auditor
+```
+
+The execution order is therefore a real progression constraint, not presentation metadata.
 
 ## 12. Stop conditions
 
@@ -444,6 +462,7 @@ agents:
   auditor: REQUIRED
 
 execution_order:
+  - orchestrator
   - analyst
   - planner
   - backend
