@@ -14,10 +14,10 @@ baseline:
   pull_request: 70
 summary: QA verified the exact README-only candidate against all R12 acceptance criteria with no scope drift.
 outputs:
-  - R12-AC-001 PASS: proposal entrypoint is present
-  - R12-AC-002 PASS: stable release status is not overstated
-  - R12-AC-003 PASS: VERSION and DEVELOPMENT_VERSION are untouched
-  - regression check: canonical protocol paths named in README exist
+  - "R12-AC-001 PASS: proposal entrypoint is present"
+  - "R12-AC-002 PASS: stable release status is not overstated"
+  - "R12-AC-003 PASS: VERSION and DEVELOPMENT_VERSION are untouched"
+  - "regression check: canonical protocol paths named in README exist"
 evidence_ids:
   - EVD-R12-QA-DIFF
   - EVD-R12-QA-SCOPE
