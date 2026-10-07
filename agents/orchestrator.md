@@ -217,6 +217,20 @@ Examples:
 
 Applicability must be reasoned from scope and risk.
 
+`COMPLETED` is an evidence-bearing state, not an administrative label. Except for the Orchestrator's terminal coordination completion, a participant marked `COMPLETED` must have a declared handoff document produced by that same participant for the governed task revision and candidate HEAD, carrying a successful status owned by that role.
+
+```text
+COMPLETED
+  =>
+DECLARED ROLE-OWNED HANDOFF
+  +
+CURRENT TASK REVISION
+  +
+CURRENT CANDIDATE HEAD
+  +
+NON-FAILURE STATUS
+```
+
 ## 10. Handoff enforcement
 
 The Orchestrator should not advance a role when a required predecessor handoff is missing.
