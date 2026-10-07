@@ -687,6 +687,20 @@ def validate_orchestration_handoffs(
                 f"COMPLETED participant lacks successful declared handoff evidence: {participant}"
             )
 
+    human_decision_docs = [
+        item
+        for item in actual_by_id.values()
+        if item["handoff_id"] in declared_ids
+        and item["scope"] == "HUMAN_DECISION"
+    ]
+    if human_decision_docs and orchestration["current_state"] not in {
+        "READY_FOR_HUMAN_DECISION",
+        "CLOSED",
+    }:
+        raise AssertionError(
+            "HUMAN_DECISION handoff evidence cannot exist before the human-decision boundary"
+        )
+
     if orchestration["current_state"] == "READY_FOR_HUMAN_DECISION":
         auditor_docs = [
             item
