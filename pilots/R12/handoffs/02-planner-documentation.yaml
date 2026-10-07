@@ -1,0 +1,28 @@
+schema_version: agent-protocol-proposal-1
+handoff_id: HO-BP-AGENT-070-PLANNER-DOCUMENTATION
+task_id: BP-AGENT-070
+task_revision: 1
+scope: TASK_PACKET_BOUNDARY
+from_agent: planner
+to_agents:
+  - documentation
+status: PLANNED
+baseline:
+  repository: LuisHdezE/SoftwareDevelopmentBlueprint
+  branch: pilot/r12-agent-protocol-readme
+  head_sha: "105391b1254cef18f43d122aa6174227463925a2"
+  pull_request: 70
+summary: Planner admits the bounded README-only Task Packet to Documentation as the first executor.
+outputs:
+  - bounded documentation task packet
+  - README-only implementation constraint
+  - QA and Auditor downstream route
+evidence_ids:
+  - EVD-R12-PLAN
+blockers: []
+open_questions: []
+decisions:
+  - id: DEC-R12-PLAN-001
+    summary: Documentation is the first and only implementation authority for the candidate change.
+    decision_ref: null
+created_at: "2026-10-07T18:42:00Z"
