@@ -11,6 +11,11 @@ baseline:
   working_branch: feat/cart-quantity
   head_sha: "1234567"
   pull_request: 101
+evidence_plane:
+  mode: DETACHED
+  record_repository: owner/repository
+  record_ref: governance/evidence/BP-CART-001
+  candidate_head_frozen: true
 agents:
   orchestrator: REQUIRED
   analyst: COMPLETED
