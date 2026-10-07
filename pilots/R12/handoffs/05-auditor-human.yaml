@@ -12,7 +12,7 @@ baseline:
   branch: pilot/r12-agent-protocol-readme
   head_sha: "105391b1254cef18f43d122aa6174227463925a2"
   pull_request: 70
-summary: Independent audit found the candidate aligned with the approved documentation-only task, exact HEAD evidence and human merge boundary.
+summary: Independent audit reviewed the corrected evidence chain and found the candidate aligned with the documentation-only task, exact HEAD evidence and human merge boundary.
 outputs:
   - exact candidate HEAD confirmed
   - scope and requirement traceability confirmed
@@ -20,10 +20,11 @@ outputs:
   - no protocol, schema or version changes detected
 evidence_ids:
   - EVD-R12-AUDIT
+  - EVD-R12-PROTOCOL-VALIDATION
 blockers: []
 open_questions: []
 decisions:
   - id: DEC-R12-AUDIT-001
     summary: Auditor recommends READY_FOR_MERGE for PR #70; merge authority remains with the human owner.
     decision_ref: null
-created_at: "2026-10-07T18:45:00Z"
+created_at: "2026-10-07T19:29:00Z"
