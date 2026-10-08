@@ -57,13 +57,15 @@
         "task_packets_root",
         "handoffs_root",
         "orchestration_state",
-        "agent_evidence_root"
+        "agent_evidence_root",
+        "agent_runs_root"
       ],
       "properties": {
         "task_packets_root": {"type": "string", "minLength": 1},
         "handoffs_root": {"type": "string", "minLength": 1},
         "orchestration_state": {"type": "string", "minLength": 1},
-        "agent_evidence_root": {"type": "string", "minLength": 1}
+        "agent_evidence_root": {"type": "string", "minLength": 1},
+        "agent_runs_root": {"type": "string", "minLength": 1}
       },
       "additionalProperties": false
     },
