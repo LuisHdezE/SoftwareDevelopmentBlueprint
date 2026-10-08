@@ -20,6 +20,7 @@ artifact_locations:
   handoffs_root: .blueprint/agents/handoffs
   orchestration_state: .blueprint/agents/orchestration.yaml
   agent_evidence_root: .blueprint/agents/evidence
+  agent_runs_root: .blueprint/agents/runs
 
 policies:
   automatic_consumer_upgrade: false
