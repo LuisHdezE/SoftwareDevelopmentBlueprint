@@ -25,7 +25,11 @@ on:
       - 'templates/discoverability-orchestration.example.yaml'
       - 'scripts/validate-agent-protocol.py'
       - 'scripts/validate-agent-run.py'
+      - 'scripts/validate-project-agent-adoption.py'
+      - 'schemas/project-agent-protocol-adoption.schema.json'
+      - 'templates/project-agent-protocol-adoption.example.yaml'
       - 'templates/agent-run.example/**'
+      - 'templates/project-agent-consumer.example/**'
       - '.github/workflows/blueprint-agent-protocol-validation.yml'
 
   pull_request:
@@ -52,7 +56,11 @@ on:
       - 'templates/discoverability-orchestration.example.yaml'
       - 'scripts/validate-agent-protocol.py'
       - 'scripts/validate-agent-run.py'
+      - 'scripts/validate-project-agent-adoption.py'
+      - 'schemas/project-agent-protocol-adoption.schema.json'
+      - 'templates/project-agent-protocol-adoption.example.yaml'
       - 'templates/agent-run.example/**'
+      - 'templates/project-agent-consumer.example/**'
       - '.github/workflows/blueprint-agent-protocol-validation.yml'
 
 permissions:
@@ -79,3 +87,10 @@ jobs:
 
       - name: Validate reusable agent run example
         run: python scripts/validate-agent-run.py templates/agent-run.example
+
+      - name: Validate consumer agent adoption example
+        run: >-
+          python scripts/validate-project-agent-adoption.py
+          templates/project-agent-consumer.example/adoption.yaml
+          --project-root templates/project-agent-consumer.example
+          --run-dir templates/project-agent-consumer.example/.blueprint/agents/runs/BP-CART-001
