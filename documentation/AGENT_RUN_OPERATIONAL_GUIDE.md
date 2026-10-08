@@ -78,6 +78,42 @@ The canonical implementation lives in SoftwareDevelopmentBlueprint, but each con
 
 A consumer may copy the bundle shape and run the validator from its adopted Blueprint tooling. That does not automatically upgrade the consumer's Blueprint version or enable every agent.
 
+## Consumer opt-in validation
+
+A consumer adopts the proposal explicitly through a project-local adoption file that conforms to `schemas/project-agent-protocol-adoption.schema.json`.
+
+The adoption declaration now includes:
+
+```yaml
+artifact_locations:
+  agent_runs_root: .blueprint/agents/runs
+```
+
+Validate one consumer plus one governed run with:
+
+```bash
+python scripts/validate-project-agent-adoption.py \
+  path/to/adoption.yaml \
+  --project-root path/to/project \
+  --run-dir path/to/project/.blueprint/agents/runs/TASK-ID
+```
+
+The validator requires the run to live under the declared `agent_runs_root`, validates the run with the canonical R13 validator, and requires both Task Packet and orchestration to name the same repository declared by the consumer.
+
+A valid adoption therefore means:
+
+```text
+EXPLICIT OPT-IN
++
+SAFE PROJECT-LOCAL LOCATIONS
++
+CANONICAL AGENT RUN
++
+REPOSITORY OWNERSHIP MATCH
+```
+
+It still does not mean automatic Blueprint upgrade, merge authority, or activation of every agent.
+
 ## Canonical example
 
 `templates/agent-run.example/` is the continuously validated reference bundle.
