@@ -48,6 +48,9 @@ Puntos de entrada:
 - `schemas/agent-handoff.schema.json`: handoffs y estados propios de cada rol;
 - `schemas/orchestration-state.schema.json`: estado y secuencia de la orquestación;
 - `scripts/validate-agent-protocol.py`: validación fail-closed del protocolo;
+- `scripts/validate-agent-run.py`: validación reusable de un bundle operacional completo;
+- `templates/agent-run.example/`: bundle canónico continuamente validado;
+- `documentation/AGENT_RUN_OPERATIONAL_GUIDE.md`: guía de ejecución/adopción;
 - `templates/`: fixtures canónicos para tareas, handoffs y orquestación.
 
 La cadena gobernada preserva separación de responsabilidades, evidencia sobre el HEAD candidato exacto y decisión humana final. La existencia del protocolo canónico no implica adopción automática por repositorios consumidores.

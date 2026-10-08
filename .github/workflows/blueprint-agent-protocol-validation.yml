@@ -24,6 +24,8 @@ on:
       - 'templates/discoverability-handoff.example.yaml'
       - 'templates/discoverability-orchestration.example.yaml'
       - 'scripts/validate-agent-protocol.py'
+      - 'scripts/validate-agent-run.py'
+      - 'templates/agent-run.example/**'
       - '.github/workflows/blueprint-agent-protocol-validation.yml'
 
   pull_request:
@@ -49,6 +51,8 @@ on:
       - 'templates/discoverability-handoff.example.yaml'
       - 'templates/discoverability-orchestration.example.yaml'
       - 'scripts/validate-agent-protocol.py'
+      - 'scripts/validate-agent-run.py'
+      - 'templates/agent-run.example/**'
       - '.github/workflows/blueprint-agent-protocol-validation.yml'
 
 permissions:
@@ -72,3 +76,6 @@ jobs:
 
       - name: Validate agent protocol proposal
         run: python scripts/validate-agent-protocol.py
+
+      - name: Validate reusable agent run example
+        run: python scripts/validate-agent-run.py templates/agent-run.example
