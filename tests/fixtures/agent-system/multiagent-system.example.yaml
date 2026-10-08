@@ -1,0 +1,49 @@
+schema_version: agent-protocol-proposal-1
+scenario_id: SYS-MULTIAGENT-001
+description: End-to-end governed task graph fixture for system-level validation.
+tasks:
+  - task_id: SYS-DATA-001
+    revision: 1
+    required_state: READY_FOR_HUMAN_DECISION
+    depends_on: []
+    required_participants:
+      - orchestrator
+      - analyst
+      - planner
+      - architect
+      - database
+      - qa
+      - security
+      - documentation
+      - auditor
+  - task_id: SYS-PUBLIC-002
+    revision: 2
+    required_state: READY_FOR_HUMAN_DECISION
+    depends_on:
+      - task_id: SYS-DATA-001
+        required_state: READY_FOR_IMPLEMENTATION
+    required_participants:
+      - orchestrator
+      - analyst
+      - planner
+      - architect
+      - backend
+      - frontend
+      - qa
+      - security
+      - documentation
+      - specialist:search-ai-discoverability
+      - auditor
+governance:
+  revision_transition:
+    requires_replanning: true
+    exact_increment: 1
+  evidence:
+    stale_revision_may_satisfy_current_gate: false
+    stale_head_may_satisfy_current_gate: false
+    audit_may_be_preserved_across_revision: false
+    revalidation_emits_new_evidence: true
+  authority:
+    auditor_may_recommend_ready_for_merge: true
+    auditor_may_merge: false
+    human_merge_approval_required: true

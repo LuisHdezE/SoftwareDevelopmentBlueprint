@@ -104,6 +104,32 @@
       },
       "additionalProperties": false
     },
+    "evidence_plane": {
+      "type": "object",
+      "required": [
+        "mode",
+        "record_repository",
+        "record_ref",
+        "candidate_head_frozen"
+      ],
+      "properties": {
+        "mode": {
+          "const": "DETACHED"
+        },
+        "record_repository": {
+          "type": "string",
+          "pattern": "^[^/\\s]+/[^/\\s]+$"
+        },
+        "record_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "candidate_head_frozen": {
+          "const": true
+        }
+      },
+      "additionalProperties": false
+    },
     "agents": {
       "type": "object",
       "required": [
@@ -215,7 +241,7 @@
           "minItems": 1,
           "uniqueItems": true,
           "items": {
-            "enum": ["PLAN", "IMPLEMENTATION_EVIDENCE", "QA_EVIDENCE", "SECURITY_EVIDENCE", "AUDIT_EVIDENCE"]
+            "enum": ["PLAN", "IMPLEMENTATION_EVIDENCE", "QA_EVIDENCE", "SECURITY_EVIDENCE", "DOCUMENTATION_EVIDENCE", "SPECIALIST_EVIDENCE", "AUDIT_EVIDENCE"]
           }
         },
         "previous_revision": {
@@ -299,6 +325,16 @@
     "handoffs": {
       "type": "array",
       "uniqueItems": true,
+      "description": "Handoffs already executed and backed by evidence documents.",
+      "items": {
+        "type": "string",
+        "pattern": "^HO-[A-Z0-9][A-Z0-9._-]*$"
+      }
+    },
+    "expected_handoffs": {
+      "type": "array",
+      "uniqueItems": true,
+      "description": "Planned future handoffs that have not occurred yet and therefore do not count as evidence.",
       "items": {
         "type": "string",
         "pattern": "^HO-[A-Z0-9][A-Z0-9._-]*$"

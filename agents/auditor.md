@@ -110,6 +110,8 @@ GREEN CI ON CURRENT HEAD
 
 If the candidate changes after audit, impact must be reassessed and required evidence rerun.
 
+The Auditor must also preserve evidence-plane separation. Audit records created after candidate freeze must not be committed onto the candidate branch they certify. A detached evidence ref may record the audit while still pointing to the immutable candidate HEAD.
+
 ## 7. Scope audit
 
 Auditor verifies:

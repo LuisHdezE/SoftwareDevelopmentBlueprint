@@ -14,6 +14,8 @@ on:
       - 'templates/agent-contract.example.yaml'
       - 'templates/task-packet.example.yaml'
       - 'templates/agent-handoff.example.yaml'
+      - 'templates/analyst-planner-handoff.example.yaml'
+      - 'templates/planner-task-packet-boundary-handoff.example.yaml'
       - 'templates/orchestration.example.yaml'
       - 'schemas/specialist-agent-registry.schema.json'
       - 'catalog/specialist-agents.proposal.yaml'
@@ -22,6 +24,8 @@ on:
       - 'templates/discoverability-handoff.example.yaml'
       - 'templates/discoverability-orchestration.example.yaml'
       - 'scripts/validate-agent-protocol.py'
+      - 'scripts/validate-agent-run.py'
+      - 'templates/agent-run.example/**'
       - '.github/workflows/blueprint-agent-protocol-validation.yml'
 
   pull_request:
@@ -37,6 +41,8 @@ on:
       - 'templates/agent-contract.example.yaml'
       - 'templates/task-packet.example.yaml'
       - 'templates/agent-handoff.example.yaml'
+      - 'templates/analyst-planner-handoff.example.yaml'
+      - 'templates/planner-task-packet-boundary-handoff.example.yaml'
       - 'templates/orchestration.example.yaml'
       - 'schemas/specialist-agent-registry.schema.json'
       - 'catalog/specialist-agents.proposal.yaml'
@@ -45,6 +51,8 @@ on:
       - 'templates/discoverability-handoff.example.yaml'
       - 'templates/discoverability-orchestration.example.yaml'
       - 'scripts/validate-agent-protocol.py'
+      - 'scripts/validate-agent-run.py'
+      - 'templates/agent-run.example/**'
       - '.github/workflows/blueprint-agent-protocol-validation.yml'
 
 permissions:
@@ -68,3 +76,6 @@ jobs:
 
       - name: Validate agent protocol proposal
         run: python scripts/validate-agent-protocol.py
+
+      - name: Validate reusable agent run example
+        run: python scripts/validate-agent-run.py templates/agent-run.example

@@ -217,9 +217,35 @@ Examples:
 
 Applicability must be reasoned from scope and risk.
 
+`COMPLETED` is an evidence-bearing state, not an administrative label. Except for the Orchestrator's terminal coordination completion, a participant marked `COMPLETED` must have a declared handoff document produced by that same participant for the governed task revision and candidate HEAD, carrying a successful status owned by that role.
+
+```text
+COMPLETED
+  =>
+DECLARED ROLE-OWNED HANDOFF
+  +
+CURRENT TASK REVISION
+  +
+CURRENT CANDIDATE HEAD
+  +
+NON-FAILURE STATUS
+```
+
 ## 10. Handoff enforcement
 
 The Orchestrator should not advance a role when a required predecessor handoff is missing.
+
+The orchestration ledger distinguishes evidence from intent:
+
+```text
+handoffs
+  = already executed, evidence-backed transitions
+
+expected_handoffs
+  = planned future transitions, not evidence
+```
+
+A future handoff must never be pre-recorded in `handoffs`. In particular, an Auditor-to-human handoff cannot exist as executed evidence before `READY_FOR_HUMAN_DECISION` or `CLOSED`.
 
 Examples:
 
@@ -256,7 +282,25 @@ REJECTED
 CLOSED
 ```
 
-These states describe orchestration progress. They do not replace existing canonical Blueprint gates unless formally promoted into the machine-readable model.
+These states describe orchestration progress. They are not labels that may be advanced optimistically.
+
+Readiness gates are fail-closed:
+
+```text
+READY_FOR_QA / VALIDATING
+  => every upstream participant before QA, except the still-active Orchestrator, is COMPLETED
+
+READY_FOR_AUDIT / AUDITING
+  => every upstream participant before Auditor, except the still-active Orchestrator, is COMPLETED
+
+VALIDATING
+  => current_agent = qa
+
+AUDITING
+  => current_agent = auditor
+```
+
+The execution order is therefore a real progression constraint, not presentation metadata.
 
 ## 12. Stop conditions
 
@@ -356,6 +400,18 @@ Active PR when applicable
 
 If the baseline moves materially, downstream plans/evidence may require revalidation.
 
+For self-governed or repository-local work, terminal governance evidence must not mutate the candidate it is proving. When evidence is recorded after candidate freeze, the orchestration should declare a detached evidence plane:
+
+```yaml
+evidence_plane:
+  mode: DETACHED
+  record_repository: owner/repository
+  record_ref: governance/evidence/TASK-ID
+  candidate_head_frozen: true
+```
+
+If the evidence lives in the same repository, `record_ref` must differ from the candidate working branch.
+
 ## 18. Consumer isolation
 
 The canonical agent contracts live in `SoftwareDevelopmentBlueprint`.
@@ -444,6 +500,7 @@ agents:
   auditor: REQUIRED
 
 execution_order:
+  - orchestrator
   - analyst
   - planner
   - backend

@@ -1,0 +1,30 @@
+schema_version: agent-protocol-proposal-1
+handoff_id: HO-BP-CART-001-PLANNER-FRONTEND
+task_id: BP-CART-001
+task_revision: 1
+scope: TASK_PACKET_BOUNDARY
+from_agent: planner
+to_agents:
+  - frontend
+status: PLANNED
+baseline:
+  repository: owner/repository
+  branch: feat/cart-quantity
+  head_sha: "1234567"
+  pull_request: 101
+summary: Planner emits the approved Task Packet boundary and transfers control to the first declared executor.
+outputs:
+  - bounded Task Packet
+  - execution order
+  - validation expectations
+  - explicit first executor
+  - planner-to-executor start boundary
+evidence_ids:
+  - EVD-CART-PLANNER-TASK-PACKET
+blockers: []
+open_questions: []
+decisions:
+  - id: DEC-CART-BOUNDARY-001
+    summary: Frontend is the first executor because this task is a bounded frontend-only implementation slice.
+    decision_ref: null
+created_at: "2026-10-06T11:50:00-03:00"

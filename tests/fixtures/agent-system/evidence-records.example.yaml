@@ -1,0 +1,74 @@
+evidence:
+  - schema_version: agent-protocol-proposal-1
+    evidence_id: EVD-SYS-FRONTEND-R2
+    task_id: SYS-CHAIN-001
+    task_revision: 2
+    evidence_type: IMPLEMENTATION_EVIDENCE
+    producer_agent: frontend
+    baseline: {repository: owner/repository, head_sha: abcdef1234567890}
+    result: PASS
+    artifacts: [frontend implementation verification]
+    revalidates:
+      - evidence_id: EVD-SYS-FRONTEND-R1
+        from_revision: 1
+    created_at: "2026-10-05T21:00:00-03:00"
+  - schema_version: agent-protocol-proposal-1
+    evidence_id: EVD-SYS-DISCOVERABILITY-R2
+    task_id: SYS-CHAIN-001
+    task_revision: 2
+    evidence_type: SPECIALIST_EVIDENCE
+    producer_agent: specialist:search-ai-discoverability
+    baseline: {repository: owner/repository, head_sha: abcdef1234567890}
+    result: PASS
+    artifacts: [discoverability validation]
+    created_at: "2026-10-05T21:01:00-03:00"
+  - schema_version: agent-protocol-proposal-1
+    evidence_id: EVD-SYS-QA-R2
+    task_id: SYS-CHAIN-001
+    task_revision: 2
+    evidence_type: QA_EVIDENCE
+    producer_agent: qa
+    baseline: {repository: owner/repository, head_sha: abcdef1234567890}
+    result: PASS
+    artifacts: [qa test report]
+    created_at: "2026-10-05T21:02:00-03:00"
+  - schema_version: agent-protocol-proposal-1
+    evidence_id: EVD-SYS-SECURITY-R2
+    task_id: SYS-CHAIN-001
+    task_revision: 2
+    evidence_type: SECURITY_EVIDENCE
+    producer_agent: security
+    baseline: {repository: owner/repository, head_sha: abcdef1234567890}
+    result: PASS
+    artifacts: [security review]
+    created_at: "2026-10-05T21:03:00-03:00"
+  - schema_version: agent-protocol-proposal-1
+    evidence_id: EVD-SYS-DOCUMENTATION-R2
+    task_id: SYS-CHAIN-001
+    task_revision: 2
+    evidence_type: DOCUMENTATION_EVIDENCE
+    producer_agent: documentation
+    baseline: {repository: owner/repository, head_sha: abcdef1234567890}
+    result: PASS
+    artifacts: [documentation review]
+    created_at: "2026-10-05T21:04:00-03:00"
+  - schema_version: agent-protocol-proposal-1
+    evidence_id: EVD-SYS-AUDIT-R2
+    task_id: SYS-CHAIN-001
+    task_revision: 2
+    evidence_type: AUDIT_EVIDENCE
+    producer_agent: auditor
+    baseline: {repository: owner/repository, head_sha: abcdef1234567890}
+    result: PASS
+    artifacts: [independent audit verdict]
+    created_at: "2026-10-05T21:05:00-03:00"
+  - schema_version: agent-protocol-proposal-1
+    evidence_id: EVD-SYS-FRONTEND-R1
+    task_id: SYS-CHAIN-001
+    task_revision: 1
+    evidence_type: IMPLEMENTATION_EVIDENCE
+    producer_agent: frontend
+    baseline: {repository: owner/repository, head_sha: "1111111"}
+    result: PASS
+    artifacts: [historical frontend implementation verification]
+    created_at: "2026-10-05T20:00:00-03:00"
