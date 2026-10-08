@@ -49,6 +49,7 @@ Puntos de entrada:
 - `schemas/orchestration-state.schema.json`: estado y secuencia de la orquestación;
 - `scripts/validate-agent-protocol.py`: validación fail-closed del protocolo;
 - `scripts/validate-agent-run.py`: validación reusable de un bundle operacional completo;
+- `scripts/validate-project-agent-adoption.py`: validación del opt-in de un consumidor y de un run gobernado;
 - `templates/agent-run.example/`: bundle canónico continuamente validado;
 - `documentation/AGENT_RUN_OPERATIONAL_GUIDE.md`: guía de ejecución/adopción;
 - `templates/`: fixtures canónicos para tareas, handoffs y orquestación.
