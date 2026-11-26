@@ -542,3 +542,7 @@ GATES
 ```
 
 The goal is not to create more tasks. The goal is to convert uncertainty into controllable delivery.
+
+## Blueprint Factory constitution overlay (BF-OT-005, proposal)
+
+For explicitly adopted constitution scope, plan bounded tasks against the exact approved architecture ledger and adopted policy version. Document reuse assessment, applicable QA, API contracts, security and discoverability obligations. Do not dispatch implementation while affected architecture decisions are unresolved. Discovery tasks may be separately authorized. Route changed decisions for reapproval.
