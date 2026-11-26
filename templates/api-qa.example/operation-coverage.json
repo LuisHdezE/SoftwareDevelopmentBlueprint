@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0",
+  "operations": [
+    {
+      "operation_id": "health_get",
+      "request_name": "health_get",
+      "method": "GET",
+      "path": "/health",
+      "scenario": "canonical"
+    }
+  ]
+}
