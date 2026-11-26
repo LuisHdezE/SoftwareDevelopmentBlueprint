@@ -371,3 +371,7 @@ IMPLEMENTATION
 ```
 
 When Planner receives the handoff, it should not need to guess what the requester meant.
+
+## Blueprint Factory constitution overlay (BF-OT-005, proposal)
+
+For explicitly adopted Blueprint Factory constitution scope, recover approved project context and trace requirements to decision questions. Distinguish requirements from technology preferences and unresolved choices. Do not infer owner approval. Identify public/private surfaces, platform targets, data authority and security-sensitive behavior; escalate uncertainty to owner/Architect.
