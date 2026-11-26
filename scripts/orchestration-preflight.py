@@ -21,6 +21,19 @@ def module(name, filename):
 approval = module("approval", "validate-architecture-approval.py")
 protocol = module("protocol", "validate-agent-protocol.py")
 
+class UniqueLoader(yaml.SafeLoader):
+    pass
+
+def unique_mapping(loader, node):
+    result = {}
+    for key, value in loader.construct_pairs(node):
+        if key in result:
+            raise ValueError("duplicate YAML key: " + str(key))
+        result[key] = value
+    return result
+
+UniqueLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, unique_mapping)
+
 def evaluate(task, ledger, review, now):
     schema = approval.load(ROOT / "schemas/task-packet.schema.json")
     Draft202012Validator(schema).validate(task)
@@ -31,6 +44,19 @@ def evaluate(task, ledger, review, now):
     if ledger["project"]["repository"] != task["baseline"]["repository"]:
         errors.append("task and ledger repository mismatch")
     required = set(task["required_agents"])
+    registry = approval.load(ROOT / "catalog/agent-policy-registry.proposal.json")
+    known = {agent["id"] for agent in registry["agents"]}
+    declared = required | set(task["optional_agents"]) | set(task["not_applicable_agents"])
+    if not declared <= known:
+        errors.append("unknown agent in task packet")
+    if task["validation"]["tests"] != "required":
+        errors.append("implementation tests must be required")
+    if task["dependencies"]:
+        errors.append("dependency evidence not supported by this preflight; validate predecessor chain before dispatch")
+    if len(task["baseline"]["base_sha"]) != 40:
+        errors.append("full baseline commit required")
+    if task["baseline"].get("head_sha") and len(task["baseline"]["head_sha"]) != 40:
+        errors.append("full candidate commit required")
     if not {"qa", "auditor"} <= required:
         errors.append("QA and Auditor required for implementation preflight")
     if task["owner_agent"] not in {"backend", "frontend", "database"}:
@@ -50,8 +76,15 @@ def evaluate(task, ledger, review, now):
         if not isinstance(review["evidence"],str) or not review["evidence"].strip():
             errors.append("missing review evidence")
         try:
-            if approval.timestamp(review["reviewed_at"]) > now:
+            reviewed = approval.timestamp(review["reviewed_at"])
+            if reviewed.tzinfo is None:
+                raise ValueError("timezone required")
+            if reviewed > now:
                 errors.append("future review")
+            for decision in ledger["decisions"]:
+                if decision["approval"] and approval.timestamp(decision["approval"]["at"]) > reviewed:
+                    errors.append("review predates individual approval")
+                    break
         except (ValueError, TypeError, AttributeError):
             errors.append("invalid review timestamp")
         if type(review["architecture_changed"]) is not bool:
@@ -68,7 +101,7 @@ def main():
     parser.add_argument("--review", type=Path, required=True)
     args = parser.parse_args()
     try:
-        task = yaml.safe_load(args.task.read_text(encoding="utf-8"))
+        task = yaml.load(args.task.read_text(encoding="utf-8"), Loader=UniqueLoader)
         result = evaluate(task, approval.load(args.ledger), approval.load(args.review), datetime.now(timezone.utc))
     except Exception as exc:
         result = {"status":"BLOCKED","execution_authorized":False,"findings":[str(exc)]}
