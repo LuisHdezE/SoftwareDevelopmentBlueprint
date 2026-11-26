@@ -1,0 +1,32 @@
+name: Blueprint Architecture Approval Validation
+on:
+  push:
+    branches: [main, 'blueprint/**']
+    paths:
+      - 'catalog/architecture-decisions.proposal.json'
+      - 'schemas/architecture-approval.proposal.schema.json'
+      - 'scripts/validate-architecture-approval.py'
+      - 'scripts/test-architecture-approval.py'
+      - 'documentation/BF_OT_004_ARCHITECTURE_APPROVAL.md'
+      - '.github/workflows/blueprint-architecture-approval-validation.yml'
+  pull_request:
+    branches: [main, 'blueprint/**']
+    paths:
+      - 'catalog/architecture-decisions.proposal.json'
+      - 'schemas/architecture-approval.proposal.schema.json'
+      - 'scripts/validate-architecture-approval.py'
+      - 'scripts/test-architecture-approval.py'
+      - 'documentation/BF_OT_004_ARCHITECTURE_APPROVAL.md'
+      - '.github/workflows/blueprint-architecture-approval-validation.yml'
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: [self-hosted, linux, x64, blueprint]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+      - run: python -m pip install --disable-pip-version-check jsonschema==4.26.0 rfc3339-validator==0.1.4
+      - run: python scripts/test-architecture-approval.py
