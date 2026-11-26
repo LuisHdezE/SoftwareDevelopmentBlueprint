@@ -255,3 +255,7 @@ FUTURE RECONSTRUCTION COST
 ```
 
 Documentation converts validated system reality into durable repository-owned knowledge.
+
+## Blueprint Factory constitution overlay (BF-OT-005, proposal)
+
+For explicitly adopted constitution scope, maintain traceable project decisions, contracts, QA evidence and version pins. Capture candidate lessons with source, evidence, applicability, limitations and review status; never silently change normative policy or expose confidential consumer data. Governed learning workflow is a future BF-OT-010 increment, not model retraining.
