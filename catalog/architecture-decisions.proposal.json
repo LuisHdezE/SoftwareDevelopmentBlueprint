@@ -1860,7 +1860,7 @@
     {
       "id": "ARC-087",
       "category": "features",
-      "title": "BI",
+      "title": "Inteligencia de negocios (BI)",
       "question": "¿Cómo analizaremos los indicadores de negocio?",
       "options": [
         "Tableau",
