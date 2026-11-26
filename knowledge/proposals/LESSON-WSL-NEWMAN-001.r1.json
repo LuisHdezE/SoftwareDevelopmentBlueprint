@@ -1,0 +1,29 @@
+{
+  "body": {
+    "id": "LESSON-WSL-NEWMAN-001",
+    "revision": 1,
+    "category": "environment",
+    "author": "qa",
+    "source_repository": "LuisHdezE/SoftwareDevelopmentBlueprint",
+    "source_commit": "bed6fbf81b67aa8ba60c4bf32a8ddbe3d75829c4",
+    "source_task": "BF-OT-008",
+    "created_at": "2026-11-26T10:37:56Z",
+    "scope": "PORTABLE",
+    "technologies": [
+      "Node.js",
+      "Newman",
+      "WSL"
+    ],
+    "title": "Use native Node tooling for Newman on WSL",
+    "observation": "Windows npm invoked from WSL interpreted POSIX paths incorrectly. Native Linux Node tooling resolved the failure.",
+    "recommendation": "Check that npm and npx resolve to native Linux executables before executing Newman with POSIX paths. Keep runtime isolated and verify the exit status and sanitized report.",
+    "limitations": "Observed on one WSL environment with a synthetic API; not a universal Node or Newman diagnosis.",
+    "evidence": [
+      "https://github.com/LuisHdezE/SoftwareDevelopmentBlueprint/pull/82"
+    ],
+    "policy_override": false
+  },
+  "status": "PROPOSED",
+  "review": null,
+  "approval": null
+}
