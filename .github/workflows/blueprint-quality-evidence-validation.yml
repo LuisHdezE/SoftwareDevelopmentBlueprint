@@ -1,0 +1,39 @@
+name: Blueprint Quality Evidence Validation
+on:
+  push:
+    branches: [main, 'blueprint/**']
+    paths:
+      - 'scripts/validate-quality-evidence.py'
+      - 'scripts/test-quality-evidence.py'
+      - 'scripts/run-browser-qa-example.mjs'
+      - 'templates/browser-qa.example/**'
+      - '.github/workflows/blueprint-quality-evidence-validation.yml'
+  pull_request:
+    branches: [main, 'blueprint/**']
+    paths:
+      - 'scripts/validate-quality-evidence.py'
+      - 'scripts/test-quality-evidence.py'
+      - 'scripts/run-browser-qa-example.mjs'
+      - 'templates/browser-qa.example/**'
+      - '.github/workflows/blueprint-quality-evidence-validation.yml'
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: [self-hosted, linux, x64, blueprint]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - run: python scripts/test-quality-evidence.py
+      - name: Install pinned browser tooling in isolated directory
+        run: |
+          mkdir -p "$RUNNER_TEMP/bf-quality-playwright"
+          npm install --prefix "$RUNNER_TEMP/bf-quality-playwright" --no-audit --no-fund playwright@1.65.1
+          "$RUNNER_TEMP/bf-quality-playwright/node_modules/.bin/playwright" install chromium
+      - name: Execute Chromium
+        run: NODE_PATH="$RUNNER_TEMP/bf-quality-playwright/node_modules" node scripts/run-browser-qa-example.mjs

@@ -1,0 +1,8 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Blueprint QA fixture</title>
+<style>body{font:16px system-ui;margin:16px}main{max-width:760px;margin:auto}form{display:flex;gap:8px;flex-wrap:wrap}input,button{font:inherit;padding:8px;max-width:100%;box-sizing:border-box}li{overflow-wrap:anywhere}</style></head>
+<body><main><h1>Reference items</h1><form novalidate><label for="name">Item name</label><input id="name" required><button type="submit">Add item</button></form><p role="alert" id="error"></p><p role="status" id="status">No items</p><ul id="items"></ul></main>
+<script>
+const form=document.querySelector('form'), input=document.querySelector('#name'), error=document.querySelector('#error'), status=document.querySelector('#status'), list=document.querySelector('#items');
+form.addEventListener('submit',e=>{e.preventDefault();const name=input.value.trim();if(!name){error.textContent='Name required';input.focus();return;}error.textContent='';const li=document.createElement('li');li.textContent=name;list.append(li);status.textContent=list.children.length+' item(s)';input.value='';});
+</script></body></html>
