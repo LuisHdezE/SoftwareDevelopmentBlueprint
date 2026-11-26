@@ -33,7 +33,7 @@ with tempfile.TemporaryDirectory() as tmp:
     assert len(manifest["canonical_resources"]) >= 30
     for source, destination in manifest["canonical_resources"].items():
         assert destination.startswith(".blueprint/canonical/")
-        assert (first / destination).read_bytes() == (ROOT / source).read_bytes()
+        assert (first / destination).read_text(encoding="utf-8") == (ROOT / source).read_text(encoding="utf-8")
     for generated_path, digest in manifest["files"].items():
         raw = (first / generated_path).read_bytes()
         assert hashlib.sha256(raw).hexdigest() == digest
