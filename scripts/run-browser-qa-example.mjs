@@ -1,4 +1,8 @@
-import { chromium } from 'playwright';
+import { createRequire } from 'node:module';
+const require=createRequire(import.meta.url);
+const { chromium }=require('playwright');
+const runnerVersion=require('playwright/package.json').version;
+if(runnerVersion!=='1.65.1')throw new Error('Expected Playwright 1.65.1');
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
@@ -26,5 +30,5 @@ try {
    assert.deepEqual(errors,[]);executed++;
   }finally{await context.close();}
  }
- console.log(JSON.stringify({scope:'synthetic_browser_only',runner:'playwright',browser:browser.version(),viewports:2,executed,failures:0}));
+ console.log(JSON.stringify({scope:'synthetic_browser_only',runner:'playwright',runnerVersion,browser:browser.version(),viewports:2,executed,failures:0}));
 }finally{if(browser)await browser.close();await new Promise(resolve=>server.close(resolve));}
