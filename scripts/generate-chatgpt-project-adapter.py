@@ -57,6 +57,8 @@ This is a review package, not an account change. To use it manually:
 
 The kit contains three knowledge files, within the current 25-file project limit for ChatGPT Plus. Actual limits and workspace settings can change; check the Project UI if the account differs.
 
+Before uploading proprietary or sensitive source material, check the ChatGPT Data Controls setting: for Plus, project information may be used to improve models if “Improve the model for everyone” is on.
+
 This adapter targets Projects because current OpenAI help documentation says new GPT creation is unavailable on personal accounts, including Plus. It does not create a GPT, project, API skill, connector, or credential. Projects provide instructions and reference files, not hard policy enforcement or independent agent execution.
 
 A role analysis in one ChatGPT conversation is not an independent review. Do not mark QA, Security, or Auditor approval based on role prompting alone. Packaged scripts are reference materials; they run only when an authorized execution tool is actually available.

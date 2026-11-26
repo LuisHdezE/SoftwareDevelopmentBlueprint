@@ -9,7 +9,7 @@ The generator creates a review-only kit with:
 - Three knowledge files containing the exact 12 canonical role contracts, 16 materialized skills, and text resources referenced by those skills.
 - README-SETUP.md and blueprint-adapter-manifest.json with the exact source commit, resource mapping, and SHA-256 hashes.
 
-Three knowledge files stay below the current Plus Project file limit of 25. The limit and availability may change; check the destination UI at adoption time.
+Three knowledge files stay below the current Plus Project file limit of 25. The limit and availability may change; check the destination UI at adoption time. Before uploading proprietary or sensitive project data, check Data Controls: Plus project content may be used to improve models if “Improve the model for everyone” is on.
 
 ## Platform boundary
 

@@ -58,7 +58,8 @@ with tempfile.TemporaryDirectory() as tmp:
     for required in ("Clean Architecture", "one by one", "not an independent review",
                      "Never claim delegation", "Do not merge", "final approver"):
         assert required.lower() in instructions.lower()
-    assert "role analysis" in (first / "README-SETUP.md").read_text(encoding="utf-8")
+    readme = (first / "README-SETUP.md").read_text(encoding="utf-8")
+    assert "role analysis" in readme and "Data Controls" in readme
     assert len(list((first / "knowledge").glob("*.md"))) == 3
     print("PASS project instructions, approval boundaries and three-file kit")
 
