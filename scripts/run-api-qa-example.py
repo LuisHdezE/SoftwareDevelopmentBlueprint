@@ -2,6 +2,7 @@
 """Execute the synthetic health endpoint on loopback using pinned Newman."""
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -26,6 +27,8 @@ def main():
     npx=shutil.which("npx")
     if not npx:
         raise RuntimeError("Node/npm npx required")
+    if os.name == "posix" and str(Path(npx).resolve()).startswith("/mnt/"):
+        raise RuntimeError("Use native Linux Node/npm in WSL; Windows npx cannot consume POSIX paths")
     server=ThreadingHTTPServer(("127.0.0.1",0),Handler)
     thread=threading.Thread(target=server.serve_forever,daemon=True)
     thread.start()
