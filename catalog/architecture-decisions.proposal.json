@@ -1,0 +1,2966 @@
+{
+  "schema_version": "1.0.0",
+  "catalog_version": "proposal-1",
+  "status": "PROPOSED",
+  "policy": "BF-P03",
+  "note": "Options are illustrative, not selected; related_decisions are compatibility links, not execution order. All decisions require explicit applicability and owner resolution; conditional N/A never waives applicable policy.",
+  "decisions": [
+    {
+      "id": "ARC-001",
+      "category": "project",
+      "title": "Tipo de proyecto",
+      "question": "¿Partimos de cero, modernizamos o ampliamos un sistema?",
+      "options": [
+        "Greenfield",
+        "Brownfield",
+        "Ampliación"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-002",
+      "category": "project",
+      "title": "Modelo de aplicación",
+      "question": "¿Qué plataformas y superficies necesita el producto?",
+      "options": [
+        "Web",
+        "API",
+        "Android",
+        "iOS",
+        "Escritorio",
+        "Multiplataforma"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-003",
+      "category": "project",
+      "title": "Arquitectura",
+      "question": "¿Qué arquitectura y límites de dependencia se adoptarán?",
+      "options": [
+        "Clean Architecture",
+        "Ports & Adapters",
+        "Alternativa con excepción"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [],
+      "policy": "BF-P01"
+    },
+    {
+      "id": "ARC-004",
+      "category": "project",
+      "title": "Distribución",
+      "question": "¿Cómo distribuiremos los módulos y procesos?",
+      "options": [
+        "Monolito modular",
+        "Microservicios",
+        "Aplicación autónoma"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-005",
+      "category": "project",
+      "title": "Modelo de negocio",
+      "question": "¿A cuántas organizaciones sirve el producto?",
+      "options": [
+        "Individual",
+        "Multiempresa",
+        "SaaS"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-006",
+      "category": "project",
+      "title": "Tenancy",
+      "question": "¿Cómo se aislarán los datos de cada organización?",
+      "options": [
+        "Sin tenants",
+        "BD compartida",
+        "BD por tenant",
+        "Esquema por tenant"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-005"
+      ]
+    },
+    {
+      "id": "ARC-007",
+      "category": "project",
+      "title": "Organización del código",
+      "question": "¿Cómo organizaremos los repositorios?",
+      "options": [
+        "Monorepo",
+        "Repositorios independientes"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-008",
+      "category": "project",
+      "title": "Modelado del dominio",
+      "question": "¿Cómo representaremos las reglas de negocio?",
+      "options": [
+        "DDD",
+        "Casos de uso",
+        "Módulos funcionales"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-009",
+      "category": "backend",
+      "title": "Lenguaje backend",
+      "question": "¿En qué lenguaje implementaremos el servidor?",
+      "options": [
+        "PHP",
+        "C#",
+        "TypeScript",
+        "Python",
+        "Java",
+        "Kotlin"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-010",
+      "category": "backend",
+      "title": "Framework backend",
+      "question": "¿Qué framework o runtime usaremos?",
+      "options": [
+        "Laravel",
+        "ASP.NET Core",
+        "NestJS",
+        "Fastify",
+        "FastAPI",
+        "Spring Boot"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-009"
+      ],
+      "reference": "ApiBlueprint"
+    },
+    {
+      "id": "ARC-011",
+      "category": "backend",
+      "title": "Versiones tecnológicas",
+      "question": "¿Qué versiones exactas y compatibles fijaremos?",
+      "options": [
+        "Versiones soportadas y fijadas",
+        "Matriz de compatibilidad"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-009",
+        "ARC-010",
+        "ARC-039",
+        "ARC-062"
+      ]
+    },
+    {
+      "id": "ARC-012",
+      "category": "backend",
+      "title": "Acceso a datos",
+      "question": "¿Qué adaptadores de persistencia utilizaremos?",
+      "options": [
+        "Eloquent",
+        "EF Core",
+        "Prisma",
+        "SQL explícito"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-009",
+        "ARC-010",
+        "ARC-017"
+      ]
+    },
+    {
+      "id": "ARC-013",
+      "category": "backend",
+      "title": "Procesos asíncronos",
+      "question": "¿Cómo ejecutaremos trabajos fuera de la petición?",
+      "options": [
+        "Jobs",
+        "Workers",
+        "Colas",
+        "Ejecución síncrona"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-014",
+      "category": "backend",
+      "title": "Caché",
+      "question": "¿Qué mecanismo de caché necesita el servidor?",
+      "options": [
+        "Redis",
+        "Archivos",
+        "Memoria",
+        "Base de datos",
+        "Sin caché"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-015",
+      "category": "backend",
+      "title": "Reglas de negocio",
+      "question": "¿Dónde residirán las reglas y cómo se configurarán?",
+      "options": [
+        "Código",
+        "Reglas configurables",
+        "Motor especializado"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-016",
+      "category": "backend",
+      "title": "Tareas programadas",
+      "question": "¿Cómo ejecutaremos procesos periódicos?",
+      "options": [
+        "Scheduler",
+        "Cron",
+        "Servicios externos"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-017",
+      "category": "data",
+      "title": "Motor principal",
+      "question": "¿Qué base de datos será autoritativa?",
+      "options": [
+        "MySQL",
+        "PostgreSQL",
+        "SQL Server",
+        "SQLite",
+        "MongoDB",
+        "Firestore"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-018",
+      "category": "data",
+      "title": "Persistencia local",
+      "question": "¿Cómo almacenaremos datos en el dispositivo o navegador?",
+      "options": [
+        "SQLite",
+        "Room",
+        "IndexedDB",
+        "SQLDelight"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-002"
+      ]
+    },
+    {
+      "id": "ARC-019",
+      "category": "data",
+      "title": "Fuente autoritativa",
+      "question": "¿Qué sistema decide el estado válido de los datos?",
+      "options": [
+        "Servidor",
+        "Dispositivo",
+        "Servicio externo"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-020",
+      "category": "data",
+      "title": "Multimedia",
+      "question": "¿Dónde almacenaremos archivos e imágenes?",
+      "options": [
+        "Local",
+        "S3",
+        "Cloudflare R2",
+        "Google Drive"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-021",
+      "category": "data",
+      "title": "Migraciones",
+      "question": "¿Cómo versionaremos los cambios del esquema?",
+      "options": [
+        "Migraciones versionadas",
+        "Migraciones automatizadas"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-022",
+      "category": "data",
+      "title": "Históricos",
+      "question": "¿Cómo conservaremos datos y campañas anteriores?",
+      "options": [
+        "Histórico",
+        "Versionado",
+        "Archivado"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-023",
+      "category": "data",
+      "title": "Copias de seguridad",
+      "question": "¿Qué frecuencia, destino y retención tendrán las copias?",
+      "options": [
+        "Automatizadas",
+        "Manuales controladas",
+        "Gestionadas"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-024",
+      "category": "data",
+      "title": "Recuperación",
+      "question": "¿Cómo probaremos restauración y contingencia?",
+      "options": [
+        "Restauración periódica",
+        "Plan de contingencia",
+        "PITR"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-025",
+      "category": "data",
+      "title": "Eliminación",
+      "question": "¿Qué sucede cuando se elimina un registro?",
+      "options": [
+        "Física",
+        "Lógica",
+        "Archivado"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-026",
+      "category": "data",
+      "title": "Integridad y concurrencia",
+      "question": "¿Cómo evitaremos inconsistencias y actualizaciones perdidas?",
+      "options": [
+        "Transacciones",
+        "Restricciones",
+        "Locking",
+        "Control optimista"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-027",
+      "category": "data",
+      "title": "Sincronización",
+      "question": "¿Cómo sincronizaremos y resolveremos conflictos?",
+      "options": [
+        "Unidireccional",
+        "Bidireccional",
+        "Resolución explícita"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-018",
+        "ARC-019"
+      ]
+    },
+    {
+      "id": "ARC-028",
+      "category": "api",
+      "title": "Existencia de API",
+      "question": "¿Necesitamos API y quién podrá consumirla?",
+      "options": [
+        "Pública",
+        "Privada",
+        "Interna",
+        "Ninguna"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-029",
+      "category": "api",
+      "title": "Arquitectura API",
+      "question": "¿Qué estilo de comunicación utilizará la API?",
+      "options": [
+        "REST",
+        "GraphQL",
+        "gRPC"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-028"
+      ],
+      "reference": "ApiBlueprint"
+    },
+    {
+      "id": "ARC-030",
+      "category": "api",
+      "title": "Versionado API",
+      "question": "¿Cómo mantendremos compatibles los contratos?",
+      "options": [
+        "Ruta /api/v1",
+        "Cabeceras",
+        "Versionado de esquema"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-028",
+        "ARC-029"
+      ]
+    },
+    {
+      "id": "ARC-031",
+      "category": "api",
+      "title": "Contrato API",
+      "question": "¿Cómo documentaremos el contrato formal?",
+      "options": [
+        "OpenAPI",
+        "Swagger UI",
+        "Contrato equivalente no HTTP"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-028",
+        "ARC-029"
+      ],
+      "policy": "BF-P05",
+      "reference": "ApiBlueprint"
+    },
+    {
+      "id": "ARC-032",
+      "category": "api",
+      "title": "Autenticación API",
+      "question": "¿Cómo se autenticarán los consumidores?",
+      "options": [
+        "Sanctum",
+        "JWT",
+        "OAuth2",
+        "API Keys"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-028",
+        "ARC-074"
+      ],
+      "reference": "ApiBlueprint"
+    },
+    {
+      "id": "ARC-033",
+      "category": "api",
+      "title": "Respuestas y errores",
+      "question": "¿Qué contrato uniforme de respuesta y error usaremos?",
+      "options": [
+        "RFC 9457",
+        "Contrato tipado",
+        "Otro contrato explícito"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-034",
+      "category": "api",
+      "title": "Paginación y consultas",
+      "question": "¿Cómo se consultarán colecciones?",
+      "options": [
+        "Cursor",
+        "Offset",
+        "Filtros",
+        "Ordenamiento",
+        "Búsqueda"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-035",
+      "category": "api",
+      "title": "Idempotencia",
+      "question": "¿Qué operaciones requieren protección frente a repetición?",
+      "options": [
+        "Claves de idempotencia",
+        "Restricciones",
+        "Deduplicación"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-036",
+      "category": "api",
+      "title": "Límites de peticiones",
+      "question": "¿Cómo limitaremos abuso y consumo?",
+      "options": [
+        "Rate limiting",
+        "Cuotas",
+        "Límites por identidad"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-037",
+      "category": "api",
+      "title": "Integraciones externas",
+      "question": "¿Qué proveedores y webhooks se integrarán?",
+      "options": [
+        "Servicios externos",
+        "Webhooks",
+        "Ninguno"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-038",
+      "category": "api",
+      "title": "Tiempo real",
+      "question": "¿Cómo se transmitirán actualizaciones en tiempo real?",
+      "options": [
+        "WebSockets",
+        "SSE",
+        "Polling"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-039",
+      "category": "web",
+      "title": "Frontend web",
+      "question": "¿Qué tecnología construirá la interfaz web?",
+      "options": [
+        "React",
+        "Vue",
+        "Angular",
+        "Svelte",
+        "Livewire",
+        "Blade"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-002"
+      ],
+      "reference": "WebBlueprint"
+    },
+    {
+      "id": "ARC-040",
+      "category": "web",
+      "title": "Lenguaje frontend",
+      "question": "¿Qué lenguaje utilizaremos en el cliente?",
+      "options": [
+        "TypeScript",
+        "JavaScript"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-039"
+      ]
+    },
+    {
+      "id": "ARC-041",
+      "category": "web",
+      "title": "Construcción frontend",
+      "question": "¿Qué herramienta construirá o renderizará el frontend?",
+      "options": [
+        "Vite",
+        "Next.js",
+        "Nuxt",
+        "Toolchain del framework"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-039",
+        "ARC-040"
+      ],
+      "reference": "WebBlueprint"
+    },
+    {
+      "id": "ARC-042",
+      "category": "web",
+      "title": "Estilos",
+      "question": "¿Cómo implementaremos los estilos y tokens?",
+      "options": [
+        "Tailwind CSS",
+        "Bootstrap",
+        "CSS personalizado"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [],
+      "reference": "WebBlueprint"
+    },
+    {
+      "id": "ARC-043",
+      "category": "web",
+      "title": "Componentes UI",
+      "question": "¿Qué biblioteca de componentes emplearemos?",
+      "options": [
+        "shadcn/ui",
+        "Flux UI",
+        "Material UI",
+        "PrimeVue",
+        "WebBlueprint"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-039",
+        "ARC-042"
+      ],
+      "reference": "WebBlueprint"
+    },
+    {
+      "id": "ARC-044",
+      "category": "web",
+      "title": "Estado cliente",
+      "question": "¿Cómo compartiremos estado local como carrito, sesión o preferencias?",
+      "options": [
+        "Zustand",
+        "Redux",
+        "Pinia",
+        "Estado propio del framework"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-039"
+      ]
+    },
+    {
+      "id": "ARC-045",
+      "category": "web",
+      "title": "Consultas al servidor",
+      "question": "¿Cómo gestionaremos carga, caché, errores y actualización de datos de API?",
+      "options": [
+        "TanStack Query",
+        "Servicios propios",
+        "Mecanismo del framework"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-028",
+        "ARC-039"
+      ]
+    },
+    {
+      "id": "ARC-046",
+      "category": "web",
+      "title": "Diseño adaptable",
+      "question": "¿Diseñaremos primero para móvil o escritorio y cómo adaptaremos otras pantallas?",
+      "options": [
+        "Mobile-first",
+        "Desktop-first",
+        "Responsive por superficie"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [],
+      "reference": "WebBlueprint"
+    },
+    {
+      "id": "ARC-047",
+      "category": "web",
+      "title": "Temas",
+      "question": "¿Qué temas y preferencias visuales soportaremos?",
+      "options": [
+        "Claro",
+        "Oscuro",
+        "Configurable"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-048",
+      "category": "web",
+      "title": "Internacionalización",
+      "question": "¿Qué idiomas, monedas, fechas y unidades soportaremos?",
+      "options": [
+        "Un idioma",
+        "Multilingüe",
+        "Localización regional"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-049",
+      "category": "web",
+      "title": "Accesibilidad",
+      "question": "¿Qué nivel y pruebas de accesibilidad exigiremos?",
+      "options": [
+        "WCAG 2.2 AA",
+        "Nivel superior",
+        "Requisitos específicos"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-050",
+      "category": "web",
+      "title": "SEO",
+      "question": "¿Cómo prepararemos las páginas públicas para buscadores?",
+      "options": [
+        "Metadatos",
+        "Sitemap",
+        "Canónicas",
+        "HTML accesible"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-051",
+      "category": "web",
+      "title": "PWA",
+      "question": "¿Necesitamos instalación web y capacidades offline?",
+      "options": [
+        "PWA",
+        "Web convencional",
+        "Offline parcial"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-052",
+      "category": "admin",
+      "title": "Panel administrativo",
+      "question": "¿Cómo administraremos los datos y operaciones internas?",
+      "options": [
+        "FilamentPHP",
+        "React",
+        "Vue",
+        "Livewire",
+        "Personalizado"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-010",
+        "ARC-039"
+      ],
+      "reference": "WebBlueprint"
+    },
+    {
+      "id": "ARC-053",
+      "category": "admin",
+      "title": "Separación de interfaces",
+      "question": "¿Qué interfaces pública, administrativa y de cliente existirán?",
+      "options": [
+        "Admin",
+        "Sitio público",
+        "Portal cliente"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-054",
+      "category": "admin",
+      "title": "Gestión de usuarios",
+      "question": "¿Cómo se organizan usuarios y ámbitos administrativos?",
+      "options": [
+        "Centralizada",
+        "Por empresa",
+        "Por tenant"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-055",
+      "category": "admin",
+      "title": "CRUD administrativos",
+      "question": "¿Cómo implementaremos altas, bajas y modificaciones?",
+      "options": [
+        "Generados",
+        "Personalizados",
+        "Híbridos"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-056",
+      "category": "admin",
+      "title": "Configuración",
+      "question": "¿Qué reglas y parámetros serán editables desde la interfaz?",
+      "options": [
+        "Configuración por interfaz",
+        "Configuración versionada",
+        "Mixta"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-057",
+      "category": "admin",
+      "title": "Branding",
+      "question": "¿Qué elementos de identidad podrá cambiar el administrador?",
+      "options": [
+        "Logo",
+        "Colores",
+        "Identidad configurable"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-058",
+      "category": "admin",
+      "title": "Dashboard",
+      "question": "¿Qué indicadores y alertas necesita la administración?",
+      "options": [
+        "Indicadores",
+        "Alertas",
+        "Gráficos"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-059",
+      "category": "admin",
+      "title": "Importación",
+      "question": "¿Qué formatos y fuentes importaremos?",
+      "options": [
+        "Excel",
+        "CSV",
+        "JSON",
+        "Sistemas legacy"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-060",
+      "category": "admin",
+      "title": "Exportación",
+      "question": "¿Qué formatos de salida entregaremos?",
+      "options": [
+        "Excel",
+        "CSV",
+        "PDF",
+        "JSON"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-061",
+      "category": "client",
+      "title": "Plataformas móviles",
+      "question": "¿Qué plataformas móviles se entregarán?",
+      "options": [
+        "Android",
+        "iOS",
+        "Ambas",
+        "Ninguna"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-062",
+      "category": "client",
+      "title": "Tecnología móvil",
+      "question": "¿Qué tecnología generará las aplicaciones móviles?",
+      "options": [
+        "Kotlin nativo",
+        "Swift",
+        "KMP",
+        "React Native",
+        "Flutter",
+        "NativePHP"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-061"
+      ]
+    },
+    {
+      "id": "ARC-063",
+      "category": "client",
+      "title": "Interfaz móvil",
+      "question": "¿Qué toolkit construirá la UI móvil?",
+      "options": [
+        "Jetpack Compose",
+        "SwiftUI",
+        "Compose Multiplatform",
+        "React Native UI",
+        "Flutter widgets"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-062"
+      ]
+    },
+    {
+      "id": "ARC-064",
+      "category": "client",
+      "title": "Arquitectura móvil",
+      "question": "¿Cómo organizaremos dominio y presentación móvil?",
+      "options": [
+        "Clean Architecture",
+        "MVVM",
+        "MVI"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-003",
+        "ARC-062"
+      ]
+    },
+    {
+      "id": "ARC-065",
+      "category": "client",
+      "title": "Conectividad",
+      "question": "¿Cómo funcionará el producto sin conexión?",
+      "options": [
+        "Online",
+        "Offline-first",
+        "Offline autónomo"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-061"
+      ]
+    },
+    {
+      "id": "ARC-066",
+      "category": "client",
+      "title": "Persistencia móvil",
+      "question": "¿Qué almacenamiento local emplearemos?",
+      "options": [
+        "Room",
+        "SQLite",
+        "SQLDelight"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-062",
+        "ARC-065"
+      ]
+    },
+    {
+      "id": "ARC-067",
+      "category": "client",
+      "title": "Sincronización móvil",
+      "question": "¿Cuándo y cómo se sincronizará el dispositivo?",
+      "options": [
+        "Automática",
+        "Manual",
+        "Segundo plano"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-065",
+        "ARC-066"
+      ]
+    },
+    {
+      "id": "ARC-068",
+      "category": "client",
+      "title": "Notificaciones",
+      "question": "¿Qué notificaciones necesita la aplicación?",
+      "options": [
+        "Push",
+        "Locales",
+        "Ninguna"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-069",
+      "category": "client",
+      "title": "Hardware",
+      "question": "¿Qué capacidades de hardware utilizará?",
+      "options": [
+        "Cámara",
+        "GPS",
+        "NFC",
+        "Bluetooth",
+        "USB",
+        "Biometría"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-070",
+      "category": "client",
+      "title": "Distribución móvil",
+      "question": "¿Cómo distribuiremos cada plataforma?",
+      "options": [
+        "Google Play",
+        "App Store",
+        "APK directa"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-061",
+        "ARC-062"
+      ]
+    },
+    {
+      "id": "ARC-071",
+      "category": "client",
+      "title": "Licenciamiento móvil",
+      "question": "¿Qué licencia o modelo de acceso tendrá?",
+      "options": [
+        "Gratuito",
+        "Suscripción",
+        "Pago único",
+        "Licencia offline"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-061"
+      ]
+    },
+    {
+      "id": "ARC-072",
+      "category": "client",
+      "title": "Escritorio",
+      "question": "¿Qué tecnología emplearemos para escritorio?",
+      "options": [
+        "NativePHP",
+        "Electron",
+        "Tauri",
+        ".NET"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-073",
+      "category": "client",
+      "title": "Actualizaciones",
+      "question": "¿Cómo actualizaremos los clientes instalados?",
+      "options": [
+        "Manuales",
+        "Automáticas",
+        "Tiendas"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-074",
+      "category": "security",
+      "title": "Autenticación",
+      "question": "¿Cómo se identificará a los usuarios?",
+      "options": [
+        "Sesiones",
+        "Tokens",
+        "OAuth2",
+        "SSO"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-075",
+      "category": "security",
+      "title": "Autorización",
+      "question": "¿Cómo decidiremos qué operaciones puede realizar cada usuario?",
+      "options": [
+        "RBAC",
+        "ABAC",
+        "Permisos específicos"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-076",
+      "category": "security",
+      "title": "Ámbitos de acceso",
+      "question": "¿Qué ámbitos limitarán el acceso a los datos?",
+      "options": [
+        "Organización",
+        "Empresa",
+        "Territorio",
+        "Usuario"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-005",
+        "ARC-006",
+        "ARC-075"
+      ]
+    },
+    {
+      "id": "ARC-077",
+      "category": "security",
+      "title": "Contraseñas",
+      "question": "¿Cómo se almacenarán y recuperarán las credenciales?",
+      "options": [
+        "Hashing seguro",
+        "Recuperación",
+        "Proveedor externo"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-078",
+      "category": "security",
+      "title": "Segundo factor",
+      "question": "¿Qué autenticación adicional exigiremos?",
+      "options": [
+        "2FA",
+        "MFA",
+        "Biometría",
+        "Según riesgo"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-079",
+      "category": "security",
+      "title": "Protección web",
+      "question": "¿Cómo mitigaremos riesgos de navegador y peticiones?",
+      "options": [
+        "CSRF",
+        "XSS",
+        "CORS",
+        "CSP"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-039",
+        "ARC-074"
+      ]
+    },
+    {
+      "id": "ARC-080",
+      "category": "security",
+      "title": "Cifrado",
+      "question": "¿Qué datos se cifrarán y dónde?",
+      "options": [
+        "TLS",
+        "En reposo",
+        "Por campo"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-081",
+      "category": "security",
+      "title": "Secretos",
+      "question": "¿Dónde almacenaremos claves y credenciales?",
+      "options": [
+        "Variables de entorno",
+        "Gestor de secretos"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-082",
+      "category": "security",
+      "title": "Auditoría",
+      "question": "¿Qué eventos críticos registraremos y quién podrá consultarlos?",
+      "options": [
+        "Eventos críticos",
+        "Historial",
+        "Registro inmutable"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-083",
+      "category": "security",
+      "title": "Privacidad",
+      "question": "¿Cómo clasificaremos y retendremos datos personales?",
+      "options": [
+        "Minimización",
+        "Retención",
+        "Control de acceso"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-084",
+      "category": "security",
+      "title": "Dependencias",
+      "question": "¿Cómo detectaremos vulnerabilidades de dependencias?",
+      "options": [
+        "Escaneo SCA",
+        "Actualizaciones",
+        "Lockfiles"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-085",
+      "category": "security",
+      "title": "Sesiones",
+      "question": "¿Cómo expirarán y se revocarán sesiones y tokens?",
+      "options": [
+        "Expiración",
+        "Revocación",
+        "Dispositivos"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-086",
+      "category": "features",
+      "title": "Reportes",
+      "question": "¿Qué informes necesita el producto?",
+      "options": [
+        "Internos",
+        "Configurables",
+        "Especializados"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-087",
+      "category": "features",
+      "title": "Inteligencia de negocios (BI)",
+      "question": "¿Cómo analizaremos los indicadores de negocio?",
+      "options": [
+        "Tableau",
+        "Power BI",
+        "Metabase",
+        "Dashboard propio"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-086"
+      ]
+    },
+    {
+      "id": "ARC-088",
+      "category": "features",
+      "title": "Visualización",
+      "question": "¿Qué biblioteca utilizarán los gráficos?",
+      "options": [
+        "Chart.js",
+        "Recharts",
+        "ECharts"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-089",
+      "category": "features",
+      "title": "GIS",
+      "question": "¿Qué tecnología usaremos para mapas y datos espaciales?",
+      "options": [
+        "Leaflet",
+        "Mapbox",
+        "OpenLayers"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-090",
+      "category": "features",
+      "title": "Documentos",
+      "question": "¿Cómo generaremos documentos imprimibles?",
+      "options": [
+        "PDF",
+        "Impresión",
+        "Plantillas"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-091",
+      "category": "features",
+      "title": "Búsqueda avanzada",
+      "question": "¿Qué motor soportará búsqueda avanzada?",
+      "options": [
+        "SQL",
+        "Meilisearch",
+        "Elasticsearch"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-092",
+      "category": "features",
+      "title": "Pagos",
+      "question": "¿Qué proveedores de pago utilizaremos?",
+      "options": [
+        "Mercado Pago",
+        "Stripe",
+        "Otros"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-093",
+      "category": "features",
+      "title": "Comunicaciones",
+      "question": "¿Qué canales de comunicación se integrarán?",
+      "options": [
+        "Email",
+        "WhatsApp",
+        "SMS"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-094",
+      "category": "features",
+      "title": "Inteligencia artificial (IA)",
+      "question": "¿Qué capacidades y proveedores de IA se utilizarán?",
+      "options": [
+        "Modelos remotos",
+        "Modelos locales",
+        "Ninguno"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-095",
+      "category": "features",
+      "title": "Analítica de usuarios",
+      "question": "¿Qué eventos y métricas se recogerán?",
+      "options": [
+        "Eventos",
+        "Métricas",
+        "Conversiones"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-096",
+      "category": "features",
+      "title": "Multimedia",
+      "question": "¿Cómo procesaremos y presentaremos multimedia?",
+      "options": [
+        "Galerías",
+        "Procesamiento",
+        "Optimización"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-097",
+      "category": "operations",
+      "title": "Hosting",
+      "question": "¿Dónde se alojará la aplicación?",
+      "options": [
+        "cPanel",
+        "VPS",
+        "Cloud Run",
+        "Render"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-098",
+      "category": "operations",
+      "title": "Infraestructura de datos",
+      "question": "¿Dónde se alojarán los datos?",
+      "options": [
+        "Servidor propio",
+        "Neon",
+        "Servicios gestionados"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-017",
+        "ARC-097"
+      ]
+    },
+    {
+      "id": "ARC-099",
+      "category": "operations",
+      "title": "Entornos",
+      "question": "¿Qué entornos estarán separados?",
+      "options": [
+        "Local",
+        "Desarrollo",
+        "Staging",
+        "Producción"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-100",
+      "category": "operations",
+      "title": "Contenedores",
+      "question": "¿Cómo empaquetaremos el runtime?",
+      "options": [
+        "Docker",
+        "Despliegue tradicional"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-101",
+      "category": "operations",
+      "title": "Control de versiones",
+      "question": "¿Qué plataforma de repositorios usaremos?",
+      "options": [
+        "Git",
+        "GitHub"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-102",
+      "category": "operations",
+      "title": "Ramas",
+      "question": "¿Qué estrategia de ramas y revisión adoptaremos?",
+      "options": [
+        "Feature branches",
+        "Trunk-based"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-103",
+      "category": "operations",
+      "title": "CI/CD",
+      "question": "¿Qué sistema automatizará validaciones y despliegues?",
+      "options": [
+        "GitHub Actions",
+        "Otro CI/CD"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-101",
+        "ARC-102"
+      ]
+    },
+    {
+      "id": "ARC-104",
+      "category": "operations",
+      "title": "Despliegue",
+      "question": "¿Cómo publicaremos cada componente?",
+      "options": [
+        "FTP",
+        "SSH",
+        "Contenedores"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-097",
+        "ARC-099",
+        "ARC-103"
+      ]
+    },
+    {
+      "id": "ARC-105",
+      "category": "operations",
+      "title": "Dominios y TLS",
+      "question": "¿Cómo configuraremos DNS y certificados?",
+      "options": [
+        "DNS gestionado",
+        "HTTPS",
+        "TLS"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-106",
+      "category": "operations",
+      "title": "Observabilidad",
+      "question": "¿Qué registros y métricas operativas necesitaremos?",
+      "options": [
+        "Logs",
+        "Métricas",
+        "Trazas"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-107",
+      "category": "operations",
+      "title": "Rollback",
+      "question": "¿Cómo revertiremos un despliegue defectuoso?",
+      "options": [
+        "Rollback",
+        "Restauración"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-108",
+      "category": "operations",
+      "title": "Versiones",
+      "question": "¿Cómo identificaremos entregas?",
+      "options": [
+        "SemVer",
+        "Releases",
+        "Changelog"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-109",
+      "category": "operations",
+      "title": "Costos",
+      "question": "¿Qué presupuesto operativo y licencias autorizaremos?",
+      "options": [
+        "Hosting",
+        "Almacenamiento",
+        "API",
+        "Licencias"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-110",
+      "category": "quality",
+      "title": "Pruebas backend",
+      "question": "¿Con qué herramientas probaremos el servidor?",
+      "options": [
+        "Pest",
+        "PHPUnit",
+        "xUnit",
+        "Jest"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-009",
+        "ARC-010"
+      ]
+    },
+    {
+      "id": "ARC-111",
+      "category": "quality",
+      "title": "Pruebas frontend",
+      "question": "¿Con qué herramientas probaremos el cliente?",
+      "options": [
+        "Vitest",
+        "Jest",
+        "Testing Library"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-039"
+      ]
+    },
+    {
+      "id": "ARC-112",
+      "category": "quality",
+      "title": "E2E",
+      "question": "¿Cómo ejecutaremos pruebas reales en navegador cuando corresponda?",
+      "options": [
+        "Playwright",
+        "Cypress",
+        "Otra herramienta verificable"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-039",
+        "ARC-046"
+      ],
+      "policy": "BF-P07",
+      "reference": "WebBlueprint"
+    },
+    {
+      "id": "ARC-113",
+      "category": "quality",
+      "title": "Pruebas móviles",
+      "question": "¿Qué emuladores y dispositivos verificaremos?",
+      "options": [
+        "Emuladores",
+        "Dispositivos reales"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-061",
+        "ARC-062"
+      ],
+      "policy": "BF-P07"
+    },
+    {
+      "id": "ARC-114",
+      "category": "quality",
+      "title": "Pruebas arquitectónicas",
+      "question": "¿Cómo verificaremos dependencias y límites aprobados?",
+      "options": [
+        "Tests de dependencias",
+        "Tests de capas",
+        "Análisis de boundaries"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-003"
+      ]
+    },
+    {
+      "id": "ARC-115",
+      "category": "quality",
+      "title": "Análisis estático",
+      "question": "¿Qué herramientas detectarán defectos antes de ejecución?",
+      "options": [
+        "Larastan",
+        "PHPStan",
+        "ESLint"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-116",
+      "category": "quality",
+      "title": "Formato",
+      "question": "¿Qué herramientas normalizarán el código?",
+      "options": [
+        "Pint",
+        "Prettier",
+        "Formatter del lenguaje"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-117",
+      "category": "quality",
+      "title": "Cobertura",
+      "question": "¿Qué umbrales de cobertura exigiremos?",
+      "options": [
+        "Por módulo",
+        "Por riesgo",
+        "Por tipo de prueba"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-118",
+      "category": "quality",
+      "title": "Rendimiento",
+      "question": "¿Qué límites de latencia, carga y consumo aceptaremos?",
+      "options": [
+        "Carga",
+        "Concurrencia",
+        "Consumo"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-119",
+      "category": "quality",
+      "title": "Evidencias",
+      "question": "¿Cómo registraremos resultados reproducibles?",
+      "options": [
+        "Capturas",
+        "Logs",
+        "Vídeos",
+        "Reportes"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-120",
+      "category": "quality",
+      "title": "Datos de demo",
+      "question": "¿Cómo crearemos datos reproducibles no sensibles?",
+      "options": [
+        "Seeders",
+        "Datos sintéticos"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-121",
+      "category": "quality",
+      "title": "Documentación",
+      "question": "¿Qué documentación entregaremos?",
+      "options": [
+        "Técnica",
+        "Funcional",
+        "Usuario",
+        "Operación"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-122",
+      "category": "quality",
+      "title": "Aceptación",
+      "question": "¿Qué criterios deben cumplirse para aprobar una entrega?",
+      "options": [
+        "Criterios trazables",
+        "QA",
+        "Auditoría",
+        "Aprobación humana"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": []
+    },
+    {
+      "id": "ARC-123",
+      "category": "discoverability",
+      "title": "GEO y AEO",
+      "question": "¿Cómo haremos comprensible el contenido público para buscadores con IA?",
+      "options": [
+        "Contenido semántico",
+        "Respuestas claras",
+        "Entidades verificables"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-050",
+        "ARC-129"
+      ],
+      "policy": "BF-P09"
+    },
+    {
+      "id": "ARC-124",
+      "category": "discoverability",
+      "title": "Rastreadores IA",
+      "question": "¿Qué rastreadores autorizaremos para búsqueda y cuáles para entrenamiento?",
+      "options": [
+        "Permitir búsqueda",
+        "Permitir entrenamiento",
+        "Bloquear entrenamiento"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-129"
+      ],
+      "policy": "BF-P09"
+    },
+    {
+      "id": "ARC-125",
+      "category": "discoverability",
+      "title": "Datos estructurados",
+      "question": "¿Qué marcado estructurado necesita cada superficie pública?",
+      "options": [
+        "Schema.org",
+        "JSON-LD"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-129"
+      ],
+      "policy": "BF-P09"
+    },
+    {
+      "id": "ARC-126",
+      "category": "discoverability",
+      "title": "Renderizado",
+      "question": "¿Qué estrategia permitirá acceder al contenido público?",
+      "options": [
+        "SSR",
+        "SSG",
+        "CSR",
+        "Prerenderizado"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-039",
+        "ARC-129"
+      ],
+      "policy": "BF-P09"
+    },
+    {
+      "id": "ARC-127",
+      "category": "discoverability",
+      "title": "IndexNow",
+      "question": "¿Usaremos notificación de cambios a buscadores compatibles?",
+      "options": [
+        "IndexNow",
+        "Sitemap y rastreo",
+        "No adopción justificada"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-129"
+      ],
+      "policy": "BF-P09"
+    },
+    {
+      "id": "ARC-128",
+      "category": "discoverability",
+      "title": "Monitorización",
+      "question": "¿Cómo observaremos visibilidad en buscadores e IA?",
+      "options": [
+        "Search Console",
+        "Bing Webmaster Tools",
+        "Referencias de IA"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-123",
+        "ARC-129"
+      ],
+      "policy": "BF-P09"
+    },
+    {
+      "id": "ARC-129",
+      "category": "discoverability",
+      "title": "Exposición",
+      "question": "¿Qué rutas serán indexables, no indexables o privadas?",
+      "options": [
+        "PUBLIC_INDEXABLE",
+        "PUBLIC_NO_INDEX",
+        "PRIVATE"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [],
+      "policy": "BF-P09"
+    },
+    {
+      "id": "ARC-130",
+      "category": "api_qa",
+      "title": "Estrategia API QA",
+      "question": "¿Cómo probaremos el comportamiento real de la API?",
+      "options": [
+        "Postman/Newman",
+        "Postman CLI",
+        "Pruebas de integración complementarias"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-028",
+        "ARC-031"
+      ],
+      "policy": "BF-P06",
+      "reference": "ApiBlueprint"
+    },
+    {
+      "id": "ARC-131",
+      "category": "api_qa",
+      "title": "Colecciones Postman",
+      "question": "¿Cómo entregaremos la colección importable con scripts?",
+      "options": [
+        "JSON versionado",
+        "Generación desde OpenAPI"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-130",
+        "ARC-031"
+      ],
+      "policy": "BF-P06",
+      "reference": "ApiBlueprint"
+    },
+    {
+      "id": "ARC-132",
+      "category": "api_qa",
+      "title": "Entornos de prueba",
+      "question": "¿Dónde y con qué datos aislados ejecutaremos QA?",
+      "options": [
+        "Local aislado",
+        "CI efímero",
+        "Staging aislado"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-099",
+        "ARC-130"
+      ],
+      "policy": "BF-P06"
+    },
+    {
+      "id": "ARC-133",
+      "category": "api_qa",
+      "title": "Automatización CI",
+      "question": "¿Cómo se ejecutarán las colecciones en CI/CD?",
+      "options": [
+        "Newman",
+        "Postman CLI",
+        "Runner compatible"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-103",
+        "ARC-131",
+        "ARC-132"
+      ],
+      "policy": "BF-P06",
+      "reference": "ApiBlueprint"
+    },
+    {
+      "id": "ARC-134",
+      "category": "api_qa",
+      "title": "Flujos encadenados",
+      "question": "¿Qué operaciones dependientes verificaremos juntas?",
+      "options": [
+        "Autenticación",
+        "CRUD",
+        "Flujos de negocio",
+        "Limpieza"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-131",
+        "ARC-132"
+      ],
+      "policy": "BF-P06"
+    },
+    {
+      "id": "ARC-135",
+      "category": "api_qa",
+      "title": "Informes QA",
+      "question": "¿Qué resultados y evidencias sanitizadas conservaremos?",
+      "options": [
+        "JSON",
+        "JUnit",
+        "Resumen reproducible"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-130"
+      ],
+      "policy": "BF-P06"
+    },
+    {
+      "id": "ARC-136",
+      "category": "api_qa",
+      "title": "Rendimiento API",
+      "question": "¿Qué umbrales de respuesta tendrán las operaciones?",
+      "options": [
+        "Por operación",
+        "Por perfil de carga"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-118",
+        "ARC-130"
+      ],
+      "policy": "BF-P06"
+    },
+    {
+      "id": "ARC-137",
+      "category": "api_qa",
+      "title": "Cobertura OpenAPI",
+      "question": "¿Cómo verificaremos que cada operationId tiene pruebas?",
+      "options": [
+        "Mapa de cobertura",
+        "Reconciliación contrato/rutas/colección"
+      ],
+      "approval": "individual_owner",
+      "default_selection": null,
+      "applicability": "evaluate_explicitly",
+      "allow_other": true,
+      "allow_na": "owner_approved_with_reason",
+      "recommendation": "project_specific_required",
+      "compatibility": "verify_before_approval",
+      "evidence": "approved_decision_record",
+      "related_decisions": [
+        "ARC-031",
+        "ARC-131"
+      ],
+      "policy": "BF-P06",
+      "reference": "ApiBlueprint"
+    }
+  ]
+}

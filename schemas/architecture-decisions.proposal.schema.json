@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://blueprint.eliasworks.uy/proposals/architecture-decisions.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "catalog_version",
+    "status",
+    "policy",
+    "note",
+    "decisions"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "catalog_version": {
+      "const": "proposal-1"
+    },
+    "status": {
+      "const": "PROPOSED"
+    },
+    "policy": {
+      "const": "BF-P03"
+    },
+    "note": {
+      "type": "string",
+      "minLength": 20
+    },
+    "decisions": {
+      "type": "array",
+      "minItems": 137,
+      "maxItems": 137,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "category",
+          "title",
+          "question",
+          "options",
+          "approval",
+          "default_selection",
+          "applicability",
+          "allow_other",
+          "allow_na",
+          "recommendation",
+          "compatibility",
+          "evidence",
+          "related_decisions"
+        ],
+        "properties": {
+          "id": {
+            "pattern": "^ARC-[0-9]{3}$",
+            "type": "string"
+          },
+          "category": {
+            "enum": [
+              "project",
+              "backend",
+              "data",
+              "api",
+              "web",
+              "admin",
+              "client",
+              "security",
+              "features",
+              "operations",
+              "quality",
+              "discoverability",
+              "api_qa"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "minLength": 3
+          },
+          "question": {
+            "type": "string",
+            "minLength": 12
+          },
+          "options": {
+            "type": "array",
+            "minItems": 2,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "approval": {
+            "const": "individual_owner"
+          },
+          "default_selection": {
+            "type": "null"
+          },
+          "applicability": {
+            "const": "evaluate_explicitly"
+          },
+          "allow_other": {
+            "const": true
+          },
+          "allow_na": {
+            "const": "owner_approved_with_reason"
+          },
+          "recommendation": {
+            "const": "project_specific_required"
+          },
+          "compatibility": {
+            "const": "verify_before_approval"
+          },
+          "evidence": {
+            "const": "approved_decision_record"
+          },
+          "related_decisions": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^ARC-[0-9]{3}$"
+            }
+          },
+          "policy": {
+            "enum": [
+              "BF-P01",
+              "BF-P05",
+              "BF-P06",
+              "BF-P07",
+              "BF-P09"
+            ]
+          },
+          "reference": {
+            "enum": [
+              "WebBlueprint",
+              "ApiBlueprint"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

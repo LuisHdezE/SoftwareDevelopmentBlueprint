@@ -1,0 +1,30 @@
+name: Blueprint Architecture Decision Catalog Validation
+on:
+  push:
+    branches: [main, 'blueprint/**']
+    paths:
+      - 'catalog/architecture-decisions.proposal.json'
+      - 'schemas/architecture-decisions.proposal.schema.json'
+      - 'scripts/validate-architecture-decision-catalog.py'
+      - 'documentation/BF_OT_003_ARCHITECTURE_DECISION_CATALOG.md'
+      - '.github/workflows/blueprint-architecture-decision-catalog-validation.yml'
+  pull_request:
+    branches: [main, 'blueprint/**']
+    paths:
+      - 'catalog/architecture-decisions.proposal.json'
+      - 'schemas/architecture-decisions.proposal.schema.json'
+      - 'scripts/validate-architecture-decision-catalog.py'
+      - 'documentation/BF_OT_003_ARCHITECTURE_DECISION_CATALOG.md'
+      - '.github/workflows/blueprint-architecture-decision-catalog-validation.yml'
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: [self-hosted, linux, x64, blueprint]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+      - run: python -m pip install --disable-pip-version-check jsonschema==4.26.0
+      - run: python scripts/validate-architecture-decision-catalog.py
