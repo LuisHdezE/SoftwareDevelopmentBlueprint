@@ -1,0 +1,31 @@
+name: Blueprint Governed Learning Validation
+on:
+  push:
+    branches: [main, 'blueprint/**']
+    paths:
+      - 'knowledge/**'
+      - 'scripts/validate-governed-lesson.py'
+      - 'scripts/retrieve-governed-lessons.py'
+      - 'scripts/test-governed-learning.py'
+      - 'catalog/agent-policy-registry.proposal.json'
+      - '.github/workflows/blueprint-governed-learning-validation.yml'
+  pull_request:
+    branches: [main, 'blueprint/**']
+    paths:
+      - 'knowledge/**'
+      - 'scripts/validate-governed-lesson.py'
+      - 'scripts/retrieve-governed-lessons.py'
+      - 'scripts/test-governed-learning.py'
+      - 'catalog/agent-policy-registry.proposal.json'
+      - '.github/workflows/blueprint-governed-learning-validation.yml'
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: [self-hosted, linux, x64, blueprint]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+      - run: python scripts/test-governed-learning.py
