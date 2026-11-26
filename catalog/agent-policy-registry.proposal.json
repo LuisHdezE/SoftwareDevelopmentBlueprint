@@ -1,0 +1,216 @@
+{
+  "schema_version": "1.0.0",
+  "registry_version": "proposal-1",
+  "status": "PROPOSED",
+  "protocol": "agent-protocol-proposal-1",
+  "adoption": "explicit_opt_in",
+  "runtime_enforcement": false,
+  "agents": [
+    {
+      "id": "orchestrator",
+      "alias": "@orchestrator",
+      "kind": "coordination",
+      "authority": "route_tasks",
+      "policies": [
+        "BF-P03",
+        "BF-P07",
+        "BF-P10",
+        "BF-P11",
+        "BF-P13"
+      ],
+      "contract": "agents/orchestrator.md",
+      "version": "proposal-2",
+      "human_approval": false,
+      "activation": "scope_based"
+    },
+    {
+      "id": "analyst",
+      "alias": "@analyst",
+      "kind": "analysis",
+      "authority": "analyze_requirements",
+      "policies": [
+        "BF-P03",
+        "BF-P08",
+        "BF-P09",
+        "BF-P14"
+      ],
+      "contract": "agents/analyst.md",
+      "version": "proposal-2",
+      "human_approval": false,
+      "activation": "scope_based"
+    },
+    {
+      "id": "planner",
+      "alias": "@planner",
+      "kind": "planning",
+      "authority": "plan_tasks",
+      "policies": [
+        "BF-P03",
+        "BF-P04",
+        "BF-P07",
+        "BF-P14"
+      ],
+      "contract": "agents/planner.md",
+      "version": "proposal-2",
+      "human_approval": false,
+      "activation": "scope_based"
+    },
+    {
+      "id": "architect",
+      "alias": "@architect",
+      "kind": "design",
+      "authority": "design_architecture",
+      "policies": [
+        "BF-P01",
+        "BF-P02",
+        "BF-P03",
+        "BF-P04",
+        "BF-P08"
+      ],
+      "contract": "agents/architect.md",
+      "version": "proposal-2",
+      "human_approval": false,
+      "activation": "scope_based"
+    },
+    {
+      "id": "database",
+      "alias": "@database",
+      "kind": "implementation",
+      "authority": "implement_persistence",
+      "policies": [
+        "BF-P01",
+        "BF-P02",
+        "BF-P03",
+        "BF-P08"
+      ],
+      "contract": "agents/database.md",
+      "version": "proposal-2",
+      "human_approval": false,
+      "activation": "scope_based"
+    },
+    {
+      "id": "backend",
+      "alias": "@backend",
+      "kind": "implementation",
+      "authority": "implement_api",
+      "policies": [
+        "BF-P01",
+        "BF-P02",
+        "BF-P03",
+        "BF-P04",
+        "BF-P05",
+        "BF-P06",
+        "BF-P08"
+      ],
+      "contract": "agents/backend.md",
+      "version": "proposal-2",
+      "human_approval": false,
+      "activation": "scope_based"
+    },
+    {
+      "id": "frontend",
+      "alias": "@frontend",
+      "kind": "implementation",
+      "authority": "implement_client",
+      "policies": [
+        "BF-P01",
+        "BF-P02",
+        "BF-P03",
+        "BF-P04",
+        "BF-P07",
+        "BF-P09"
+      ],
+      "contract": "agents/frontend.md",
+      "version": "proposal-2",
+      "human_approval": false,
+      "activation": "scope_based"
+    },
+    {
+      "id": "qa",
+      "alias": "@qa",
+      "kind": "verification",
+      "authority": "verify_behavior",
+      "policies": [
+        "BF-P06",
+        "BF-P07",
+        "BF-P10",
+        "BF-P11"
+      ],
+      "contract": "agents/qa.md",
+      "version": "proposal-2",
+      "human_approval": false,
+      "activation": "scope_based"
+    },
+    {
+      "id": "security",
+      "alias": "@security",
+      "kind": "verification",
+      "authority": "verify_security",
+      "policies": [
+        "BF-P08",
+        "BF-P10",
+        "BF-P11"
+      ],
+      "contract": "agents/security.md",
+      "version": "proposal-2",
+      "human_approval": false,
+      "activation": "scope_based"
+    },
+    {
+      "id": "documentation",
+      "alias": "@documentation",
+      "kind": "knowledge",
+      "authority": "maintain_knowledge",
+      "policies": [
+        "BF-P10",
+        "BF-P12",
+        "BF-P14"
+      ],
+      "contract": "agents/documentation.md",
+      "version": "proposal-2",
+      "human_approval": false,
+      "activation": "scope_based"
+    },
+    {
+      "id": "auditor",
+      "alias": "@auditor",
+      "kind": "independent_audit",
+      "authority": "audit_delivery",
+      "policies": [
+        "BF-P01",
+        "BF-P02",
+        "BF-P03",
+        "BF-P04",
+        "BF-P05",
+        "BF-P06",
+        "BF-P07",
+        "BF-P08",
+        "BF-P09",
+        "BF-P10",
+        "BF-P11",
+        "BF-P12",
+        "BF-P13",
+        "BF-P14"
+      ],
+      "contract": "agents/auditor.md",
+      "version": "proposal-2",
+      "human_approval": false,
+      "activation": "scope_based"
+    },
+    {
+      "id": "specialist:search-ai-discoverability",
+      "alias": "@search-ai-discoverability",
+      "kind": "conditional_specialist",
+      "authority": "prepare_discoverability",
+      "policies": [
+        "BF-P09",
+        "BF-P10",
+        "BF-P11"
+      ],
+      "contract": "agents/specialists/search-ai-discoverability.md",
+      "version": "proposal-2",
+      "human_approval": false,
+      "activation": "public_indexable_surfaces_exist"
+    }
+  ]
+}
