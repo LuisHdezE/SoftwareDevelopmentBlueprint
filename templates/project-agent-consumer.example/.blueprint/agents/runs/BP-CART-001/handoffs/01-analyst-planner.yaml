@@ -1,0 +1,28 @@
+schema_version: agent-protocol-proposal-1
+handoff_id: HO-BP-CART-001-ANALYST-PLANNER
+task_id: BP-CART-001
+task_revision: 1
+scope: LIFECYCLE_GOVERNANCE
+from_agent: analyst
+to_agents:
+  - planner
+status: ANALYZED
+baseline:
+  repository: owner/repository
+  branch: feat/cart-quantity
+  head_sha: "1234567"
+  pull_request: 101
+summary: Analysis completed and bounded planning inputs transferred to Planner.
+outputs:
+  - clarified requirements
+  - acceptance criteria
+  - scope boundaries
+evidence_ids:
+  - EVD-CART-ANALYSIS
+blockers: []
+open_questions: []
+decisions:
+  - id: DEC-CART-ANALYSIS-001
+    summary: Cart quantity controls remain a frontend-only bounded task.
+    decision_ref: null
+created_at: "2026-10-03T17:45:00-03:00"

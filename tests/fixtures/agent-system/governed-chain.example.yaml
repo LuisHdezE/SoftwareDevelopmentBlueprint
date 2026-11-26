@@ -1,0 +1,93 @@
+schema_version: agent-protocol-proposal-1
+scenario_id: SYS-CHAIN-001
+task_packet:
+  task_id: SYS-CHAIN-001
+  revision: 2
+  required_agents:
+    - frontend
+    - qa
+    - security
+    - documentation
+    - auditor
+  required_specialists:
+    - specialist:search-ai-discoverability
+  baseline:
+    repository: owner/repository
+    head_sha: abcdef1234567890
+
+orchestration:
+  task:
+    id: SYS-CHAIN-001
+    revision: 2
+  baseline:
+    repository: owner/repository
+    head_sha: abcdef1234567890
+  execution_order:
+    - orchestrator
+    - frontend
+    - specialist:search-ai-discoverability
+    - qa
+    - security
+    - documentation
+    - auditor
+  current_state: READY_FOR_HUMAN_DECISION
+  required_human_decisions:
+    - merge_approval
+  handoffs:
+    - HO-SYS-CHAIN-001-FRONTEND-SPECIALIST
+    - HO-SYS-CHAIN-001-SPECIALIST-QA
+    - HO-SYS-CHAIN-001-QA-AUDITOR
+    - HO-SYS-CHAIN-001-SECURITY-AUDITOR
+    - HO-SYS-CHAIN-001-DOCUMENTATION-AUDITOR
+    - HO-SYS-CHAIN-001-AUDITOR-HUMAN
+
+handoffs:
+  - handoff_id: HO-SYS-CHAIN-001-FRONTEND-SPECIALIST
+    task_id: SYS-CHAIN-001
+    task_revision: 2
+    scope: TASK_EXECUTION
+    from_agent: frontend
+    to_agents: [specialist:search-ai-discoverability]
+    head_sha: abcdef1234567890
+    evidence_ids: [EVD-SYS-FRONTEND-R2]
+  - handoff_id: HO-SYS-CHAIN-001-SPECIALIST-QA
+    task_id: SYS-CHAIN-001
+    task_revision: 2
+    scope: TASK_EXECUTION
+    from_agent: specialist:search-ai-discoverability
+    to_agents: [qa]
+    head_sha: abcdef1234567890
+    evidence_ids: [EVD-SYS-DISCOVERABILITY-R2]
+  - handoff_id: HO-SYS-CHAIN-001-QA-AUDITOR
+    task_id: SYS-CHAIN-001
+    task_revision: 2
+    scope: TASK_EXECUTION
+    from_agent: qa
+    to_agents: [auditor]
+    head_sha: abcdef1234567890
+    evidence_ids: [EVD-SYS-QA-R2]
+  - handoff_id: HO-SYS-CHAIN-001-SECURITY-AUDITOR
+    task_id: SYS-CHAIN-001
+    task_revision: 2
+    scope: TASK_EXECUTION
+    from_agent: security
+    to_agents: [auditor]
+    head_sha: abcdef1234567890
+    evidence_ids: [EVD-SYS-SECURITY-R2]
+  - handoff_id: HO-SYS-CHAIN-001-DOCUMENTATION-AUDITOR
+    task_id: SYS-CHAIN-001
+    task_revision: 2
+    scope: TASK_EXECUTION
+    from_agent: documentation
+    to_agents: [auditor]
+    head_sha: abcdef1234567890
+    evidence_ids: [EVD-SYS-DOCUMENTATION-R2]
+  - handoff_id: HO-SYS-CHAIN-001-AUDITOR-HUMAN
+    task_id: SYS-CHAIN-001
+    task_revision: 2
+    scope: HUMAN_DECISION
+    from_agent: auditor
+    to_agents: [human]
+    status: READY_FOR_MERGE
+    head_sha: abcdef1234567890
+    evidence_ids: [EVD-SYS-AUDIT-R2]

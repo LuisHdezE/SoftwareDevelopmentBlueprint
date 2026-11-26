@@ -1,0 +1,57 @@
+name: Blueprint Agent Workflow Integration Validation
+
+on:
+  push:
+    branches:
+      - main
+      - 'blueprint/**'
+    paths:
+      - 'workflows/greenfield.yaml'
+      - 'workflows/brownfield.yaml'
+      - 'catalog/gates.yaml'
+      - 'catalog/agent-workflow-integration.proposal.yaml'
+      - 'schemas/agent-workflow-integration.schema.json'
+      - 'schemas/project-agent-protocol-adoption.schema.json'
+      - 'templates/project-agent-protocol-adoption.example.yaml'
+      - 'scripts/validate-agent-workflow-integration.py'
+      - '.github/workflows/blueprint-agent-workflow-integration-validation.yml'
+
+  pull_request:
+    branches:
+      - main
+      - 'blueprint/**'
+    paths:
+      - 'workflows/greenfield.yaml'
+      - 'workflows/brownfield.yaml'
+      - 'catalog/gates.yaml'
+      - 'catalog/agent-workflow-integration.proposal.yaml'
+      - 'schemas/agent-workflow-integration.schema.json'
+      - 'schemas/project-agent-protocol-adoption.schema.json'
+      - 'templates/project-agent-protocol-adoption.example.yaml'
+      - 'scripts/validate-agent-workflow-integration.py'
+      - '.github/workflows/blueprint-agent-workflow-integration-validation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: [self-hosted, linux, x64, blueprint]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+
+      - name: Install validator dependencies
+        run: python -m pip install --disable-pip-version-check jsonschema==4.26.0 PyYAML==6.0.2
+
+      - name: Validate base agent protocol
+        run: python scripts/validate-agent-protocol.py
+
+      - name: Validate workflow integration proposal
+        run: python scripts/validate-agent-workflow-integration.py

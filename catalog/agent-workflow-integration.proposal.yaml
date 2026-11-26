@@ -1,0 +1,342 @@
+schema_version: agent-workflow-integration-proposal-1
+protocol_version: agent-protocol-proposal-1
+stable_blueprint_version: 0.5.4
+frozen_release_candidate: 0.5.5-dev
+
+adoption:
+  mode: opt_in
+  automatic_consumer_upgrade: false
+  stable_workflows_unchanged: true
+  stable_gates_unchanged: true
+  orchestration_is_overlay: true
+
+workflow_bindings:
+  greenfield:
+    inherit_stable_sequence: true
+    phase_agents:
+      discovery:
+        required_agents: [analyst]
+        optional_agents: [documentation]
+      target_definition:
+        required_agents: [analyst]
+        optional_agents: [architect, documentation]
+      requirements_domain:
+        required_agents: [analyst]
+        optional_agents: [security, documentation]
+      interface_scope_baseline:
+        required_agents: [analyst]
+        optional_agents: [frontend, architect]
+      architecture_security_data:
+        required_agents: [architect]
+        optional_agents: [database, security, documentation]
+      api_contract_design:
+        required_agents: [architect, backend]
+        optional_agents: [security, database]
+      api_implementation:
+        required_agents: [backend]
+        optional_agents: [database, security]
+      openapi_validation:
+        required_agents: [backend, qa]
+        optional_agents: [security]
+      postman_contract:
+        required_agents: [qa]
+        optional_agents: [backend]
+      api_qa:
+        required_agents: [qa]
+        optional_agents: [security, backend]
+      api_gate:
+        required_agents: [qa]
+        optional_agents: [security, auditor]
+      interface_inventory:
+        required_agents: [analyst, frontend]
+        optional_agents: [architect]
+      design_system:
+        required_agents: [frontend]
+        optional_agents: [qa, documentation]
+      client_architecture:
+        required_agents: [architect, frontend]
+        optional_agents: [security]
+      functional_interface_slice:
+        required_agents: [frontend]
+        optional_agents: [backend, database, qa]
+      visual_functional_review:
+        required_agents: [qa]
+        optional_agents: [frontend, documentation]
+      integration_qa:
+        required_agents: [qa]
+        optional_agents: [security, backend, frontend]
+      release_gate:
+        required_agents: [auditor]
+        optional_agents: [documentation, qa, security]
+      operations:
+        required_agents: [documentation]
+        optional_agents: [security, backend, frontend]
+
+  brownfield:
+    inherit_stable_sequence: true
+    phase_agents:
+      brownfield_inspection:
+        required_agents: [analyst]
+        optional_agents: [architect, documentation]
+      as_is:
+        required_agents: [analyst]
+        optional_agents: [architect, database, backend, frontend, documentation]
+      gap_analysis:
+        required_agents: [analyst]
+        optional_agents: [architect, security, documentation]
+      target_definition:
+        required_agents: [analyst]
+        optional_agents: [architect, documentation]
+      requirements_domain:
+        required_agents: [analyst]
+        optional_agents: [security, documentation]
+      interface_scope_baseline:
+        required_agents: [analyst]
+        optional_agents: [frontend, architect]
+      architecture_security_data:
+        required_agents: [architect]
+        optional_agents: [database, security, documentation]
+      api_contract_design:
+        required_agents: [architect, backend]
+        optional_agents: [security, database]
+      api_implementation:
+        required_agents: [backend]
+        optional_agents: [database, security]
+      openapi_validation:
+        required_agents: [backend, qa]
+        optional_agents: [security]
+      postman_contract:
+        required_agents: [qa]
+        optional_agents: [backend]
+      api_qa:
+        required_agents: [qa]
+        optional_agents: [security, backend]
+      api_gate:
+        required_agents: [qa]
+        optional_agents: [security, auditor]
+      interface_inventory:
+        required_agents: [analyst, frontend]
+        optional_agents: [architect]
+      design_system:
+        required_agents: [frontend]
+        optional_agents: [qa, documentation]
+      client_architecture:
+        required_agents: [architect, frontend]
+        optional_agents: [security]
+      functional_interface_slice:
+        required_agents: [frontend]
+        optional_agents: [backend, database, qa]
+      visual_functional_review:
+        required_agents: [qa]
+        optional_agents: [frontend, documentation]
+      integration_qa:
+        required_agents: [qa]
+        optional_agents: [security, backend, frontend]
+      release_gate:
+        required_agents: [auditor]
+        optional_agents: [documentation, qa, security]
+      operations:
+        required_agents: [documentation]
+        optional_agents: [security, backend, frontend]
+
+cross_cutting_roles:
+  orchestrator:
+    agent: orchestrator
+    trigger: every adopted multi-agent task from routing until human decision or closure
+    substitutes_stable_phase: false
+    note: Coordinates role applicability, handoffs, blockers and exact task state.
+  planner:
+    agent: planner
+    trigger: after ANALYZED and before the first implementation-bound Task Packet
+    substitutes_stable_phase: false
+    note: Planning is an orchestration checkpoint layered across stable workflow phases.
+  documentation:
+    agent: documentation
+    trigger: whenever behavior, architecture, contracts, operations or governance artifacts change
+    substitutes_stable_phase: false
+    note: Documentation can participate incrementally and must be current before final audit when applicable.
+  auditor:
+    agent: auditor
+    trigger: before a governed human merge or release decision for the bounded delivery candidate
+    substitutes_stable_phase: false
+    note: READY_FOR_MERGE is evidence for a human decision, not merge authorization.
+
+gate_bindings:
+  brownfield_baseline:
+    required_role_evidence:
+      - {agent: analyst, status: ANALYZED}
+    conditional_role_evidence:
+      - {agent: architect, status: ARCHITECTURE_READY}
+      - {agent: documentation, status: DOCUMENTED}
+    substitutes_stable_checks: false
+    human_decision_preserved: true
+
+  requirements_ready:
+    required_role_evidence:
+      - {agent: analyst, status: ANALYZED}
+    conditional_role_evidence: []
+    substitutes_stable_checks: false
+    human_decision_preserved: true
+
+  interface_scope_ready:
+    required_role_evidence:
+      - {agent: analyst, status: ANALYZED}
+    conditional_role_evidence: []
+    substitutes_stable_checks: false
+    human_decision_preserved: true
+    note: Frontend participation is captured by task handoffs; no implementation-completion status is required before this planning gate.
+
+  architecture_ready:
+    required_role_evidence:
+      - {agent: architect, status: ARCHITECTURE_READY}
+    conditional_role_evidence:
+      - {agent: database, status: DATA_READY}
+      - {agent: security, status: SECURITY_PASS}
+    substitutes_stable_checks: false
+    human_decision_preserved: true
+
+  api_contract_ready:
+    required_role_evidence:
+      - {agent: architect, status: ARCHITECTURE_READY}
+    conditional_role_evidence:
+      - {agent: security, status: SECURITY_PASS}
+    substitutes_stable_checks: false
+    human_decision_preserved: true
+    note: Backend participation is captured through contract-design handoffs; backend implementation completion is not required before the contract gate.
+
+  api_implemented:
+    required_role_evidence:
+      - {agent: backend, status: BACKEND_IMPLEMENTED}
+    conditional_role_evidence:
+      - {agent: database, status: DATA_READY}
+    substitutes_stable_checks: false
+    human_decision_preserved: true
+
+  openapi_valid:
+    required_role_evidence:
+      - {agent: qa, status: QA_PASS}
+    conditional_role_evidence:
+      - {agent: backend, status: BACKEND_IMPLEMENTED}
+    substitutes_stable_checks: false
+    human_decision_preserved: true
+
+  postman_ready:
+    required_role_evidence:
+      - {agent: qa, status: QA_PASS}
+    conditional_role_evidence:
+      - {agent: backend, status: BACKEND_IMPLEMENTED}
+    substitutes_stable_checks: false
+    human_decision_preserved: true
+
+  api_qa_pass:
+    required_role_evidence:
+      - {agent: qa, status: QA_PASS}
+    conditional_role_evidence:
+      - {agent: security, status: SECURITY_PASS}
+    substitutes_stable_checks: false
+    human_decision_preserved: true
+
+  api_gate:
+    required_role_evidence:
+      - {agent: qa, status: QA_PASS}
+    conditional_role_evidence:
+      - {agent: security, status: SECURITY_PASS}
+      - {agent: auditor, status: READY_FOR_MERGE}
+    substitutes_stable_checks: false
+    human_decision_preserved: true
+
+  interface_inventory_ready:
+    required_role_evidence:
+      - {agent: analyst, status: ANALYZED}
+    conditional_role_evidence:
+      - {agent: architect, status: ARCHITECTURE_READY}
+    substitutes_stable_checks: false
+    human_decision_preserved: true
+
+  design_system_ready:
+    required_role_evidence: []
+    conditional_role_evidence:
+      - {agent: qa, status: QA_PASS}
+    substitutes_stable_checks: false
+    human_decision_preserved: true
+    note: Frontend participation is represented by design-system task handoffs; this gate does not require executable client implementation.
+
+  mockup_review_pass:
+    required_role_evidence:
+      - {agent: qa, status: QA_PASS}
+    conditional_role_evidence:
+      - {agent: frontend, status: FRONTEND_IMPLEMENTED}
+    substitutes_stable_checks: false
+    human_decision_preserved: true
+
+  client_architecture_ready:
+    required_role_evidence:
+      - {agent: architect, status: ARCHITECTURE_READY}
+    conditional_role_evidence:
+      - {agent: security, status: SECURITY_PASS}
+    substitutes_stable_checks: false
+    human_decision_preserved: true
+
+  functional_slice_ready:
+    required_role_evidence:
+      - {agent: frontend, status: FRONTEND_IMPLEMENTED}
+    conditional_role_evidence:
+      - {agent: backend, status: BACKEND_IMPLEMENTED}
+      - {agent: qa, status: QA_PASS}
+    substitutes_stable_checks: false
+    human_decision_preserved: true
+
+  visual_functional_review_pass:
+    required_role_evidence:
+      - {agent: qa, status: QA_PASS}
+    conditional_role_evidence:
+      - {agent: frontend, status: FRONTEND_IMPLEMENTED}
+    substitutes_stable_checks: false
+    human_decision_preserved: true
+
+  integration_qa_pass:
+    required_role_evidence:
+      - {agent: qa, status: QA_PASS}
+    conditional_role_evidence:
+      - {agent: security, status: SECURITY_PASS}
+    substitutes_stable_checks: false
+    human_decision_preserved: true
+
+  mobile_licensing_ready:
+    required_role_evidence:
+      - {agent: qa, status: QA_PASS}
+    conditional_role_evidence:
+      - {agent: architect, status: ARCHITECTURE_READY}
+      - {agent: backend, status: BACKEND_IMPLEMENTED}
+      - {agent: frontend, status: FRONTEND_IMPLEMENTED}
+      - {agent: security, status: SECURITY_PASS}
+    substitutes_stable_checks: false
+    human_decision_preserved: true
+
+  release_gate:
+    required_role_evidence:
+      - {agent: auditor, status: READY_FOR_MERGE}
+    conditional_role_evidence:
+      - {agent: documentation, status: DOCUMENTED}
+      - {agent: qa, status: QA_PASS}
+      - {agent: security, status: SECURITY_PASS}
+    substitutes_stable_checks: false
+    human_decision_preserved: true
+
+state_model:
+  blueprint_status_authority: project.artifact_locations.status
+  orchestration_state_authority: task_coordination_only
+  task_packet_authority: bounded_delivery_definition
+  handoff_authority: role_transition_evidence
+  no_state_substitution: true
+
+invariants:
+  - stable phase sequence remains authoritative until a future governed promotion changes it
+  - stable gate checks remain authoritative and role evidence never substitutes them
+  - orchestration state cannot mark a Blueprint gate PASS
+  - Blueprint status cannot be inferred solely from an agent role completion status
+  - task packets must trace to approved requirements and acceptance criteria
+  - handoffs must reference the exact candidate repository state
+  - implementers cannot self-certify final QA or final audit
+  - READY_FOR_MERGE remains distinct from human merge approval
+  - consumer adoption is explicit and never automatic

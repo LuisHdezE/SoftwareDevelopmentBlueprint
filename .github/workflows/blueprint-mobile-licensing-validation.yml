@@ -7,6 +7,10 @@ on:
       - 'blueprint/**'
       - 'release/**'
     paths:
+      - VERSION
+      - DEVELOPMENT_VERSION
+      - scripts/validate-versioned-scope.py
+      - scripts/validate-development.py
       - 'schemas/mobile-licensing.schema.json'
       - 'schemas/project.schema.json'
       - 'templates/mobile-licensing.example.yaml'
@@ -25,6 +29,10 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - VERSION
+      - DEVELOPMENT_VERSION
+      - scripts/validate-versioned-scope.py
+      - scripts/validate-development.py
       - 'schemas/mobile-licensing.schema.json'
       - 'schemas/project.schema.json'
       - 'templates/mobile-licensing.example.yaml'
@@ -58,9 +66,5 @@ jobs:
         run: python -m pip install --disable-pip-version-check jsonschema==4.26.0 PyYAML==6.0.2
       - name: Validate mobile licensing contract and boundary
         run: |
-          if [[ "$(cat VERSION)" == "0.5.4" && ! -f DEVELOPMENT_VERSION ]]; then
-            python scripts/validate-release-v054.py --scope mobile-licensing
-          else
-            python scripts/validate-mobile-licensing.py
-            python scripts/validate-mobile-licensing-boundary.py
-          fi
+          python scripts/validate-versioned-scope.py --self-test
+          python scripts/validate-versioned-scope.py --scope mobile-licensing

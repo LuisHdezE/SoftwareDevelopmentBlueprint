@@ -6,6 +6,10 @@ on:
       - "blueprint/**"
       - "release/**"
     paths:
+      - VERSION
+      - DEVELOPMENT_VERSION
+      - scripts/validate-versioned-scope.py
+      - scripts/validate-development.py
       - "catalog/skills.yaml"
       - "skills/**"
       - "scripts/validate-skills.py"
@@ -16,6 +20,10 @@ on:
     branches:
       - main
     paths:
+      - VERSION
+      - DEVELOPMENT_VERSION
+      - scripts/validate-versioned-scope.py
+      - scripts/validate-development.py
       - "catalog/skills.yaml"
       - "skills/**"
       - "scripts/validate-skills.py"
@@ -43,8 +51,5 @@ jobs:
 
       - name: Validate executable Blueprint skills
         run: |
-          if [[ "$(cat VERSION)" == "0.5.4" && ! -f DEVELOPMENT_VERSION ]]; then
-            python scripts/validate-release-v054.py --scope skills
-          else
-            python scripts/validate-skills.py
-          fi
+          python scripts/validate-versioned-scope.py --self-test
+          python scripts/validate-versioned-scope.py --scope skills
