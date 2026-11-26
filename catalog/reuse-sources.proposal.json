@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.0.0",
+  "status": "PROPOSED",
+  "policy": "BF-P04",
+  "sources": [
+    {
+      "id": "web-blueprint",
+      "repository": "LuisHdezE/WebBlueprint",
+      "commit": "6154927bbbad37ddb5372351a1298920c876128d",
+      "kind": "web_export",
+      "required_selections": {
+        "ARC-039": "React",
+        "ARC-040": "TypeScript",
+        "ARC-041": "Vite",
+        "ARC-042": "Tailwind CSS"
+      },
+      "references": [
+        "docs/decisions/0008-contract-first-export-architecture.md",
+        "docs/reference/mandatory-qa-gate.md",
+        "src/composer/project.catalog.ts",
+        "src/export/export.types.ts"
+      ],
+      "limitations": [
+        "Preview mocks are not authoritative business data",
+        "Selection equals preview equals export",
+        "Export acceptance does not replace consumer QA"
+      ]
+    },
+    {
+      "id": "api-blueprint",
+      "repository": "LuisHdezE/ApiBlueprint",
+      "commit": "b9e4ff6d702e6a0e7a136d76be86691cbb30b214",
+      "kind": "api_export",
+      "required_selections": {
+        "ARC-009": "PHP",
+        "ARC-010": "Laravel",
+        "ARC-029": "REST"
+      },
+      "references": [
+        "docs/product/blueprint-manifest.md",
+        "app/Application/Blueprint/Services/ResolveBlueprintManifest.php",
+        "docs/delivery/operational-contract-audit-qa.md",
+        "scripts/run-postman-operational-contract.sh"
+      ],
+      "limitations": [
+        "Resolved manifest may add endpoints and governance settings; review all changes",
+        "Generated business behavior varies by operation; stubs are not implemented use cases",
+        "Consumer OpenAPI and Postman must be independently verified"
+      ]
+    }
+  ],
+  "automatic_reuse": false,
+  "automatic_upgrade": false
+}
