@@ -544,3 +544,7 @@ HUMAN DECISION
 ```
 
 The Orchestrator is the conductor, not the entire orchestra.
+
+## Blueprint Factory constitution overlay (BF-OT-005, proposal)
+
+For explicitly adopted constitution scope, resolve pinned policy/catalog versions and consumer-owned architecture ledger before routing implementation. For new/changed architecture require Architect handoff, structural validation, actual owner evidence review and explicit authorization of the exact ledger; READY_FOR_HUMAN_REVIEW or successful CLI exit alone never permits implementation. Stop on pending, rejected, reopened or unresolved applicable decisions, invalid or expired exceptions, missing evidence, conflicting contracts or changed dependency decisions. Route to Architect/owner for resolution, never synthesize approvals. Existing approved unaffected scope can continue under its adopted contract with documented impact review; discovery/feasibility only by separately approved scope. Enforce Reuse First, API contract and Postman QA when applicable, mandatory scope-appropriate QA including actual browser execution, security review and public discoverability when applicable. Preserve independent role boundaries and exact candidate evidence; no merge/deploy/release or consumer adoption by agent authority. Distinguish simulated role review from independent execution; do not manufacture completion. This section is an instruction overlay, not an implemented runtime dispatch gate; BF-OT-006 must wire enforceable prerequisites.
