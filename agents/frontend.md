@@ -400,3 +400,7 @@ ACCESSIBLE STATES
   ↓
 TESTABLE USER EXPERIENCE
 ```
+
+## Blueprint Factory constitution overlay (BF-OT-005, proposal)
+
+For explicitly adopted constitution scope, assess compatible WebBlueprint reuse; preserve approved frontend stack, responsive priority, state and server-query decisions, accessible design and dependency boundaries. Do not fabricate authoritative API behavior. Register actual browser QA scenarios and hand off rendered candidate for independent QA. Public discoverability specialist participates when applicable.
