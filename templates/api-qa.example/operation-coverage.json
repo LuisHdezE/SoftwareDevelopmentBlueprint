@@ -1,0 +1,89 @@
+{
+  "schema_version": "1.0",
+  "operations": [
+    {
+      "operation_id": "health_get",
+      "request_name": "health_get",
+      "method": "GET",
+      "path": "/health",
+      "scenario": "canonical"
+    },
+    {
+      "operation_id": "auth_login",
+      "request_name": "auth_login",
+      "method": "POST",
+      "path": "/auth/login",
+      "scenario": "canonical"
+    },
+    {
+      "operation_id": "auth_login",
+      "request_name": "auth_login_user",
+      "method": "POST",
+      "path": "/auth/login",
+      "scenario": "flow"
+    },
+    {
+      "operation_id": "auth_login",
+      "request_name": "auth_login_invalid",
+      "method": "POST",
+      "path": "/auth/login",
+      "scenario": "negative"
+    },
+    {
+      "operation_id": "items_create",
+      "request_name": "items_create_unauthenticated",
+      "method": "POST",
+      "path": "/items",
+      "scenario": "negative"
+    },
+    {
+      "operation_id": "items_create",
+      "request_name": "items_create_forbidden",
+      "method": "POST",
+      "path": "/items",
+      "scenario": "negative"
+    },
+    {
+      "operation_id": "items_create",
+      "request_name": "items_create_missing_key",
+      "method": "POST",
+      "path": "/items",
+      "scenario": "negative"
+    },
+    {
+      "operation_id": "items_create",
+      "request_name": "items_create_invalid",
+      "method": "POST",
+      "path": "/items",
+      "scenario": "negative"
+    },
+    {
+      "operation_id": "items_create",
+      "request_name": "items_create",
+      "method": "POST",
+      "path": "/items",
+      "scenario": "canonical"
+    },
+    {
+      "operation_id": "items_create",
+      "request_name": "items_create_replay",
+      "method": "POST",
+      "path": "/items",
+      "scenario": "flow"
+    },
+    {
+      "operation_id": "items_create",
+      "request_name": "items_create_conflict",
+      "method": "POST",
+      "path": "/items",
+      "scenario": "negative"
+    },
+    {
+      "operation_id": "items_get",
+      "request_name": "items_get",
+      "method": "GET",
+      "path": "/items/{id}",
+      "scenario": "canonical"
+    }
+  ]
+}
