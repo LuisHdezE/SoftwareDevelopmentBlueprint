@@ -38,12 +38,7 @@ The intended core model contains eleven roles:
 10. Documentation
 11. Auditor
 
-This first increment materializes only:
-
-- `analyst.md`
-- `planner.md`
-
-The remaining roles must be introduced through later governed increments.
+All eleven core role definitions and the conditional `specialist:search-ai-discoverability` are materialized at proposal stage. See `catalog/agent-policy-registry.proposal.json` for versioned identities, invocation aliases and constitution responsibilities. Aliases are portable conventions, not native platform commands. The constitution overlay requires explicit adoption; no runtime enforcement is implied.
 
 ## Responsibility chain
 
