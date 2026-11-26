@@ -91,7 +91,7 @@ def main():
                  "--env-var","adminPassword="+server.passwords["admin"],
                  "--env-var","userPassword="+server.passwords["user"],
                  "--reporters","json","--reporter-json-export",str(raw)]
-            subprocess.run(cmd,check=True,timeout=120)
+            subprocess.run(cmd,check=True,timeout=120,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
             report=json.loads(raw.read_text(encoding="utf-8"))["run"]
             stats=report["stats"]
             summary={"runner":"newman@6.2.1","scope":"synthetic_loopback_only",
