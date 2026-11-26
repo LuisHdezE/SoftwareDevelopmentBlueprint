@@ -10,7 +10,7 @@ spec=importlib.util.spec_from_file_location("validator",ROOT/"scripts/validate-a
 v=importlib.util.module_from_spec(spec)
 spec.loader.exec_module(v)
 source=ROOT/"templates/api-qa.example"
-assert v.validate(source)=={"status":"PACKAGE_READY_FOR_RUNTIME_QA","api_qa_pass":False,"operations":1,"requests":1}
+assert v.validate(source)=={"status":"PACKAGE_READY_FOR_RUNTIME_QA","api_qa_pass":False,"operations":4,"requests":12}
 print("PASS reference package, not runtime QA")
 def change(d,file,fn):
     p=d/file
