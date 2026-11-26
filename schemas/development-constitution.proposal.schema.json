@@ -1,0 +1,207 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://blueprint.eliasworks.uy/proposals/development-constitution.schema.json",
+  "title": "Development constitution proposal 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "policy_version",
+    "status",
+    "source",
+    "baseline",
+    "automatic_adoption",
+    "principles",
+    "exception_policy",
+    "enforcement"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "policy_version": {
+      "const": "proposal-1"
+    },
+    "status": {
+      "const": "PROPOSED"
+    },
+    "source": {
+      "const": "documentation/BF_OT_002_DEVELOPMENT_CONSTITUTION.md"
+    },
+    "baseline": {
+      "const": "586cc2f2b629ced34519704924c0351310236ab4"
+    },
+    "automatic_adoption": {
+      "const": false
+    },
+    "principles": {
+      "type": "array",
+      "minItems": 14,
+      "maxItems": 14,
+      "prefixItems": [
+        {
+          "const": {
+            "id": "BF-P01",
+            "key": "clean_architecture",
+            "applicability": "all",
+            "exception": "owner_approved"
+          }
+        },
+        {
+          "const": {
+            "id": "BF-P02",
+            "key": "engineering_practices",
+            "applicability": "all",
+            "exception": "owner_approved"
+          }
+        },
+        {
+          "const": {
+            "id": "BF-P03",
+            "key": "architecture_approval",
+            "applicability": "all",
+            "exception": "forbidden"
+          }
+        },
+        {
+          "const": {
+            "id": "BF-P04",
+            "key": "reuse_first",
+            "applicability": "all",
+            "exception": "forbidden"
+          }
+        },
+        {
+          "const": {
+            "id": "BF-P05",
+            "key": "api_contract_first",
+            "applicability": "api_applies",
+            "exception": "forbidden"
+          }
+        },
+        {
+          "const": {
+            "id": "BF-P06",
+            "key": "postman_operational_qa",
+            "applicability": "governed_http_api",
+            "exception": "forbidden"
+          }
+        },
+        {
+          "const": {
+            "id": "BF-P07",
+            "key": "qa",
+            "applicability": "all",
+            "exception": "forbidden"
+          }
+        },
+        {
+          "const": {
+            "id": "BF-P08",
+            "key": "security",
+            "applicability": "all",
+            "exception": "forbidden"
+          }
+        },
+        {
+          "const": {
+            "id": "BF-P09",
+            "key": "public_discoverability",
+            "applicability": "public_indexable",
+            "exception": "forbidden"
+          }
+        },
+        {
+          "const": {
+            "id": "BF-P10",
+            "key": "evidence_before_pass",
+            "applicability": "all",
+            "exception": "forbidden"
+          }
+        },
+        {
+          "const": {
+            "id": "BF-P11",
+            "key": "role_independence",
+            "applicability": "all",
+            "exception": "forbidden"
+          }
+        },
+        {
+          "const": {
+            "id": "BF-P12",
+            "key": "governed_learning",
+            "applicability": "all",
+            "exception": "forbidden"
+          }
+        },
+        {
+          "const": {
+            "id": "BF-P13",
+            "key": "portable_execution",
+            "applicability": "all",
+            "exception": "forbidden"
+          }
+        },
+        {
+          "const": {
+            "id": "BF-P14",
+            "key": "traceability",
+            "applicability": "all",
+            "exception": "forbidden"
+          }
+        }
+      ],
+      "items": false
+    },
+    "exception_policy": {
+      "const": {
+        "required_fields": [
+          "exception_id",
+          "policy_id",
+          "project",
+          "scope",
+          "alternative",
+          "rationale",
+          "risk",
+          "mitigations",
+          "owner",
+          "approval_evidence",
+          "approved_at",
+          "review_trigger",
+          "expires_at",
+          "affected_tests"
+        ],
+        "blocking_states": [
+          "PENDING",
+          "REJECTED",
+          "EXPIRED"
+        ],
+        "approval_authority": "human_owner",
+        "blanket_waivers": false,
+        "missing_evidence_pass": false,
+        "qa_bypass": false,
+        "security_bypass": false,
+        "automatic_consumer_upgrade": false
+      }
+    },
+    "enforcement": {
+      "const": {
+        "state": "PROPOSED_NOT_RUNTIME_ENFORCED",
+        "followups": [
+          "BF-OT-003",
+          "BF-OT-004",
+          "BF-OT-005",
+          "BF-OT-006",
+          "BF-OT-007",
+          "BF-OT-008",
+          "BF-OT-009",
+          "BF-OT-010",
+          "BF-OT-011",
+          "BF-OT-012",
+          "BF-OT-013"
+        ]
+      }
+    }
+  }
+}
