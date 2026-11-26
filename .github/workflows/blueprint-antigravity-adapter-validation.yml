@@ -1,0 +1,31 @@
+name: Blueprint Antigravity Adapter Validation
+on:
+  push:
+    branches: [main, 'blueprint/**']
+    paths:
+      - 'agents/**'
+      - 'skills/**'
+      - 'catalog/agent-policy-registry.proposal.json'
+      - 'scripts/generate-antigravity-adapter.py'
+      - 'scripts/test-antigravity-adapter.py'
+      - '.github/workflows/blueprint-antigravity-adapter-validation.yml'
+  pull_request:
+    branches: [main, 'blueprint/**']
+    paths:
+      - 'agents/**'
+      - 'skills/**'
+      - 'catalog/agent-policy-registry.proposal.json'
+      - 'scripts/generate-antigravity-adapter.py'
+      - 'scripts/test-antigravity-adapter.py'
+      - '.github/workflows/blueprint-antigravity-adapter-validation.yml'
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: [self-hosted, linux, x64, blueprint]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+      - run: python scripts/test-antigravity-adapter.py
