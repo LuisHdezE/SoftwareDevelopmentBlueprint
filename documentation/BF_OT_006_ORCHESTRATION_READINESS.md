@@ -1,0 +1,9 @@
+# BF-OT-006 — Orchestration readiness proposal
+
+Status: PROPOSED. Depends on #79. Reuse the canonical task packet, orchestration state and handoff validators. This increment adds a preflight decision report, not an autonomous agent runtime or permission to execute commands.
+
+The preflight takes a project-owned architecture ledger and existing task packet, plus an explicit review record. It binds the review to the exact ledger digest, task digest, repository and owner. The caller must independently authenticate the evidence; no file or hash proves a human identity. Even a structurally complete review produces READY_FOR_AUTHENTICATED_DISPATCH_REVIEW, never execution authorization. The future platform adapter must enforce a trusted human authorization boundary and actual agent dispatch. Missing or invalid review blocks.
+
+For this first increment all implementation-bound tasks under the explicitly adopted proposal require a complete current ledger. This conservative choice may block small Brownfield changes until a scoped impact protocol is implemented; do not force existing non-adopting consumers to migrate. Discovery is outside this preflight, not a bypass to implementation. Reuse the task packet's actual required roles; require QA and Auditor, and Architect where new/changed architecture is identified. No agent can approve on behalf of owner. Preserve the original protocol and existing stable gates. No new lifecycle status is added to the canonical orchestration schema; preflight result is separate.
+
+Known limits: task classification, review authenticity, semantic applicability, option compatibility, dependency impact and exception scope need independent verification. The preflight does not run implementation, QA or agents and cannot replace the canonical run validator. The adapter must revalidate on changes to task/ledger/review or baseline before dispatch. No consumer adoption, merge or stable promotion.
