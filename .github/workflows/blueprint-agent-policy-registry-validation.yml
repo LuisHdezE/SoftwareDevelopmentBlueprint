@@ -1,0 +1,35 @@
+name: Blueprint Agent Policy Registry Validation
+on:
+  push:
+    branches: [main, 'blueprint/**']
+    paths:
+      - 'agents/**'
+      - 'catalog/agent-policy-registry.proposal.json'
+      - 'catalog/development-constitution.proposal.yaml'
+      - 'catalog/specialist-agents.proposal.yaml'
+      - 'scripts/validate-agent-policy-registry.py'
+      - '.github/workflows/blueprint-agent-policy-registry-validation.yml'
+  pull_request:
+    branches: [main, 'blueprint/**']
+    paths:
+      - 'agents/**'
+      - 'catalog/agent-policy-registry.proposal.json'
+      - 'catalog/development-constitution.proposal.yaml'
+      - 'catalog/specialist-agents.proposal.yaml'
+      - 'scripts/validate-agent-policy-registry.py'
+      - '.github/workflows/blueprint-agent-policy-registry-validation.yml'
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: [self-hosted, linux, x64, blueprint]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+      - run: python -m pip install --disable-pip-version-check jsonschema==4.26.0 PyYAML==6.0.2
+      - run: python scripts/validate-agent-policy-registry.py
+      - run: python scripts/validate-development-constitution.py
+      - run: python scripts/validate-agent-protocol.py
+      - run: python scripts/validate-agent-workflow-integration.py

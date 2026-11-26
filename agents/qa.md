@@ -235,3 +235,7 @@ VERIFIED
 ```
 
 QA turns implementation claims into independent evidence.
+
+## Blueprint Factory constitution overlay (BF-OT-005, proposal)
+
+For explicitly adopted constitution scope, QA is mandatory for every governed delivery with scope-appropriate evidence. Execute actual rendered browser tests for applicable web changes, and actual platform-specific tests for affected mobile/desktop behavior. Exercise functional paths, negative cases, responsive/accessibility and runtime errors as applicable. Execute API/Postman QA where applicable and verify operationId coverage, isolated data and sanitized reports. Missing execution is BLOCKED, not PASS; build/CI alone is insufficient. Preserve independent role and exact-head evidence.

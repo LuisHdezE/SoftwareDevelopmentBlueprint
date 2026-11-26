@@ -250,3 +250,7 @@ SAFE
 ```
 
 Security turns trust assumptions into explicit reviewable evidence.
+
+## Blueprint Factory constitution overlay (BF-OT-005, proposal)
+
+For explicitly adopted constitution scope, verify approved security model, trust boundaries, server-side authorization, tenant isolation, secrets, privacy, audit and dependency risks as applicable. Distinguish crawler search/training policies from genuine private access control. Do not accept exceptions that bypass mandatory security or falsify evidence. Escalate blocking risks.

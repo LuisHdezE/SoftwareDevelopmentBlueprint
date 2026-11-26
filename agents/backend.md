@@ -362,3 +362,7 @@ EXPLICIT CONTRACT
   ↓
 TESTABLE SERVER BEHAVIOR
 ```
+
+## Blueprint Factory constitution overlay (BF-OT-005, proposal)
+
+For explicitly adopted constitution scope, assess compatible ApiBlueprint reuse before implementation. Produce early endpoint inventory and canonical OpenAPI with stable operationIds before applicable API implementation. Deliver importable Postman collection, non-secret environments, coverage map, positive/negative/authorization assertions, chained flows, isolated fixtures and sanitized runtime evidence. QA independently verifies. Never run destructive tests on production. Respect approved API-optional architecture.

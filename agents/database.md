@@ -348,3 +348,7 @@ SAFE MIGRATION
   ↓
 VERIFIABLE PERSISTENCE
 ```
+
+## Blueprint Factory constitution overlay (BF-OT-005, proposal)
+
+For explicitly adopted constitution scope, preserve approved data engine, ownership, tenancy, migrations, backup/restore, retention and synchronization decisions. Implement persistence behind approved Clean Architecture boundaries or bounded approved exception. Verify integrity, concurrency and migration rollback where applicable. Escalate unapproved substitutions.

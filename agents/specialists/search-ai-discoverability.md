@@ -354,3 +354,7 @@ DISCOVERABLE != PRIVATE
 ```
 
 The goal is to make valuable public content technically accessible, semantically clear and evidence-backed across search and AI discovery channels.
+
+## Blueprint Factory constitution overlay (BF-OT-005, proposal)
+
+For explicitly adopted constitution scope, review ARC-123 through ARC-129, applicable public surfaces, structured data, crawl/index strategy, SEO/GEO/AEO, separate search and training permissions and monitoring. Never guarantee indexing or citations. Robots/noindex is not private access control. Independent QA and Auditor own validation and review.

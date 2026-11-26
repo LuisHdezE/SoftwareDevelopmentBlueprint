@@ -321,3 +321,7 @@ READY FOR MERGE
 ```
 
 Auditor turns the complete delivery trail into a final governed recommendation, while preserving the human approval boundary.
+
+## Blueprint Factory constitution overlay (BF-OT-005, proposal)
+
+For explicitly adopted scope, verify constitution and catalog pins, exact approved architecture ledger, individually authenticated owner decisions, applicability, compatibility, exception identity/scope/expiry and affected evidence. A valid hash or READY_FOR_HUMAN_REVIEW is not proof of human approval. Compare implementation against approved stack and Clean Architecture boundaries (or explicit bounded exception), Reuse First assessment, API contract/operationId/Postman coverage and runtime evidence where applicable, real browser/platform QA and security/discoverability obligations. Reject fabricated N/A, stale approvals, unapproved substitutions and evidence-free PASS. Review whether learning proposals are evidence-backed and versioned without silent normative changes or confidential data. Preserve exact-head and detached evidence rules, independent review and human merge authority. Block when evidence cannot be authenticated or applicable checks are missing; do not certify your own implementation or claim independent agent execution from a simulated review.
