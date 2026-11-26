@@ -1,0 +1,44 @@
+schema_version: "1.0.0"
+policy_version: "proposal-1"
+status: PROPOSED
+source: documentation/BF_OT_002_DEVELOPMENT_CONSTITUTION.md
+baseline: 586cc2f2b629ced34519704924c0351310236ab4
+automatic_adoption: false
+principles:
+  - {id: BF-P01, key: clean_architecture, applicability: all, exception: owner_approved}
+  - {id: BF-P02, key: engineering_practices, applicability: all, exception: owner_approved}
+  - {id: BF-P03, key: architecture_approval, applicability: all, exception: forbidden}
+  - {id: BF-P04, key: reuse_first, applicability: all, exception: forbidden}
+  - {id: BF-P05, key: api_contract_first, applicability: api_applies, exception: forbidden}
+  - {id: BF-P06, key: postman_operational_qa, applicability: governed_http_api, exception: forbidden}
+  - {id: BF-P07, key: qa, applicability: all, exception: forbidden}
+  - {id: BF-P08, key: security, applicability: all, exception: forbidden}
+  - {id: BF-P09, key: public_discoverability, applicability: public_indexable, exception: forbidden}
+  - {id: BF-P10, key: evidence_before_pass, applicability: all, exception: forbidden}
+  - {id: BF-P11, key: role_independence, applicability: all, exception: forbidden}
+  - {id: BF-P12, key: governed_learning, applicability: all, exception: forbidden}
+  - {id: BF-P13, key: portable_execution, applicability: all, exception: forbidden}
+  - {id: BF-P14, key: traceability, applicability: all, exception: forbidden}
+exception_policy:
+  required_fields: [exception_id, policy_id, project, scope, alternative, rationale, risk, mitigations, owner, approval_evidence, approved_at, review_trigger, expires_at, affected_tests]
+  blocking_states: [PENDING, REJECTED, EXPIRED]
+  approval_authority: human_owner
+  blanket_waivers: false
+  missing_evidence_pass: false
+  qa_bypass: false
+  security_bypass: false
+  automatic_consumer_upgrade: false
+enforcement:
+  state: PROPOSED_NOT_RUNTIME_ENFORCED
+  followups:
+    - BF-OT-003
+    - BF-OT-004
+    - BF-OT-005
+    - BF-OT-006
+    - BF-OT-007
+    - BF-OT-008
+    - BF-OT-009
+    - BF-OT-010
+    - BF-OT-011
+    - BF-OT-012
+    - BF-OT-013
